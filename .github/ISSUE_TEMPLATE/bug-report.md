@@ -12,7 +12,6 @@ name: 🐛 Bug Report
 about: 버그 신고
 title: "[BUG] "
 labels: bug
-assignees: ''
 ---
 
 ## 🐛 버그 요약

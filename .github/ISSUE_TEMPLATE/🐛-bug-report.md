@@ -1,17 +1,10 @@
 ---
-name: Bug Report
-about: 버그 신고
-title: ''
-labels: bug
-assignees: ''
-
----
-
----
-name: 🐛 Bug Report
+name: "\U0001F41B Bug Report"
 about: 버그 신고
 title: "[BUG] "
-labels: bug
+labels: bug, feature
+assignees: ''
+
 ---
 
 ## 🐛 버그 요약

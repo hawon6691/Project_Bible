@@ -1,17 +1,10 @@
 ---
 name: 'Document '
 about: 문서 작업
-title: ''
+title: "[DOCS] "
 labels: document
 assignees: ''
 
----
-
----
-name: ✨ Document
-about: 문서 작업
-title: "[DOCS] "
-labels: document
 ---
 
 ## ✨ 문서 요약

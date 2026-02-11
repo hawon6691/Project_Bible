@@ -60,6 +60,25 @@
 | 52 | build_parts | 견적 부품 |
 | 53 | compatibility_rules | 호환성 규칙 |
 | 54 | email_verifications | 이메일 인증코드 (회원가입/비밀번호 재설정) |
+| 55 | user_social_accounts | 소셜 계정 연동 |
+| 56 | friendships | 친구/팔로우 관계 |
+| 57 | short_forms | 숏폼 영상 |
+| 58 | short_form_products | 숏폼-상품 태깅 |
+| 59 | short_form_likes | 숏폼 좋아요 |
+| 60 | attachments | 통합 첨부파일 (다형성) |
+| 61 | news_categories | 뉴스 카테고리 |
+| 62 | news_articles | 뉴스 게시글 |
+| 63 | news_related_products | 뉴스-상품 매핑 |
+| 64 | product_mappings | 크롤링 상품 매핑 |
+| 65 | fraud_alerts | 이상 가격 알림 |
+| 66 | review_images | 리뷰 이미지 |
+| 67 | review_tags | 리뷰 태그 |
+| 68 | used_prices | 중고 시세 |
+| 69 | car_models | 자동차 모델/트림 |
+| 70 | lease_offers | 렌트/리스 조건 |
+| 71 | auctions | 역경매 요청 |
+| 72 | bids | 역경매 입찰 |
+| 73 | admin_settings | 관리자 시스템 설정 |
 
 ---
 
@@ -78,6 +97,10 @@
 | status | ENUM('ACTIVE','INACTIVE','BLOCKED') | NOT NULL, DEFAULT 'ACTIVE' | 계정 상태 |
 | email_verified | BOOLEAN | NOT NULL, DEFAULT false | 이메일 인증 완료 여부 |
 | email_verified_at | TIMESTAMP | NULLABLE | 이메일 인증 완료 시각 |
+| nickname | VARCHAR(30) | UNIQUE, NOT NULL | 닉네임 (중복 불가) |
+| bio | VARCHAR(200) | NULLABLE | 한 줄 소개글 |
+| profile_image_url | VARCHAR(500) | NULLABLE | 프로필 이미지 URL |
+| search_history_enabled | BOOLEAN | NOT NULL, DEFAULT true | 검색 기록 저장 여부 |
 | point | INT | NOT NULL, DEFAULT 0 | 보유 포인트 (비정규화) |
 | preferred_locale | VARCHAR(5) | NOT NULL, DEFAULT 'ko' | 선호 언어 |
 | preferred_currency | VARCHAR(3) | NOT NULL, DEFAULT 'KRW' | 선호 화폐 |
@@ -88,6 +111,7 @@
 
 **인덱스:**
 - `idx_users_email` → email (UNIQUE)
+- `idx_users_nickname` → nickname (UNIQUE)
 - `idx_users_status` → status
 - `idx_users_role` → role
 
@@ -127,6 +151,8 @@
 | view_count | INT | NOT NULL, DEFAULT 0 | 조회수 |
 | review_count | INT | NOT NULL, DEFAULT 0 | 리뷰 수 (비정규화) |
 | average_rating | DECIMAL(2,1) | NOT NULL, DEFAULT 0.0 | 평균 별점 (비정규화) |
+| sales_count | INT | NOT NULL, DEFAULT 0 | 판매량 (비정규화) |
+| popularity_score | DECIMAL(10,2) | NOT NULL, DEFAULT 0 | 인기 점수 (조회×0.3+리뷰×0.5+판매×0.2) |
 | version | INT | NOT NULL, DEFAULT 1 | 낙관적 잠금 버전 |
 | created_at | TIMESTAMP | NOT NULL | |
 | updated_at | TIMESTAMP | NOT NULL | |
@@ -138,6 +164,7 @@
 - `idx_products_lowest_price` → lowest_price
 - `idx_products_created` → created_at DESC
 - `idx_products_view_count` → view_count DESC
+- `idx_products_popularity` → popularity_score
 - `idx_products_name` → name (전문 검색용)
 
 ---
@@ -184,6 +211,7 @@
 | options | JSON | NULLABLE | SELECT 타입의 선택지 배열 |
 | unit | VARCHAR(20) | NULLABLE | 단위 (GB, kg 등) |
 | is_comparable | BOOLEAN | NOT NULL, DEFAULT true | 비교 대상 여부 |
+| data_type | ENUM('NUMBER','STRING','BOOLEAN') | NOT NULL, DEFAULT 'STRING' | 스펙 데이터 타입 |
 | sort_order | INT | NOT NULL, DEFAULT 0 | 정렬 순서 |
 | created_at | TIMESTAMP | NOT NULL | |
 
@@ -256,6 +284,10 @@
 | shipping_cost | INT | NOT NULL, DEFAULT 0 | 배송비 |
 | shipping_info | VARCHAR(100) | NULLABLE | 배송 정보 |
 | product_url | VARCHAR(1000) | NOT NULL | 판매처 상품 페이지 URL |
+| shipping_fee | INT | NOT NULL, DEFAULT 0 | 배송비 |
+| shipping_type | ENUM('FREE','PAID','CONDITIONAL') | NOT NULL, DEFAULT 'PAID' | 배송비 유형 |
+| total_price | INT | GENERATED AS (price + shipping_fee) | 배송비 포함 실제 가격 |
+| click_count | INT | NOT NULL, DEFAULT 0 | 클릭수 (인기 판매처 추적) |
 | is_available | BOOLEAN | NOT NULL, DEFAULT true | 구매 가능 여부 |
 | crawled_at | TIMESTAMP | NULLABLE | 마지막 크롤링 시각 |
 | created_at | TIMESTAMP | NOT NULL | |
@@ -451,6 +483,7 @@
 | order_id | INT | FK → orders.id, NOT NULL | 주문 |
 | rating | SMALLINT | NOT NULL, CHECK (1~5) | 별점 |
 | content | TEXT | NOT NULL | 리뷰 내용 |
+| is_best | BOOLEAN | NOT NULL, DEFAULT false | 베스트 리뷰 여부 |
 | created_at | TIMESTAMP | NOT NULL | |
 | updated_at | TIMESTAMP | NOT NULL | |
 | deleted_at | TIMESTAMP | NULLABLE | 소프트 삭제 |
@@ -1128,6 +1161,352 @@
 
 ---
 
+### 2.55 user_social_accounts (소셜 계정 연동)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| user_id | INT | FK → users.id, NOT NULL | 사용자 |
+| provider | VARCHAR(20) | NOT NULL | 공급자 (google/naver/kakao/facebook/instagram) |
+| social_id | VARCHAR(255) | NOT NULL | 소셜 서비스 고유 ID |
+| social_email | VARCHAR(255) | NULLABLE | 소셜 계정 이메일 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+**인덱스:**
+- `idx_social_provider_id` → (provider, social_id) UNIQUE
+- `idx_social_user` → user_id
+
+**관계:** user_social_accounts.user_id → users.id
+
+---
+
+### 2.56 friendships (친구/팔로우 관계)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| requester_id | INT | FK → users.id, NOT NULL | 요청자 |
+| addressee_id | INT | FK → users.id, NOT NULL | 수신자 |
+| status | ENUM('PENDING','ACCEPTED','BLOCKED') | NOT NULL, DEFAULT 'PENDING' | 관계 상태 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+**인덱스:**
+- `idx_friendships_pair` → (requester_id, addressee_id) UNIQUE
+- `idx_friendships_addressee` → addressee_id
+- `idx_friendships_status` → status
+
+**관계:** friendships.requester_id → users.id, friendships.addressee_id → users.id
+
+---
+
+### 2.57 short_forms (숏폼 영상)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| user_id | INT | FK → users.id, NOT NULL | 업로더 |
+| title | VARCHAR(100) | NOT NULL | 영상 제목 |
+| video_url | VARCHAR(500) | NOT NULL | 영상 파일 URL |
+| thumbnail_url | VARCHAR(500) | NULLABLE | 썸네일 이미지 URL |
+| duration | INT | NOT NULL | 재생 시간 (초, 최대 60) |
+| view_count | INT | NOT NULL, DEFAULT 0 | 조회수 |
+| like_count | INT | NOT NULL, DEFAULT 0 | 좋아요 수 (비정규화) |
+| comment_count | INT | NOT NULL, DEFAULT 0 | 댓글 수 (비정규화) |
+| status | ENUM('PROCESSING','ACTIVE','DELETED') | NOT NULL, DEFAULT 'PROCESSING' | 상태 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+| deleted_at | TIMESTAMP | NULLABLE | 소프트 삭제 |
+
+**인덱스:**
+- `idx_short_forms_user` → user_id
+- `idx_short_forms_popular` → (like_count, view_count)
+- `idx_short_forms_created` → created_at
+
+---
+
+### 2.58 short_form_products (숏폼-상품 태깅)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| short_form_id | INT | FK → short_forms.id, NOT NULL | 숏폼 |
+| product_id | INT | FK → products.id, NOT NULL | 태깅된 상품 |
+| display_order | INT | NOT NULL, DEFAULT 0 | 노출 순서 |
+
+**인덱스:** `idx_sfp_shortform` → short_form_id
+
+---
+
+### 2.59 short_form_likes (숏폼 좋아요)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| short_form_id | INT | FK → short_forms.id, NOT NULL | 숏폼 |
+| user_id | INT | FK → users.id, NOT NULL | 사용자 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+**인덱스:** `idx_sf_likes_unique` → (short_form_id, user_id) UNIQUE
+
+---
+
+### 2.60 attachments (통합 첨부파일)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| owner_id | INT | NOT NULL | 소유자 ID (게시글/리뷰/숏폼 등) |
+| owner_type | VARCHAR(30) | NOT NULL | 소유자 타입 (POST/REVIEW/SHORTFORM 등) |
+| file_type | ENUM('IMAGE','VIDEO','AUDIO','DOCUMENT') | NOT NULL | 파일 유형 |
+| original_name | VARCHAR(255) | NOT NULL | 원본 파일명 |
+| storage_path | VARCHAR(500) | NOT NULL | S3/CDN 저장 경로 |
+| mime_type | VARCHAR(50) | NOT NULL | MIME 타입 |
+| file_size | INT | NOT NULL | 파일 크기 (bytes) |
+| metadata | JSONB | NULLABLE | 추가 정보 (해상도, 재생시간, EXIF 등) |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+**인덱스:**
+- `idx_attachments_owner` → (owner_type, owner_id)
+- `idx_attachments_type` → file_type
+
+---
+
+### 2.61 news_categories (뉴스 카테고리)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| name | VARCHAR(30) | NOT NULL | 카테고리명 (IT, 스포츠, 게임 등) |
+| slug | VARCHAR(30) | UNIQUE, NOT NULL | URL 슬러그 |
+| sort_order | INT | NOT NULL, DEFAULT 0 | 탭 정렬 순서 |
+| is_active | BOOLEAN | NOT NULL, DEFAULT true | 활성 여부 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+---
+
+### 2.62 news_articles (뉴스 게시글)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| category_id | INT | FK → news_categories.id, NOT NULL | 뉴스 카테고리 |
+| author_id | INT | FK → users.id, NOT NULL | 작성자 (ADMIN) |
+| title | VARCHAR(200) | NOT NULL | 제목 |
+| content | TEXT | NOT NULL | 본문 (HTML/Markdown) |
+| thumbnail_url | VARCHAR(500) | NULLABLE | 목록 노출용 썸네일 |
+| view_count | INT | NOT NULL, DEFAULT 0 | 조회수 |
+| is_published | BOOLEAN | NOT NULL, DEFAULT true | 게시 여부 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+| deleted_at | TIMESTAMP | NULLABLE | 소프트 삭제 |
+
+**인덱스:**
+- `idx_news_category` → category_id
+- `idx_news_created` → created_at
+
+---
+
+### 2.63 news_related_products (뉴스-상품 매핑)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| news_id | INT | FK → news_articles.id, NOT NULL | 뉴스 |
+| product_id | INT | FK → products.id, NOT NULL | 관련 상품 |
+| display_order | INT | NOT NULL, DEFAULT 0 | 노출 순서 |
+
+**인덱스:** `idx_nrp_news` → news_id
+
+---
+
+### 2.64 product_mappings (크롤링 상품 매핑)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| crawled_product_name | VARCHAR(300) | NOT NULL | 크롤링된 원본 상품명 |
+| extracted_model | VARCHAR(100) | NULLABLE | 자동 추출된 모델명 |
+| seller_id | INT | FK → sellers.id, NOT NULL | 출처 판매처 |
+| product_id | INT | FK → products.id, NULLABLE | 매핑된 대표 상품 (NULL이면 미매핑) |
+| status | ENUM('PENDING','APPROVED','REJECTED') | NOT NULL, DEFAULT 'PENDING' | 매핑 상태 |
+| confidence | DECIMAL(3,2) | NULLABLE | 자동 매핑 신뢰도 (0~1) |
+| reviewed_by | INT | FK → users.id, NULLABLE | 검토 관리자 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+**인덱스:**
+- `idx_mappings_status` → status
+- `idx_mappings_seller` → seller_id
+- `idx_mappings_product` → product_id
+
+---
+
+### 2.65 fraud_alerts (이상 가격 알림)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| price_entry_id | INT | FK → price_entries.id, NOT NULL | 의심 가격 엔트리 |
+| product_id | INT | FK → products.id, NOT NULL | 대상 상품 |
+| seller_id | INT | FK → sellers.id, NOT NULL | 대상 판매처 |
+| detected_price | INT | NOT NULL | 탐지된 이상 가격 |
+| average_price | INT | NOT NULL | 평균가 (비교 기준) |
+| deviation_percent | DECIMAL(5,2) | NOT NULL | 편차 비율 (%) |
+| status | ENUM('PENDING','APPROVED','REJECTED') | NOT NULL, DEFAULT 'PENDING' | 처리 상태 |
+| reviewed_by | INT | FK → users.id, NULLABLE | 검토 관리자 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+**인덱스:**
+- `idx_fraud_status` → status
+- `idx_fraud_product` → product_id
+
+---
+
+### 2.66 review_images (리뷰 이미지)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| review_id | INT | FK → reviews.id, NOT NULL | 리뷰 |
+| image_url | VARCHAR(500) | NOT NULL | 이미지 URL |
+| display_order | INT | NOT NULL, DEFAULT 0 | 이미지 순서 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+**인덱스:** `idx_review_images_review` → review_id
+
+---
+
+### 2.67 review_tags (리뷰 태그)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| review_id | INT | FK → reviews.id, NOT NULL | 리뷰 |
+| tag | VARCHAR(30) | NOT NULL | 태그명 (#가성비, #배송빠름 등) |
+
+**인덱스:**
+- `idx_review_tags_review` → review_id
+- `idx_review_tags_tag` → tag
+
+---
+
+### 2.68 used_prices (중고 시세)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| product_id | INT | FK → products.id, NOT NULL | 대상 상품 |
+| average_price | INT | NOT NULL | 평균 중고가 |
+| min_price | INT | NOT NULL | 최저 중고가 |
+| max_price | INT | NOT NULL | 최고 중고가 |
+| sample_count | INT | NOT NULL | 표본 수 |
+| source | VARCHAR(50) | NOT NULL | 데이터 출처 |
+| collected_at | TIMESTAMP | NOT NULL | 수집 시각 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+**인덱스:** `idx_used_prices_product` → (product_id, collected_at)
+
+---
+
+### 2.69 car_models (자동차 모델)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| brand | VARCHAR(50) | NOT NULL | 제조사 (현대, 기아 등) |
+| name | VARCHAR(100) | NOT NULL | 모델명 |
+| type | ENUM('SEDAN','SUV','HATCHBACK','TRUCK','VAN','EV') | NOT NULL | 차종 |
+| year | INT | NOT NULL | 연식 |
+| base_price | INT | NOT NULL | 기본 가격 |
+| image_url | VARCHAR(500) | NULLABLE | 대표 이미지 |
+| is_active | BOOLEAN | NOT NULL, DEFAULT true | 판매 중 여부 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+**인덱스:**
+- `idx_car_models_brand` → brand
+- `idx_car_models_type` → type
+
+---
+
+### 2.70 lease_offers (렌트/리스 조건)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| car_model_id | INT | FK → car_models.id, NOT NULL | 대상 차량 |
+| company | VARCHAR(50) | NOT NULL | 렌트/리스 회사명 |
+| type | ENUM('RENT','LEASE','FINANCE') | NOT NULL | 계약 유형 |
+| monthly_payment | INT | NOT NULL | 월 납입금 |
+| deposit | INT | NOT NULL, DEFAULT 0 | 보증금 |
+| contract_months | INT | NOT NULL | 계약 기간 (개월) |
+| annual_mileage | INT | NOT NULL | 연간 주행거리 제한 (km) |
+| is_active | BOOLEAN | NOT NULL, DEFAULT true | 유효 여부 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+**인덱스:** `idx_lease_offers_model` → car_model_id
+
+---
+
+### 2.71 auctions (역경매)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| user_id | INT | FK → users.id, NOT NULL | 요청자 |
+| title | VARCHAR(100) | NOT NULL | 역경매 제목 |
+| description | TEXT | NOT NULL | 원하는 사양/조건 설명 |
+| category_id | INT | FK → categories.id, NOT NULL | 상품 카테고리 |
+| budget | INT | NULLABLE | 예산 상한 |
+| status | ENUM('OPEN','CLOSED','CANCELLED','COMPLETED') | NOT NULL, DEFAULT 'OPEN' | 상태 |
+| bid_count | INT | NOT NULL, DEFAULT 0 | 입찰 수 (비정규화) |
+| expires_at | TIMESTAMP | NOT NULL | 마감 시간 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+**인덱스:**
+- `idx_auctions_user` → user_id
+- `idx_auctions_status` → status
+- `idx_auctions_expires` → expires_at
+
+---
+
+### 2.72 bids (역경매 입찰)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| auction_id | INT | FK → auctions.id, NOT NULL | 역경매 |
+| seller_id | INT | FK → sellers.id, NOT NULL | 입찰 판매자 |
+| price | INT | NOT NULL | 제시 가격 |
+| description | TEXT | NULLABLE | 제안 상세 설명 |
+| delivery_days | INT | NOT NULL | 예상 배송 소요일 |
+| is_selected | BOOLEAN | NOT NULL, DEFAULT false | 낙찰 여부 |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+**인덱스:**
+- `idx_bids_auction` → auction_id
+- `idx_bids_seller` → seller_id
+
+---
+
+### 2.73 admin_settings (관리자 시스템 설정)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|---------|------|
+| id | INT | PK, AUTO_INCREMENT | |
+| setting_key | VARCHAR(50) | UNIQUE, NOT NULL | 설정 키 (allowed_extensions, max_image_upload 등) |
+| setting_value | JSONB | NOT NULL | 설정 값 (JSON 형식) |
+| description | VARCHAR(200) | NULLABLE | 설정 설명 |
+| updated_by | INT | FK → users.id, NULLABLE | 최종 수정자 |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT NOW | |
+
+**인덱스:** `idx_admin_settings_key` → setting_key (UNIQUE)
+
+---
+
 ## 3. 엔티티 관계도 (텍스트)
 
 ```
@@ -1155,6 +1534,13 @@ users (1) ──── (N) user_badges
 users (1) ──── (N) pc_builds
 users (1) ──── (N) search_logs
 users (1) ──── (N) email_verifications
+users (1) ──── (N) user_social_accounts
+users (1) ──── (N) friendships        [as requester_id]
+users (1) ──── (N) friendships        [as addressee_id]
+users (1) ──── (N) short_forms
+users (1) ──── (N) short_form_likes
+users (1) ──── (N) news_articles      [as author_id]
+users (1) ──── (N) auctions
 
 categories (1) ──── (N) categories       [자기참조: parent_id]
 categories (1) ──── (N) products
@@ -1177,6 +1563,12 @@ products (1) ──── (N) view_history
 products (1) ──── (N) recommendations
 products (1) ──── (N) deal_products
 products (1) ──── (N) build_parts
+products (1) ──── (N) short_form_products
+products (1) ──── (N) news_related_products
+products (1) ──── (N) product_mappings
+products (1) ──── (N) fraud_alerts
+products (1) ──── (N) used_prices
+products (1) ──── (N) review_images    [via reviews]
 
 spec_definitions (1) ──── (N) product_specs
 spec_definitions (1) ──── (N) spec_scores
@@ -1210,6 +1602,25 @@ badges (1) ──── (N) user_badges
 pc_builds (1) ──── (N) build_parts
 
 crawler_jobs (1) ──── (N) crawler_logs
+
+short_forms (1) ──── (N) short_form_products
+short_forms (1) ──── (N) short_form_likes
+short_forms (1) ──── (N) comments      [다형성: owner_type='SHORTFORM']
+
+news_categories (1) ──── (N) news_articles
+news_articles (1) ──── (N) news_related_products
+
+reviews (1) ──── (N) review_images
+reviews (1) ──── (N) review_tags
+
+sellers (1) ──── (N) product_mappings
+sellers (1) ──── (N) fraud_alerts
+sellers (1) ──── (N) bids
+
+car_models (1) ──── (N) lease_offers
+
+auctions (1) ──── (N) bids
+categories (1) ──── (N) auctions
 ```
 
 ---
@@ -1299,6 +1710,12 @@ crawler_jobs (1) ──── (N) crawler_logs
 | badges | holder_count | 배지 부여/회수 시 | 보유자 수 조회 |
 | pc_builds | total_price | 부품 추가/삭제 시 | 합계 즉시 표시 |
 | build_parts | price_at_add | 부품 추가 시 | 추가 시점 가격 고정 |
+| products | sales_count | 구매확정 시 증가 | 실시간 인기 랭킹 |
+| products | popularity_score | 조회/리뷰/판매 가중치 합산 | 인기순 정렬 |
+| short_forms | like_count | 좋아요 시 증가/감소 | 숏폼 랭킹 |
+| short_forms | comment_count | 댓글 작성/삭제 시 증가/감소 | 숏폼 정렬 |
+| auctions | bid_count | 입찰 등록/취소 시 증가/감소 | 역경매 인기 표시 |
+| price_entries | click_count | 판매처 클릭 시 증가 | 인기 판매처 추적 |
 
 ---
 

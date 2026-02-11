@@ -62,7 +62,10 @@ nestshop/
 │   │   ├── bull.config.ts               # Bull Queue 설정 (Redis 기반)
 │   │   ├── push.config.ts              # VAPID 키, Web Push 설정
 │   │   ├── image.config.ts             # 이미지 최적화 설정 (사이즈, 품질, WebP)
-│   │   └── mail.config.ts              # SMTP 설정 (Nodemailer)
+│   │   ├── mail.config.ts              # SMTP 설정 (Nodemailer)
+│   │   ├── social.config.ts              # OAuth 2.0 공급자별 설정 (Client ID/Secret)
+│   │   ├── s3.config.ts                  # AWS S3 스토리지 설정
+│   │   └── ffmpeg.config.ts              # FFmpeg 트랜스코딩 설정
 │   │
 │   ├── mail/                      # 메일 발송 모듈
 │   │   ├── mail.module.ts
@@ -83,12 +86,20 @@ nestshop/
 │   │   │   ├── resend-verification.dto.ts      # 인증 메일 재발송 DTO
 │   │   │   ├── request-password-reset.dto.ts   # 비밀번호 재설정 요청 DTO (email + phone)
 │   │   │   ├── verify-reset-code.dto.ts        # 재설정 인증코드 검증 DTO
-│   │   │   └── reset-password.dto.ts           # 새 비밀번호 설정 DTO
+│   │   │   ├── reset-password.dto.ts           # 새 비밀번호 설정 DTO
+│   │   │   ├── social-login.dto.ts             # 소셜 로그인 요청 DTO
+│   │   │   └── social-complete-signup.dto.ts    # 소셜 회원 추가정보 DTO
 │   │   ├── entities/
-│   │   │   └── email-verification.entity.ts    # 이메일 인증코드 엔티티
+│   │   │   ├── email-verification.entity.ts    # 이메일 인증코드 엔티티
+│   │   │   └── user-social-account.entity.ts   # 소셜 계정 연동
 │   │   └── strategies/
 │   │       ├── jwt.strategy.ts           # Access Token 검증
-│   │       └── jwt-refresh.strategy.ts   # Refresh Token 검증
+│   │       ├── jwt-refresh.strategy.ts   # Refresh Token 검증
+│   │       ├── google.strategy.ts          # Google OAuth 2.0
+│   │       ├── kakao.strategy.ts           # Kakao OAuth 2.0
+│   │       ├── naver.strategy.ts           # Naver OAuth 2.0
+│   │       ├── facebook.strategy.ts        # Facebook OAuth 2.0
+│   │       └── instagram.strategy.ts       # Instagram OAuth 2.0
 │   │
 │   ├── user/                     # 회원 모듈
 │   │   ├── user.module.ts
@@ -96,7 +107,9 @@ nestshop/
 │   │   ├── user.service.ts
 │   │   ├── dto/
 │   │   │   ├── update-user.dto.ts
-│   │   │   └── user-response.dto.ts
+│   │   │   ├── user-response.dto.ts
+│   │   │   ├── update-profile.dto.ts       # 닉네임, 소개글 수정 DTO
+│   │   │   └── profile-response.dto.ts     # 프로필 응답 DTO
 │   │   └── entities/
 │   │       └── user.entity.ts
 │   │
@@ -118,7 +131,8 @@ nestshop/
 │   │   │   ├── create-product.dto.ts
 │   │   │   ├── update-product.dto.ts
 │   │   │   ├── product-query.dto.ts      # 검색/필터/정렬/스펙필터 쿼리
-│   │   │   └── product-response.dto.ts
+│   │   │   ├── product-response.dto.ts
+│   │   │   └── product-sort.dto.ts         # 정렬 옵션 DTO (인기순/가격순/평점순)
 │   │   └── entities/
 │   │       ├── product.entity.ts
 │   │       ├── product-option.entity.ts
@@ -326,7 +340,9 @@ nestshop/
 │   │   │   ├── create-review.dto.ts
 │   │   │   └── update-review.dto.ts
 │   │   └── entities/
-│   │       └── review.entity.ts
+│   │       ├── review.entity.ts
+│   │       ├── review-image.entity.ts  # 리뷰 이미지
+│   │       └── review-tag.entity.ts    # 리뷰 태그
 │   │
 │   ├── wishlist/                 # 위시리스트 모듈
 │   │   ├── wishlist.module.ts
@@ -442,6 +458,101 @@ nestshop/
 │   │       ├── deal.entity.ts
 │   │       └── deal-product.entity.ts    # 특가 대상 상품
 │   │
+│   ├── friend/                    # 친구/팔로우 모듈
+│   │   ├── friend.module.ts
+│   │   ├── friend.controller.ts           # 친구 신청/수락/거절/차단, 팔로우
+│   │   ├── friend.service.ts
+│   │   ├── friend.gateway.ts              # 친구 활동 실시간 알림 (WebSocket)
+│   │   ├── dto/
+│   │   │   ├── friend-request.dto.ts
+│   │   │   └── friend-query.dto.ts
+│   │   └── entities/
+│   │       └── friendship.entity.ts       # 친구 관계 (PENDING/ACCEPTED/BLOCKED)
+│   │
+│   ├── video/                     # 숏폼/영상 모듈
+│   │   ├── video.module.ts
+│   │   ├── video.controller.ts            # 숏폼 업로드, 스트리밍, 인터랙션
+│   │   ├── video.service.ts
+│   │   ├── video.processor.ts             # Bull Queue 트랜스코딩 Worker (FFmpeg)
+│   │   ├── dto/
+│   │   │   ├── upload-video.dto.ts
+│   │   │   └── video-query.dto.ts
+│   │   └── entities/
+│   │       ├── short-form.entity.ts       # 숏폼 영상
+│   │       ├── short-form-product.entity.ts # 숏폼-상품 태깅 (N:M)
+│   │       └── short-form-like.entity.ts  # 숏폼 좋아요
+│   │
+│   ├── news/                      # 뉴스/콘텐츠 모듈
+│   │   ├── news.module.ts
+│   │   ├── news.controller.ts             # 뉴스 CRUD, 탭 기반 조회
+│   │   ├── news.service.ts
+│   │   ├── dto/
+│   │   │   ├── create-news.dto.ts
+│   │   │   └── news-query.dto.ts
+│   │   └── entities/
+│   │       ├── news-article.entity.ts     # 뉴스 게시글
+│   │       ├── news-category.entity.ts    # 뉴스 카테고리
+│   │       └── news-product.entity.ts     # 뉴스-상품 매핑 (N:M)
+│   │
+│   ├── media/                     # 멀티미디어 리소스 모듈
+│   │   ├── media.module.ts
+│   │   ├── media.controller.ts            # 파일 업로드, 스트리밍, 삭제
+│   │   ├── media.service.ts
+│   │   ├── media.processor.ts             # Bull Queue 미디어 프로세싱 Worker
+│   │   ├── dto/
+│   │   │   └── upload-media.dto.ts
+│   │   └── entities/
+│   │       └── attachment.entity.ts       # 통합 첨부파일 (다형성 관계)
+│   │
+│   ├── matching/                  # 상품 매핑 모듈
+│   │   ├── matching.module.ts
+│   │   ├── matching.controller.ts         # 매핑 승인/거절, 매핑 현황 (Admin)
+│   │   ├── matching.service.ts            # 모델명 추출, 자동 매핑 알고리즘
+│   │   ├── dto/
+│   │   │   └── approve-matching.dto.ts
+│   │   └── entities/
+│   │       └── product-mapping.entity.ts  # 판매처 상품 ↔ 대표 상품 매핑
+│   │
+│   ├── fraud/                     # 이상 가격 탐지 모듈
+│   │   ├── fraud.module.ts
+│   │   ├── fraud.service.ts               # 이상 가격 탐지 알고리즘
+│   │   ├── fraud.listener.ts              # 가격 등록 이벤트 리스너
+│   │   └── entities/
+│   │       └── fraud-alert.entity.ts      # 이상 가격 알림 기록
+│   │
+│   ├── used-market/               # 중고 마켓 모듈
+│   │   ├── used-market.module.ts
+│   │   ├── used-market.controller.ts      # 중고 시세 조회, 매입가 산정
+│   │   ├── used-market.service.ts
+│   │   └── entities/
+│   │       └── used-price.entity.ts       # 중고 시세 데이터
+│   │
+│   ├── auction/                   # 역경매 모듈
+│   │   ├── auction.module.ts
+│   │   ├── auction.controller.ts          # 역경매 등록, 입찰, 낙찰
+│   │   ├── auction.service.ts
+│   │   ├── auction.gateway.ts             # 실시간 입찰 알림 (WebSocket)
+│   │   ├── dto/
+│   │   │   ├── create-auction.dto.ts
+│   │   │   └── place-bid.dto.ts
+│   │   └── entities/
+│   │       ├── auction.entity.ts          # 역경매 요청
+│   │       └── bid.entity.ts              # 입찰 내역
+│   │
+│   ├── auto/                      # 자동차 특화 모듈
+│   │   ├── auto.module.ts
+│   │   ├── auto.controller.ts             # 신차 견적, 렌트/리스 비교
+│   │   ├── auto.service.ts
+│   │   ├── dto/
+│   │   │   └── car-estimate.dto.ts
+│   │   └── entities/
+│   │       ├── car-model.entity.ts        # 자동차 모델/트림
+│   │       └── lease-offer.entity.ts      # 렌트/리스 조건
+│   │
+│   ├── health/                    # 헬스체크 모듈
+│   │   ├── health.module.ts
+│   │   └── health.controller.ts           # DB, Redis, Elasticsearch 상태 확인
+│   │
 │   └── upload/                   # 파일 업로드 모듈 (레거시, image 모듈로 대체 가능)
 │       ├── upload.module.ts
 │       ├── upload.controller.ts
@@ -458,7 +569,12 @@ nestshop/
     ├── search.e2e-spec.ts
     ├── crawler.e2e-spec.ts
     ├── pc-builder.e2e-spec.ts
-    └── push.e2e-spec.ts
+    ├── push.e2e-spec.ts
+    ├── friend.e2e-spec.ts
+    ├── video.e2e-spec.ts
+    ├── news.e2e-spec.ts
+    ├── auction.e2e-spec.ts
+    └── social-auth.e2e-spec.ts
 ```
 
 ---
@@ -470,7 +586,7 @@ nestshop/
 | `common`         | 공통 가드, 필터, 인터셉터, 데코레이터, 기본 엔티티 | -                                                |
 | `config`         | 환경변수 기반 DB/JWT/Redis/ES/Bull/Push/Image/Mail 설정 | `@nestjs/config`                                 |
 | `mail`           | 이메일 발송 (인증코드, 비밀번호 재설정)            | `nodemailer`                                     |
-| `auth`           | 인증 (가입, 로그인, 토큰, 이메일인증, 비번재설정)  | `user`, `mail`, `@nestjs/jwt`, `passport`        |
+| `auth`           | 인증 (가입, 로그인, 토큰, 이메일인증, 비번재설정, 소셜로그인) | `user`, `mail`, `@nestjs/jwt`, `passport`, `passport-google-oauth20`, `passport-kakao` |
 | `user`           | 회원 CRUD, 관리자 회원관리                         | -                                                |
 | `category`       | 카테고리 계층 구조 관리                            | -                                                |
 | `product`        | 상품 CRUD, 옵션, 이미지 관리                       | `category`, `image`                              |
@@ -502,6 +618,16 @@ nestshop/
 | `ranking`        | 인기 상품, 실시간 검색어, 가격 하락 랭킹           | `product`, `price`, Redis                        |
 | `recommendation` | 오늘의 추천, 맞춤 추천                             | `product`, `activity`                            |
 | `deal`           | 특가/타임세일 관리                                 | `product`                                        |
+| `friend`         | 친구 신청/팔로우, 활동 피드, 차단               | `user`, `@nestjs/websockets`                     |
+| `video`          | 숏폼 영상 업로드, 트랜스코딩, 스트리밍           | `@nestjs/bull`, `ffmpeg`, `product`              |
+| `news`           | 뉴스/콘텐츠 관리, 상품 연동                      | `product`, `media`                               |
+| `media`          | 멀티미디어 업로드, 프로세싱, 스트리밍            | `@nestjs/bull`, `s3`, `ffmpeg`                   |
+| `matching`       | 크롤링 상품 → 대표 상품 자동/수동 매핑          | `product`, `crawler`                             |
+| `fraud`          | 이상 가격 탐지, 관리자 알림                      | `price`, `push`                                  |
+| `used-market`    | 중고 시세 조회, 매입가 산정                      | `product`, `pc-builder`                          |
+| `auction`        | 역경매 요청, 입찰, 실시간 알림                   | `product`, `@nestjs/websockets`                  |
+| `auto`           | 자동차 견적, 렌트/리스 비교                      | `product`                                        |
+| `health`         | 서버/DB/Redis/ES 상태 모니터링                   | `@nestjs/terminus`                               |
 | `upload`         | 이미지 파일 업로드 (레거시)                        | `multer`                                         |
 
 ---

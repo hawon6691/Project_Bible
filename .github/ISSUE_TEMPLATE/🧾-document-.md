@@ -1,5 +1,5 @@
 ---
-name: 'Document '
+name: "\U0001F9FE Document "
 about: 문서 작업
 title: "[DOCS] "
 labels: document

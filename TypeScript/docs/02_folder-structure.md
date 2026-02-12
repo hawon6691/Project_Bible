@@ -49,8 +49,19 @@ nestshop/
 │   │   │   └── locale.interceptor.ts     # Accept-Language 헤더 → 로케일 설정
 │   │   ├── middlewares/
 │   │   │   └── transaction.middleware.ts # Transaction Isolation Level 설정
-│   │   └── pipes/
-│   │       └── parse-int.pipe.ts         # 정수 변환 파이프
+│   │   ├── pipes/
+│   │   │   └── parse-int.pipe.ts             # 정수 변환 파이프
+│   │   ├── utils/
+│   │   │   ├── hash.util.ts                  # 해싱 유틸 (bcrypt 래퍼 등)
+│   │   │   ├── slug.util.ts                  # 슬러그 생성 유틸
+│   │   │   └── date.util.ts                  # 날짜 포맷/변환 유틸
+│   │   └── validators/
+│   │       ├── is-strong-password.validator.ts  # 비밀번호 강도 검증
+│   │       ├── is-korean-phone.validator.ts     # 한국 전화번호 검증
+│   │       └── match.validator.ts               # 필드 일치 검증 (비밀번호 확인 등)
+│   │
+│   ├── routes/                    # 라우트 상수 모듈
+│   │   └── api-routes.ts                    # API 경로 상수 정의 (/api/v1/...)
 │   │
 │   ├── config/                   # 설정 모듈
 │   │   ├── config.module.ts

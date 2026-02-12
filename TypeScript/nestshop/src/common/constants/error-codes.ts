@@ -16,6 +16,10 @@ export const ERROR_CODES = {
   USER_NICKNAME_DUPLICATE: { code: 'USER_002', message: '이미 사용 중인 닉네임입니다.' },
   USER_PHONE_MISMATCH: { code: 'USER_003', message: '전화번호가 일치하지 않습니다.' },
 
+  // ── Category ──
+  CATEGORY_NOT_FOUND: { code: 'CAT_001', message: '카테고리를 찾을 수 없습니다.' },
+  CATEGORY_HAS_CHILDREN: { code: 'CAT_002', message: '하위 카테고리가 있어 삭제할 수 없습니다.' },
+
   // ── Product ──
   PRODUCT_NOT_FOUND: { code: 'PROD_001', message: '상품을 찾을 수 없습니다.' },
   PRODUCT_ALREADY_EXISTS: { code: 'PROD_002', message: '이미 등록된 상품입니다.' },

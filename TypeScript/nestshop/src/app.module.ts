@@ -5,6 +5,12 @@ import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { CategoryModule } from './category/category.module';
+import { ProductModule } from './product/product.module';
+import { SpecModule } from './spec/spec.module';
+import { SellerModule } from './seller/seller.module';
+import { PriceModule } from './price/price.module';
+import { CartModule } from './cart/cart.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -38,6 +44,12 @@ import { CategoryModule } from './category/category.module';
     AuthModule,
     UserModule,
     CategoryModule,
+    ProductModule,
+    SpecModule,
+    SellerModule,
+    PriceModule,
+    CartModule,
+    OrderModule,
   ],
 })
 export class AppModule {}

@@ -1,12 +1,21 @@
 import {
   Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn,
   CreateDateColumn, Index, Unique,
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  Unique,
+  Index,
 } from 'typeorm';
 import { Product } from '../../product/entities/product.entity';
 import { SpecDefinition } from './spec-definition.entity';
 
 @Entity('product_specs')
 @Unique('uq_product_spec', ['productId', 'specDefinitionId'])
+@Unique('uq_product_specs', ['productId', 'specDefinitionId'])
 export class ProductSpec {
   @PrimaryGeneratedColumn()
   id: number;
@@ -22,6 +31,10 @@ export class ProductSpec {
   value: string;
 
   @Column({ name: 'numeric_value', type: 'decimal', precision: 15, scale: 4, nullable: true })
+  @Column({ type: 'varchar', length: 200 })
+  value: string;
+
+  @Column({ name: 'numeric_value', type: 'decimal', precision: 10, scale: 2, nullable: true })
   numericValue: number | null;
 
   @CreateDateColumn({ name: 'created_at' })

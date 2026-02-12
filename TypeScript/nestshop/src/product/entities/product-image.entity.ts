@@ -1,6 +1,13 @@
 import {
   Entity, Column, ManyToOne, JoinColumn, PrimaryGeneratedColumn,
   CreateDateColumn, Index,
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  Index,
 } from 'typeorm';
 import { Product } from './product.entity';
 

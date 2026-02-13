@@ -12,6 +12,7 @@ import { PriceModule } from './price/price.module';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
 import { ReviewModule } from './review/review.module';
+import { PointModule } from './point/point.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 
 @Module({
@@ -53,6 +54,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
     CartModule,
     OrderModule,
     ReviewModule,
+    PointModule,
     WishlistModule,
   ],
 })

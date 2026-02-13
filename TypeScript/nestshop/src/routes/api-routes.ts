@@ -37,6 +37,11 @@ export const API_ROUTES = {
   REVIEWS: {
     BASE: 'reviews',
   },
+  POINTS: {
+    BASE: 'points',
+    BALANCE: 'balance',
+    TRANSACTIONS: 'transactions',
+    ADMIN_GRANT: 'admin/points/grant',
   WISHLIST: {
     BASE: 'wishlist',
     PRODUCT: ':productId',

@@ -3,7 +3,9 @@ import {
 } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { User } from '../../user/entities/user.entity';
+import { Payment } from './payment.entity';
 
+// 주문 상태는 서비스의 상태머신 규칙(assertStatusTransition)으로만 전이되도록 관리한다.
 export enum OrderStatus {
   ORDER_PLACED = 'ORDER_PLACED',
   PAYMENT_PENDING = 'PAYMENT_PENDING',
@@ -64,6 +66,11 @@ export class Order extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
+  // 주문 품목 스냅샷
   @OneToMany('OrderItem', 'order')
   items: any[];
+
+  // 주문에 연결된 결제 이력 (재결제/환불 포함)
+  @OneToMany(() => Payment, (payment) => payment.order)
+  payments: Payment[];
 }

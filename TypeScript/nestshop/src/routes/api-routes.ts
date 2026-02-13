@@ -1,3 +1,4 @@
+// API 경로 상수는 컨트롤러/클라이언트 간 경로 불일치를 줄이기 위해 중앙 관리한다.
 export const API_ROUTES = {
   AUTH: {
     BASE: 'auth',
@@ -26,6 +27,10 @@ export const API_ROUTES = {
   },
   ORDERS: {
     BASE: 'orders',
+  },
+  PAYMENTS: {
+    BASE: 'payments',
+    REFUND: ':id/refund',
   },
   REVIEWS: {
     BASE: 'reviews',

@@ -35,6 +35,10 @@ export const ERROR_CODES = {
   REVIEW_ALREADY_EXISTS: { code: 'REV_002', message: '이미 작성한 리뷰가 있습니다.' },
   REVIEW_NOT_OWNER: { code: 'REV_003', message: '본인의 리뷰만 수정/삭제할 수 있습니다.' },
 
+  // ── Price ──
+  ALERT_ALREADY_EXISTS: { code: 'PRICE_001', message: '해당 상품에 대한 알림이 이미 존재합니다.' },
+  POINT_INSUFFICIENT: { code: 'POINT_001', message: '포인트가 부족합니다.' },
+
   // ── Payment ──
   PAYMENT_FAILED: { code: 'PAY_001', message: '결제에 실패했습니다.' },
   PAYMENT_ALREADY_REFUNDED: { code: 'PAY_002', message: '이미 환불된 결제입니다.' },

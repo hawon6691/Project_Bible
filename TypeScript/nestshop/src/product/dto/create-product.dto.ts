@@ -40,20 +40,6 @@ export class CreateProductImageDto {
   sortOrder?: number;
 }
 
-export class CreateProductSpecDto {
-  @ApiProperty({ description: '스펙 정의 ID', example: 1 })
-  @IsInt()
-  specDefinitionId: number;
-
-  @ApiProperty({ description: '스펙 값', example: 'Intel Core i7-1360P' })
-  @IsString()
-  value: string;
-
-  @ApiPropertyOptional({ description: '수치 값 (비교/정렬용)' })
-  @IsOptional()
-  numericValue?: number;
-}
-
 export class CreateProductDto {
   @ApiProperty({ description: '상품명', example: '삼성 갤럭시북4 프로' })
   @IsString()
@@ -84,6 +70,11 @@ export class CreateProductDto {
   @IsInt()
   categoryId: number;
 
+  @ApiPropertyOptional({ description: '상태', enum: ProductStatus })
+  @IsOptional()
+  @IsEnum(ProductStatus)
+  status?: ProductStatus;
+
   @ApiPropertyOptional({ description: '대표 이미지 URL' })
   @IsOptional()
   @IsString()
@@ -102,11 +93,4 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => CreateProductImageDto)
   images?: CreateProductImageDto[];
-
-  @ApiPropertyOptional({ description: '스펙 목록', type: [CreateProductSpecDto] })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => CreateProductSpecDto)
-  specs?: CreateProductSpecDto[];
 }

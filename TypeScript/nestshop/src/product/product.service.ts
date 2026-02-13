@@ -1,14 +1,12 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { Product, ProductStatus } from './entities/product.entity';
+import { Product } from './entities/product.entity';
 import { ProductOption } from './entities/product-option.entity';
 import { ProductImage } from './entities/product-image.entity';
-import { ProductSpec } from '../spec/entities/product-spec.entity';
-import { CreateProductDto } from './dto/create-product.dto';
+import { CreateProductDto, CreateProductOptionDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductQueryDto, ProductSort } from './dto/product-query.dto';
-import { CreateOptionDto, UpdateOptionDto } from './dto/product-option.dto';
 import { BusinessException } from '../common/exceptions/business.exception';
 
 @Injectable()
@@ -20,8 +18,6 @@ export class ProductService {
     private optionRepository: Repository<ProductOption>,
     @InjectRepository(ProductImage)
     private imageRepository: Repository<ProductImage>,
-    @InjectRepository(ProductSpec)
-    private specRepository: Repository<ProductSpec>,
   ) {}
 
   // ─── PROD-01, PROD-08: 상품 목록 조회 (필터/정렬/페이징) ───
@@ -101,14 +97,7 @@ export class ProductService {
     // 조회수 증가
     await this.productRepository.increment({ id }, 'viewCount', 1);
 
-    // 스펙 조회
-    const specs = await this.specRepository.find({
-      where: { productId: id },
-      relations: ['specDefinition'],
-      order: { specDefinition: { sortOrder: 'ASC' } },
-    });
-
-    return this.toDetail(product, specs);
+    return this.toDetail(product);
   }
 
   // ─── PROD-03: 상품 등록 ───
@@ -120,6 +109,7 @@ export class ProductService {
       discountPrice: dto.discountPrice || null,
       stock: dto.stock,
       categoryId: dto.categoryId,
+      status: dto.status,
       thumbnailUrl: dto.thumbnailUrl || null,
     });
 
@@ -148,19 +138,6 @@ export class ProductService {
         }),
       );
       await this.imageRepository.save(images);
-    }
-
-    // 스펙 저장
-    if (dto.specs?.length) {
-      const specs = dto.specs.map((s) =>
-        this.specRepository.create({
-          productId: saved.id,
-          specDefinitionId: s.specDefinitionId,
-          value: s.value,
-          numericValue: s.numericValue || null,
-        }),
-      );
-      await this.specRepository.save(specs);
     }
 
     return this.findOne(saved.id);
@@ -198,7 +175,7 @@ export class ProductService {
   }
 
   // ─── PROD-06: 옵션 추가 ───
-  async addOption(productId: number, dto: CreateOptionDto) {
+  async addOption(productId: number, dto: CreateProductOptionDto) {
     await this.ensureProductExists(productId);
 
     const option = this.optionRepository.create({
@@ -211,7 +188,7 @@ export class ProductService {
   }
 
   // ─── PROD-06: 옵션 수정 ───
-  async updateOption(productId: number, optionId: number, dto: UpdateOptionDto) {
+  async updateOption(productId: number, optionId: number, dto: CreateProductOptionDto) {
     await this.ensureProductExists(productId);
 
     const option = await this.optionRepository.findOne({
@@ -254,12 +231,7 @@ export class ProductService {
       );
     }
 
-    const image = this.imageRepository.create({
-      productId,
-      url,
-      isMain,
-      sortOrder,
-    });
+    const image = this.imageRepository.create({ productId, url, isMain, sortOrder });
     const saved = await this.imageRepository.save(image);
     return {
       id: saved.id,
@@ -332,7 +304,7 @@ export class ProductService {
   }
 
   // ─── 헬퍼: 상세 ───
-  private toDetail(product: Product, specs: ProductSpec[]) {
+  private toDetail(product: Product) {
     return {
       id: product.id,
       name: product.name,
@@ -350,10 +322,6 @@ export class ProductService {
       images: (product.images || [])
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((img) => ({ id: img.id, url: img.url, isMain: img.isMain, sortOrder: img.sortOrder })),
-      specs: specs.map((s) => ({
-        name: s.specDefinition?.name,
-        value: s.value,
-      })),
       reviewCount: product.reviewCount,
       averageRating: Number(product.averageRating),
       viewCount: product.viewCount,

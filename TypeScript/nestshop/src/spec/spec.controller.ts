@@ -89,7 +89,7 @@ export class SpecController {
   }
 }
 
-// ─── 상품 스펙 라우트 (ProductController에서 사용) ───
+// ─── 상품 스펙 라우트 ───
 @ApiTags('Products')
 @Controller('products')
 export class ProductSpecController {

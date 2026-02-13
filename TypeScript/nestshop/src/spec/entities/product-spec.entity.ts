@@ -17,6 +17,7 @@ export class ProductSpec {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index('idx_product_specs_product')
   @Column({ name: 'product_id', type: 'int' })
   productId: number;
 

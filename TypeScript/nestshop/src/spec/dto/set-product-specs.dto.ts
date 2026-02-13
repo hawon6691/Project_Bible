@@ -1,6 +1,6 @@
 import { IsArray, ValidateNested, IsInt, IsString, IsOptional, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class ProductSpecItemDto {
   @ApiProperty({ description: '스펙 정의 ID', example: 1 })

@@ -12,10 +12,9 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ProductService } from './product.service';
-import { CreateProductDto } from './dto/create-product.dto';
+import { CreateProductDto, CreateProductOptionDto, CreateProductImageDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
-import { CreateOptionDto, UpdateOptionDto } from './dto/product-option.dto';
 import { Roles, UserRole } from '../common/decorators/roles.decorator';
 import { Public } from '../common/decorators/public.decorator';
 
@@ -73,7 +72,7 @@ export class ProductController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: '상품 옵션 추가 (Admin)' })
-  addOption(@Param('id') id: number, @Body() dto: CreateOptionDto) {
+  addOption(@Param('id') id: number, @Body() dto: CreateProductOptionDto) {
     return this.productService.addOption(id, dto);
   }
 
@@ -85,7 +84,7 @@ export class ProductController {
   updateOption(
     @Param('id') id: number,
     @Param('optionId') optionId: number,
-    @Body() dto: UpdateOptionDto,
+    @Body() dto: CreateProductOptionDto,
   ) {
     return this.productService.updateOption(id, optionId, dto);
   }
@@ -105,11 +104,8 @@ export class ProductController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: '상품 이미지 추가 (Admin)' })
-  addImage(
-    @Param('id') id: number,
-    @Body() body: { url: string; isMain?: boolean; sortOrder?: number },
-  ) {
-    return this.productService.addImage(id, body.url, body.isMain || false, body.sortOrder || 0);
+  addImage(@Param('id') id: number, @Body() dto: CreateProductImageDto) {
+    return this.productService.addImage(id, dto.url, dto.isMain || false, dto.sortOrder || 0);
   }
 
   // ─── PROD-07: 이미지 삭제 (Admin) ───

@@ -49,6 +49,7 @@ export class ProductQueryDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
+  @Min(0)
   maxPrice?: number;
 
   @ApiPropertyOptional({ description: '정렬', enum: ProductSort, default: ProductSort.NEWEST })

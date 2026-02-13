@@ -34,17 +34,7 @@ export class SpecService {
       order: { sortOrder: 'ASC', id: 'ASC' },
     });
 
-    return definitions.map((d) => ({
-      id: d.id,
-      categoryId: d.categoryId,
-      name: d.name,
-      type: d.type,
-      options: d.options,
-      unit: d.unit,
-      isComparable: d.isComparable,
-      dataType: d.dataType,
-      sortOrder: d.sortOrder,
-    }));
+    return definitions.map((d) => this.toDefinitionResponse(d));
   }
 
   // ─── SPEC-01: 스펙 정의 생성 ───
@@ -73,8 +63,8 @@ export class SpecService {
 
     if (dto.name !== undefined) definition.name = dto.name;
     if (dto.type !== undefined) definition.type = dto.type;
-    if (dto.options !== undefined) definition.options = dto.options;
-    if (dto.unit !== undefined) definition.unit = dto.unit;
+    if (dto.options !== undefined) definition.options = dto.options || null;
+    if (dto.unit !== undefined) definition.unit = dto.unit || null;
     if (dto.isComparable !== undefined) definition.isComparable = dto.isComparable;
     if (dto.dataType !== undefined) definition.dataType = dto.dataType;
     if (dto.sortOrder !== undefined) definition.sortOrder = dto.sortOrder;
@@ -149,7 +139,6 @@ export class SpecService {
       throw new BusinessException('PRODUCT_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
 
-    // 모든 상품의 스펙을 한번에 조회
     const allSpecs = await this.productSpecRepository.find({
       where: { productId: In(dto.productIds) },
       relations: ['specDefinition'],
@@ -230,7 +219,7 @@ export class SpecService {
       let weightSum = 0;
 
       specScores.forEach((ss) => {
-        const w = hasWeights ? (weights[ss.name] || 0) : 1;
+        const w = hasWeights ? (weights[ss.name!] || 0) : 1;
         total += ss.scores[pidIdx] * w;
         weightSum += w;
       });

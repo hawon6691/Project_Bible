@@ -37,6 +37,10 @@ export const API_ROUTES = {
   REVIEWS: {
     BASE: 'reviews',
   },
+  WISHLIST: {
+    BASE: 'wishlist',
+    PRODUCT: ':productId',
+  },
   CART: {
     BASE: 'cart',
   },

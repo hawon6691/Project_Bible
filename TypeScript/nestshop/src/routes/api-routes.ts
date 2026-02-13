@@ -70,6 +70,12 @@ export const API_ROUTES = {
     POSTS: 'posts',
     COMMENTS: 'comments',
   },
+  INQUIRIES: {
+    BASE: 'inquiries',
+    PRODUCT_INQUIRIES: 'products/:productId/inquiries',
+    ANSWER: ':id/answer',
+    ME: 'me',
+  },
   CHAT: {
     BASE: 'chat',
     ROOMS: 'rooms',

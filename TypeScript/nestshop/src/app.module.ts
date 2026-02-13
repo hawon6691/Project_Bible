@@ -14,6 +14,7 @@ import { OrderModule } from './order/order.module';
 import { ReviewModule } from './review/review.module';
 import { PointModule } from './point/point.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { CommunityModule } from './community/community.module';
 import { AddressModule } from './address/address.module';
 
 @Module({
@@ -57,6 +58,7 @@ import { AddressModule } from './address/address.module';
     ReviewModule,
     PointModule,
     WishlistModule,
+    CommunityModule,
     AddressModule,
   ],
 })

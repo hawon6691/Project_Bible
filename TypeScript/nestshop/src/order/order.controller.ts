@@ -45,6 +45,14 @@ export class OrderController {
     return this.orderService.cancel(user.sub, id);
   }
 
+  // ORD-04 확장: 반품 요청
+  @Post('orders/:id/return-request')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '반품 요청' })
+  requestReturn(@CurrentUser() user: JwtPayload, @Param('id') id: number) {
+    return this.orderService.requestReturn(user.sub, id);
+  }
+
   // PAY-01: 결제 요청 (모의 결제)
   @Post('payments')
   @ApiOperation({ summary: '결제 요청 (모의 결제)' })

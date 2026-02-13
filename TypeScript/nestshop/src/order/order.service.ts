@@ -8,6 +8,7 @@ import { Product } from '../product/entities/product.entity';
 import { Seller } from '../seller/entities/seller.entity';
 import { User } from '../user/entities/user.entity';
 import { CartItem } from '../cart/entities/cart-item.entity';
+import { Address } from '../address/entities/address.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CreatePaymentDto, RefundPaymentDto } from './dto/payment.dto';
 import { BusinessException } from '../common/exceptions/business.exception';
@@ -39,10 +40,10 @@ export class OrderService {
     await queryRunner.startTransaction('SERIALIZABLE');
 
     try {
-      // 현재 프로젝트에서 address 모듈이 아직 정식 연결되지 않아 테이블 이름으로 조회한다.
-      const address = (await queryRunner.manager.findOne('addresses', {
+      // 주문 시점의 배송지 스냅샷을 남기기 위해 배송지 엔티티를 조회한다.
+      const address = await queryRunner.manager.findOne(Address, {
         where: { id: dto.addressId, userId },
-      })) as any;
+      });
       if (!address) {
         throw new BusinessException('RESOURCE_NOT_FOUND', HttpStatus.NOT_FOUND);
       }
@@ -115,11 +116,11 @@ export class OrderService {
         totalAmount,
         pointUsed: usePoint,
         finalAmount,
-        recipientName: address.recipient_name || address.recipientName,
+        recipientName: address.recipientName,
         recipientPhone: address.phone,
-        zipCode: address.zip_code || address.zipCode,
+        zipCode: address.zipCode,
         address: address.address,
-        addressDetail: address.address_detail || address.addressDetail || null,
+        addressDetail: address.addressDetail,
         memo: dto.memo || null,
       });
 

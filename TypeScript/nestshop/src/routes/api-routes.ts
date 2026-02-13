@@ -43,6 +43,10 @@ export const API_ROUTES = {
     TRANSACTIONS: 'transactions',
     ADMIN_GRANT: 'admin/points/grant',
   },
+  ADDRESSES: {
+    BASE: 'addresses',
+    DETAIL: ':id',
+  },
   WISHLIST: {
     BASE: 'wishlist',
     PRODUCT: ':productId',

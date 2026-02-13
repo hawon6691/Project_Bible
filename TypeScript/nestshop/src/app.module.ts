@@ -15,6 +15,7 @@ import { ReviewModule } from './review/review.module';
 import { PointModule } from './point/point.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { CommunityModule } from './community/community.module';
+import { AddressModule } from './address/address.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { CommunityModule } from './community/community.module';
     PointModule,
     WishlistModule,
     CommunityModule,
+    AddressModule,
   ],
 })
 export class AppModule {}

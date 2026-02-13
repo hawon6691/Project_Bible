@@ -4,12 +4,14 @@ import {
 } from 'typeorm';
 import { Order } from './order.entity';
 
+// 결제 수단 확장 대비를 위해 enum으로 관리한다.
 export enum PaymentMethod {
   CARD = 'CARD',
   BANK_TRANSFER = 'BANK_TRANSFER',
   VIRTUAL_ACCOUNT = 'VIRTUAL_ACCOUNT',
 }
 
+// 결제 상태는 결제 요청 -> 완료/실패 -> 환불 순으로 전이된다.
 export enum PaymentStatus {
   PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
@@ -22,6 +24,7 @@ export class Payment {
   @PrimaryGeneratedColumn()
   id: number;
 
+  // 주문 단위로 결제 이력을 조회하기 위해 인덱스를 둔다.
   @Index('idx_payments_order')
   @Column({ name: 'order_id', type: 'int' })
   orderId: number;
@@ -47,7 +50,7 @@ export class Payment {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => Order, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Order, (order) => order.payments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'order_id' })
   order: Order;
 }

@@ -1,13 +1,4 @@
 import {
-  IsString, IsInt, IsOptional, IsArray, ValidateNested,
-  MaxLength, Min, IsEnum, IsUrl,
-} from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { ProductStatus } from '../entities/product.entity';
-
-export class CreateProductOptionDto {
-  @ApiProperty({ description: '옵션명 (예: 색상, 사이즈)' })
   IsString,
   IsInt,
   IsOptional,
@@ -27,7 +18,6 @@ export class CreateProductOptionDto {
   @MaxLength(50)
   name: string;
 
-  @ApiProperty({ description: '옵션값 목록', type: [String] })
   @ApiProperty({ description: '옵션값 배열', example: ['실버', '그라파이트'] })
   @IsArray()
   @IsString({ each: true })
@@ -37,7 +27,6 @@ export class CreateProductOptionDto {
 export class CreateProductImageDto {
   @ApiProperty({ description: '이미지 URL' })
   @IsString()
-  @MaxLength(500)
   url: string;
 
   @ApiPropertyOptional({ description: '대표 이미지 여부', default: false })
@@ -47,27 +36,8 @@ export class CreateProductImageDto {
   @ApiPropertyOptional({ description: '정렬 순서', default: 0 })
   @IsOptional()
   @IsInt()
-  sortOrder?: number;
-}
-
-export class CreateProductDto {
-  @ApiProperty({ description: '상품명' })
   @Min(0)
   sortOrder?: number;
-}
-
-export class CreateProductSpecDto {
-  @ApiProperty({ description: '스펙 정의 ID', example: 1 })
-  @IsInt()
-  specDefinitionId: number;
-
-  @ApiProperty({ description: '스펙 값', example: 'Intel Core i7-1360P' })
-  @IsString()
-  value: string;
-
-  @ApiPropertyOptional({ description: '수치 값 (비교/정렬용)' })
-  @IsOptional()
-  numericValue?: number;
 }
 
 export class CreateProductDto {
@@ -80,7 +50,6 @@ export class CreateProductDto {
   @IsString()
   description: string;
 
-  @ApiProperty({ description: '가격' })
   @ApiProperty({ description: '정가', example: 1590000 })
   @IsInt()
   @Min(0)
@@ -92,13 +61,12 @@ export class CreateProductDto {
   @Min(0)
   discountPrice?: number;
 
-  @ApiProperty({ description: '재고' })
   @ApiProperty({ description: '재고', example: 100 })
   @IsInt()
   @Min(0)
   stock: number;
 
-  @ApiProperty({ description: '카테고리 ID' })
+  @ApiProperty({ description: '카테고리 ID', example: 1 })
   @IsInt()
   categoryId: number;
 
@@ -106,14 +74,6 @@ export class CreateProductDto {
   @IsOptional()
   @IsEnum(ProductStatus)
   status?: ProductStatus;
-
-  @ApiPropertyOptional({ description: '썸네일 URL' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  @ApiProperty({ description: '카테고리 ID', example: 1 })
-  @IsInt()
-  categoryId: number;
 
   @ApiPropertyOptional({ description: '대표 이미지 URL' })
   @IsOptional()
@@ -133,11 +93,4 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => CreateProductImageDto)
   images?: CreateProductImageDto[];
-
-  @ApiPropertyOptional({ description: '스펙 목록', type: [CreateProductSpecDto] })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => CreateProductSpecDto)
-  specs?: CreateProductSpecDto[];
 }

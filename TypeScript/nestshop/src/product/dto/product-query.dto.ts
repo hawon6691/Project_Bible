@@ -1,6 +1,3 @@
-import { IsOptional, IsInt, IsString, IsEnum, Min, Max } from 'class-validator';
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import { IsOptional, IsString, IsInt, IsEnum, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
@@ -20,9 +17,6 @@ export class ProductQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  page: number = 1;
-
-  @ApiPropertyOptional({ default: 20, maximum: 100 })
   page?: number = 1;
 
   @ApiPropertyOptional({ default: 20 })
@@ -31,9 +25,6 @@ export class ProductQueryDto {
   @IsInt()
   @Min(1)
   @Max(100)
-  limit: number = 20;
-
-  @ApiPropertyOptional({ description: '카테고리 ID' })
   limit?: number = 20;
 
   @ApiPropertyOptional({ description: '카테고리 필터' })
@@ -64,9 +55,6 @@ export class ProductQueryDto {
   @ApiPropertyOptional({ description: '정렬', enum: ProductSort, default: ProductSort.NEWEST })
   @IsOptional()
   @IsEnum(ProductSort)
-  sort?: ProductSort;
-
-  @ApiPropertyOptional({ description: '스펙 필터 (JSON)' })
   sort?: ProductSort = ProductSort.NEWEST;
 
   @ApiPropertyOptional({ description: '스펙 필터 (JSON)', example: '{"cpu":"i7","ram":"16GB"}' })
@@ -75,7 +63,6 @@ export class ProductQueryDto {
   specs?: string;
 
   get skip(): number {
-    return (this.page - 1) * this.limit;
     return ((this.page || 1) - 1) * (this.limit || 20);
   }
 }

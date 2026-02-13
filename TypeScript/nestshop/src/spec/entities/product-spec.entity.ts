@@ -1,6 +1,4 @@
 import {
-  Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn,
-  CreateDateColumn, Index, Unique,
   Entity,
   Column,
   ManyToOne,
@@ -14,7 +12,6 @@ import { Product } from '../../product/entities/product.entity';
 import { SpecDefinition } from './spec-definition.entity';
 
 @Entity('product_specs')
-@Unique('uq_product_spec', ['productId', 'specDefinitionId'])
 @Unique('uq_product_specs', ['productId', 'specDefinitionId'])
 export class ProductSpec {
   @PrimaryGeneratedColumn()
@@ -27,10 +24,6 @@ export class ProductSpec {
   @Column({ name: 'spec_definition_id', type: 'int' })
   specDefinitionId: number;
 
-  @Column({ type: 'varchar', length: 500 })
-  value: string;
-
-  @Column({ name: 'numeric_value', type: 'decimal', precision: 15, scale: 4, nullable: true })
   @Column({ type: 'varchar', length: 200 })
   value: string;
 

@@ -1,24 +1,12 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { ProductOption } from './entities/product-option.entity';
 import { ProductImage } from './entities/product-image.entity';
-import { CreateProductDto } from './dto/create-product.dto';
+import { CreateProductDto, CreateProductOptionDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductQueryDto, ProductSort } from './dto/product-query.dto';
-import { CreateProductOptionDto } from './dto/create-product.dto';
-import { BusinessException } from '../common/exceptions/business.exception';
-import { PaginationResponseDto } from '../common/dto/pagination.dto';
-import { Repository, SelectQueryBuilder } from 'typeorm';
-import { Product, ProductStatus } from './entities/product.entity';
-import { ProductOption } from './entities/product-option.entity';
-import { ProductImage } from './entities/product-image.entity';
-import { ProductSpec } from '../spec/entities/product-spec.entity';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { ProductQueryDto, ProductSort } from './dto/product-query.dto';
-import { CreateOptionDto, UpdateOptionDto } from './dto/product-option.dto';
 import { BusinessException } from '../common/exceptions/business.exception';
 
 @Injectable()
@@ -30,27 +18,6 @@ export class ProductService {
     private optionRepository: Repository<ProductOption>,
     @InjectRepository(ProductImage)
     private imageRepository: Repository<ProductImage>,
-  ) {}
-
-  // ─── PROD-01: 상품 목록 조회 ───
-  async findAll(query: ProductQueryDto) {
-    const qb = this.productRepository
-      .createQueryBuilder('p')
-      .where('p.deletedAt IS NULL');
-
-    if (query.categoryId) {
-      qb.andWhere('p.categoryId = :categoryId', { categoryId: query.categoryId });
-    }
-    if (query.search) {
-      qb.andWhere('p.name ILIKE :search', { search: `%${query.search}%` });
-    }
-    if (query.minPrice !== undefined) {
-      qb.andWhere('p.lowestPrice >= :minPrice', { minPrice: query.minPrice });
-    }
-    if (query.maxPrice !== undefined) {
-      qb.andWhere('p.lowestPrice <= :maxPrice', { maxPrice: query.maxPrice });
-    @InjectRepository(ProductSpec)
-    private specRepository: Repository<ProductSpec>,
   ) {}
 
   // ─── PROD-01, PROD-08: 상품 목록 조회 (필터/정렬/페이징) ───
@@ -96,25 +63,6 @@ export class ProductService {
       }
     }
 
-    const sort = query.sort || ProductSort.NEWEST;
-    this.applySort(qb, sort);
-
-    const totalItems = await qb.getCount();
-    const limit = query.limit || 20;
-    const items = await qb.skip(query.skip).take(limit).getMany();
-
-    const data = items.map((p) => ({
-      id: p.id,
-      name: p.name,
-      lowestPrice: p.lowestPrice,
-      sellerCount: p.sellerCount,
-      thumbnailUrl: p.thumbnailUrl,
-      reviewCount: p.reviewCount,
-      averageRating: Number(p.averageRating),
-      createdAt: p.createdAt,
-    }));
-
-    return new PaginationResponseDto(data, totalItems, query.page, limit);
     // 정렬
     this.applySort(qb, query.sort || ProductSort.NEWEST);
 
@@ -149,38 +97,7 @@ export class ProductService {
     // 조회수 증가
     await this.productRepository.increment({ id }, 'viewCount', 1);
 
-    return {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      discountPrice: product.discountPrice,
-      lowestPrice: product.lowestPrice,
-      stock: product.stock,
-      status: product.status,
-      category: product.category
-        ? { id: product.category.id, name: product.category.name }
-        : null,
-      options: product.options?.map((o) => ({
-        id: o.id, name: o.name, values: o.values,
-      })) || [],
-      images: product.images?.map((i) => ({
-        id: i.id, url: i.url, isMain: i.isMain, sortOrder: i.sortOrder,
-      })) || [],
-      sellerCount: product.sellerCount,
-      reviewCount: product.reviewCount,
-      averageRating: Number(product.averageRating),
-      salesCount: product.salesCount,
-      createdAt: product.createdAt,
-    };
-    // 스펙 조회
-    const specs = await this.specRepository.find({
-      where: { productId: id },
-      relations: ['specDefinition'],
-      order: { specDefinition: { sortOrder: 'ASC' } },
-    });
-
-    return this.toDetail(product, specs);
+    return this.toDetail(product);
   }
 
   // ─── PROD-03: 상품 등록 ───
@@ -193,9 +110,6 @@ export class ProductService {
       stock: dto.stock,
       categoryId: dto.categoryId,
       status: dto.status,
-      thumbnailUrl: dto.thumbnailUrl || null,
-      lowestPrice: dto.price,
-    });
       thumbnailUrl: dto.thumbnailUrl || null,
     });
 
@@ -215,12 +129,6 @@ export class ProductService {
 
     // 이미지 저장
     if (dto.images?.length) {
-      const images = dto.images.map((i) =>
-        this.imageRepository.create({
-          productId: saved.id,
-          url: i.url,
-          isMain: i.isMain || false,
-          sortOrder: i.sortOrder || 0,
       const images = dto.images.map((img) =>
         this.imageRepository.create({
           productId: saved.id,
@@ -230,19 +138,6 @@ export class ProductService {
         }),
       );
       await this.imageRepository.save(images);
-    }
-
-    // 스펙 저장
-    if (dto.specs?.length) {
-      const specs = dto.specs.map((s) =>
-        this.specRepository.create({
-          productId: saved.id,
-          specDefinitionId: s.specDefinitionId,
-          value: s.value,
-          numericValue: s.numericValue || null,
-        }),
-      );
-      await this.specRepository.save(specs);
     }
 
     return this.findOne(saved.id);
@@ -261,8 +156,6 @@ export class ProductService {
     if (dto.discountPrice !== undefined) product.discountPrice = dto.discountPrice;
     if (dto.stock !== undefined) product.stock = dto.stock;
     if (dto.categoryId !== undefined) product.categoryId = dto.categoryId;
-    if (dto.status !== undefined) product.status = dto.status;
-    if (dto.thumbnailUrl !== undefined) product.thumbnailUrl = dto.thumbnailUrl;
     if (dto.thumbnailUrl !== undefined) product.thumbnailUrl = dto.thumbnailUrl;
     if (dto.status !== undefined) product.status = dto.status;
 
@@ -270,14 +163,12 @@ export class ProductService {
     return this.findOne(id);
   }
 
-  // ─── PROD-05: 상품 삭제 (소프트 삭제) ───
   // ─── PROD-05: 상품 삭제 (소프트) ───
   async remove(id: number) {
     const product = await this.productRepository.findOne({ where: { id } });
     if (!product) {
       throw new BusinessException('PRODUCT_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
-    await this.productRepository.softRemove(product);
 
     await this.productRepository.softDelete(id);
     return { message: '상품이 삭제되었습니다.' };
@@ -286,37 +177,24 @@ export class ProductService {
   // ─── PROD-06: 옵션 추가 ───
   async addOption(productId: number, dto: CreateProductOptionDto) {
     await this.ensureProductExists(productId);
-  async addOption(productId: number, dto: CreateOptionDto) {
-    await this.ensureProductExists(productId);
 
     const option = this.optionRepository.create({
       productId,
       name: dto.name,
       values: dto.values,
     });
-    return this.optionRepository.save(option);
-  }
-
-  // ─── PROD-06: 옵션 수정 ───
-  async updateOption(productId: number, optionId: number, dto: CreateProductOptionDto) {
-    await this.ensureProductExists(productId);
     const saved = await this.optionRepository.save(option);
     return this.toOptionResponse(saved);
   }
 
   // ─── PROD-06: 옵션 수정 ───
-  async updateOption(productId: number, optionId: number, dto: UpdateOptionDto) {
+  async updateOption(productId: number, optionId: number, dto: CreateProductOptionDto) {
     await this.ensureProductExists(productId);
 
     const option = await this.optionRepository.findOne({
       where: { id: optionId, productId },
     });
     if (!option) {
-      throw new BusinessException('RESOURCE_NOT_FOUND', HttpStatus.NOT_FOUND);
-    }
-    option.name = dto.name;
-    option.values = dto.values;
-    return this.optionRepository.save(option);
       throw new BusinessException('PRODUCT_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
 
@@ -334,8 +212,6 @@ export class ProductService {
       where: { id: optionId, productId },
     });
     if (!option) {
-      throw new BusinessException('RESOURCE_NOT_FOUND', HttpStatus.NOT_FOUND);
-    }
       throw new BusinessException('PRODUCT_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
 
@@ -344,10 +220,6 @@ export class ProductService {
   }
 
   // ─── PROD-07: 이미지 추가 ───
-  async addImage(productId: number, url: string, isMain = false, sortOrder = 0) {
-    await this.ensureProductExists(productId);
-
-    // 대표 이미지 지정 시 기존 대표 해제
   async addImage(productId: number, url: string, isMain: boolean, sortOrder: number) {
     await this.ensureProductExists(productId);
 
@@ -360,13 +232,6 @@ export class ProductService {
     }
 
     const image = this.imageRepository.create({ productId, url, isMain, sortOrder });
-    return this.imageRepository.save(image);
-    const image = this.imageRepository.create({
-      productId,
-      url,
-      isMain,
-      sortOrder,
-    });
     const saved = await this.imageRepository.save(image);
     return {
       id: saved.id,
@@ -384,8 +249,6 @@ export class ProductService {
       where: { id: imageId, productId },
     });
     if (!image) {
-      throw new BusinessException('RESOURCE_NOT_FOUND', HttpStatus.NOT_FOUND);
-    }
       throw new BusinessException('PRODUCT_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
 
@@ -393,8 +256,6 @@ export class ProductService {
     return { message: '이미지가 삭제되었습니다.' };
   }
 
-  private async ensureProductExists(id: number) {
-    const exists = await this.productRepository.findOne({ where: { id } });
   // ─── 헬퍼: 상품 존재 확인 ───
   private async ensureProductExists(productId: number) {
     const exists = await this.productRepository.findOne({ where: { id: productId } });
@@ -403,29 +264,6 @@ export class ProductService {
     }
   }
 
-  private applySort(qb: any, sort: ProductSort) {
-    switch (sort) {
-      case ProductSort.POPULARITY:
-        qb.orderBy('p.popularityScore', 'DESC');
-        break;
-      case ProductSort.PRICE_ASC:
-        qb.orderBy('p.lowestPrice', 'ASC', 'NULLS LAST');
-        break;
-      case ProductSort.PRICE_DESC:
-        qb.orderBy('p.lowestPrice', 'DESC', 'NULLS LAST');
-        break;
-      case ProductSort.RATING_DESC:
-        qb.orderBy('p.averageRating', 'DESC').addOrderBy('p.reviewCount', 'DESC');
-        break;
-      case ProductSort.RATING_ASC:
-        qb.orderBy('p.averageRating', 'ASC');
-        break;
-      case ProductSort.NEWEST:
-      default:
-        qb.orderBy('p.createdAt', 'DESC');
-        break;
-    }
-  }
   // ─── 헬퍼: 정렬 적용 ───
   private applySort(qb: SelectQueryBuilder<Product>, sort: ProductSort) {
     switch (sort) {
@@ -466,7 +304,7 @@ export class ProductService {
   }
 
   // ─── 헬퍼: 상세 ───
-  private toDetail(product: Product, specs: ProductSpec[]) {
+  private toDetail(product: Product) {
     return {
       id: product.id,
       name: product.name,
@@ -484,10 +322,6 @@ export class ProductService {
       images: (product.images || [])
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((img) => ({ id: img.id, url: img.url, isMain: img.isMain, sortOrder: img.sortOrder })),
-      specs: specs.map((s) => ({
-        name: s.specDefinition?.name,
-        value: s.value,
-      })),
       reviewCount: product.reviewCount,
       averageRating: Number(product.averageRating),
       viewCount: product.viewCount,

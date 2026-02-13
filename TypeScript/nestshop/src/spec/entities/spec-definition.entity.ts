@@ -1,7 +1,4 @@
 import {
-  Entity, Column, PrimaryGeneratedColumn, CreateDateColumn,
-  UpdateDateColumn, Index,
-} from 'typeorm';
   Entity,
   Column,
   ManyToOne,
@@ -19,8 +16,6 @@ export enum SpecInputType {
 }
 
 export enum SpecDataType {
-  STRING = 'STRING',
-  NUMBER = 'NUMBER',
   NUMBER = 'NUMBER',
   STRING = 'STRING',
   BOOLEAN = 'BOOLEAN',
@@ -35,14 +30,6 @@ export class SpecDefinition {
   @Column({ name: 'category_id', type: 'int' })
   categoryId: number;
 
-  @Column({ type: 'varchar', length: 100 })
-  name: string;
-
-  @Column({ name: 'input_type', type: 'enum', enum: SpecInputType, default: SpecInputType.TEXT })
-  inputType: SpecInputType;
-
-  @Column({ name: 'data_type', type: 'enum', enum: SpecDataType, default: SpecDataType.STRING })
-  dataType: SpecDataType;
   @Column({ type: 'varchar', length: 50 })
   name: string;
 
@@ -55,20 +42,6 @@ export class SpecDefinition {
   @Column({ type: 'varchar', length: 20, nullable: true })
   unit: string | null;
 
-  @Column({ name: 'sort_order', type: 'int', default: 0 })
-  sortOrder: number;
-
-  @Column({ name: 'is_filterable', type: 'boolean', default: true })
-  isFilterable: boolean;
-
-  @Column({ name: 'is_comparable', type: 'boolean', default: true })
-  isComparable: boolean;
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
   @Column({ name: 'is_comparable', type: 'boolean', default: true })
   isComparable: boolean;
 

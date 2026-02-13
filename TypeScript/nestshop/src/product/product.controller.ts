@@ -1,16 +1,4 @@
 import {
-  Controller, Get, Post, Patch, Delete, Body, Param, Query,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { ProductService } from './product.service';
-import { CreateProductDto, CreateProductOptionDto, CreateProductImageDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { ProductQueryDto } from './dto/product-query.dto';
-import { Public } from '../common/decorators/public.decorator';
-import { Roles, UserRole } from '../common/decorators/roles.decorator';
-
-@ApiTags('Products')
-@Controller()
   Controller,
   Get,
   Post,
@@ -24,10 +12,9 @@ import { Roles, UserRole } from '../common/decorators/roles.decorator';
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ProductService } from './product.service';
-import { CreateProductDto } from './dto/create-product.dto';
+import { CreateProductDto, CreateProductOptionDto, CreateProductImageDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
-import { CreateOptionDto, UpdateOptionDto } from './dto/product-option.dto';
 import { Roles, UserRole } from '../common/decorators/roles.decorator';
 import { Public } from '../common/decorators/public.decorator';
 
@@ -37,9 +24,6 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   // ─── PROD-01: 상품 목록 조회 ───
-  @Get('products')
-  @Public()
-  @ApiOperation({ summary: '상품 목록 조회' })
   @Public()
   @Get()
   @ApiOperation({ summary: '상품 목록 조회 (필터/정렬/페이징)' })
@@ -48,8 +32,6 @@ export class ProductController {
   }
 
   // ─── PROD-02: 상품 상세 조회 ───
-  @Get('products/:id')
-  @Public()
   @Public()
   @Get(':id')
   @ApiOperation({ summary: '상품 상세 조회' })
@@ -57,8 +39,6 @@ export class ProductController {
     return this.productService.findOne(id);
   }
 
-  // ─── PROD-03: 상품 등록 ───
-  @Post('products')
   // ─── PROD-03: 상품 등록 (Admin) ───
   @Post()
   @Roles(UserRole.ADMIN)
@@ -68,8 +48,6 @@ export class ProductController {
     return this.productService.create(dto);
   }
 
-  // ─── PROD-04: 상품 수정 ───
-  @Patch('products/:id')
   // ─── PROD-04: 상품 수정 (Admin) ───
   @Patch(':id')
   @Roles(UserRole.ADMIN)
@@ -79,11 +57,6 @@ export class ProductController {
     return this.productService.update(id, dto);
   }
 
-  // ─── PROD-05: 상품 삭제 ───
-  @Delete('products/:id')
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '상품 삭제 (Admin)' })
   // ─── PROD-05: 상품 삭제 (Admin) ───
   @Delete(':id')
   @Roles(UserRole.ADMIN)
@@ -94,23 +67,12 @@ export class ProductController {
     return this.productService.remove(id);
   }
 
-  // ─── PROD-06: 옵션 추가 ───
-  @Post('products/:id/options')
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '상품 옵션 추가 (Admin)' })
-  addOption(@Param('id') id: number, @Body() dto: CreateProductOptionDto) {
-    return this.productService.addOption(id, dto);
-  }
-
-  // ─── PROD-06: 옵션 수정 ───
-  @Patch('products/:id/options/:optionId')
   // ─── PROD-06: 옵션 추가 (Admin) ───
   @Post(':id/options')
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: '상품 옵션 추가 (Admin)' })
-  addOption(@Param('id') id: number, @Body() dto: CreateOptionDto) {
+  addOption(@Param('id') id: number, @Body() dto: CreateProductOptionDto) {
     return this.productService.addOption(id, dto);
   }
 
@@ -123,15 +85,10 @@ export class ProductController {
     @Param('id') id: number,
     @Param('optionId') optionId: number,
     @Body() dto: CreateProductOptionDto,
-    @Body() dto: UpdateOptionDto,
   ) {
     return this.productService.updateOption(id, optionId, dto);
   }
 
-  // ─── PROD-06: 옵션 삭제 ───
-  @Delete('products/:id/options/:optionId')
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
   // ─── PROD-06: 옵션 삭제 (Admin) ───
   @Delete(':id/options/:optionId')
   @Roles(UserRole.ADMIN)
@@ -142,29 +99,13 @@ export class ProductController {
     return this.productService.removeOption(id, optionId);
   }
 
-  // ─── PROD-07: 이미지 추가 ───
-  @Post('products/:id/images')
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '상품 이미지 추가 (Admin)' })
-  addImage(@Param('id') id: number, @Body() dto: CreateProductImageDto) {
-    return this.productService.addImage(id, dto.url, dto.isMain, dto.sortOrder);
-  }
-
-  // ─── PROD-07: 이미지 삭제 ───
-  @Delete('products/:id/images/:imageId')
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
   // ─── PROD-07: 이미지 추가 (Admin) ───
   @Post(':id/images')
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: '상품 이미지 추가 (Admin)' })
-  addImage(
-    @Param('id') id: number,
-    @Body() body: { url: string; isMain?: boolean; sortOrder?: number },
-  ) {
-    return this.productService.addImage(id, body.url, body.isMain || false, body.sortOrder || 0);
+  addImage(@Param('id') id: number, @Body() dto: CreateProductImageDto) {
+    return this.productService.addImage(id, dto.url, dto.isMain || false, dto.sortOrder || 0);
   }
 
   // ─── PROD-07: 이미지 삭제 (Admin) ───

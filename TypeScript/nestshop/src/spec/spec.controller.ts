@@ -1,5 +1,4 @@
 import {
-  Controller, Get, Post, Patch, Put, Delete, Body, Param, Query,
   Controller,
   Get,
   Post,
@@ -18,10 +17,6 @@ import { CreateSpecDefinitionDto } from './dto/create-spec-definition.dto';
 import { UpdateSpecDefinitionDto } from './dto/update-spec-definition.dto';
 import { SetProductSpecsDto } from './dto/set-product-specs.dto';
 import { CompareSpecsDto, ScoredCompareDto, SetSpecScoresDto } from './dto/compare-specs.dto';
-import { Public } from '../common/decorators/public.decorator';
-import { Roles, UserRole } from '../common/decorators/roles.decorator';
-
-// ─── 스펙 정의 & 비교 컨트롤러 ───
 import { Roles, UserRole } from '../common/decorators/roles.decorator';
 import { Public } from '../common/decorators/public.decorator';
 
@@ -30,8 +25,6 @@ import { Public } from '../common/decorators/public.decorator';
 export class SpecController {
   constructor(private readonly specService: SpecService) {}
 
-  @Get('definitions')
-  @Public()
   // ─── SPEC-01: 스펙 정의 목록 조회 ───
   @Public()
   @Get('definitions')
@@ -58,9 +51,6 @@ export class SpecController {
     return this.specService.updateDefinition(id, dto);
   }
 
-  @Delete('definitions/:id')
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
   // ─── SPEC-01: 스펙 정의 삭제 (Admin) ───
   @Delete('definitions/:id')
   @Roles(UserRole.ADMIN)
@@ -71,8 +61,6 @@ export class SpecController {
     return this.specService.removeDefinition(id);
   }
 
-  @Post('compare')
-  @Public()
   // ─── SPEC-04: 상품 스펙 비교 ───
   @Public()
   @Post('compare')
@@ -82,9 +70,6 @@ export class SpecController {
     return this.specService.compareSpecs(dto);
   }
 
-  @Post('compare/scored')
-  @Public()
-  @ApiOperation({ summary: '점수화 스펙 비교' })
   // ─── SPEC-04: 점수화 스펙 비교 ───
   @Public()
   @Post('compare/scored')
@@ -99,26 +84,17 @@ export class SpecController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: '스펙 점수 매핑 설정 (Admin)' })
-  setScores(@Param('specDefId') specDefId: number, @Body() dto: SetSpecScoresDto) {
-    return this.specService.setScores(specDefId, dto);
-  }
-}
-
-// ─── 상품별 스펙 컨트롤러 ───
-@ApiTags('Product Specs')
   setSpecScores(@Param('specDefId') specDefId: number, @Body() dto: SetSpecScoresDto) {
     return this.specService.setSpecScores(specDefId, dto);
   }
 }
 
-// ─── 상품 스펙 라우트 (ProductController에서 사용) ───
+// ─── 상품 스펙 라우트 ───
 @ApiTags('Products')
 @Controller('products')
 export class ProductSpecController {
   constructor(private readonly specService: SpecService) {}
 
-  @Get(':id/specs')
-  @Public()
   // ─── SPEC-02: 상품 스펙 조회 ───
   @Public()
   @Get(':id/specs')
@@ -127,10 +103,6 @@ export class ProductSpecController {
     return this.specService.getProductSpecs(id);
   }
 
-  @Put(':id/specs')
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '상품 스펙 설정 (Admin)' })
   // ─── SPEC-02: 상품 스펙 설정 (Admin) ───
   @Put(':id/specs')
   @Roles(UserRole.ADMIN)

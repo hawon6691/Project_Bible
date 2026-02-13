@@ -1,7 +1,3 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateProductDto } from './create-product.dto';
-
-export class UpdateProductDto extends PartialType(CreateProductDto) {}
 import { IsString, IsInt, IsOptional, IsEnum, MaxLength, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ProductStatus } from '../entities/product.entity';

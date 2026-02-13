@@ -48,7 +48,7 @@ export class CartService {
         userId,
         productId: dto.productId,
         sellerId: dto.sellerId,
-        selectedOptions: dto.selectedOptions || null,
+        selectedOptions: (dto.selectedOptions || undefined) as string | undefined,
       },
     });
 

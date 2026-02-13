@@ -42,6 +42,7 @@ export const API_ROUTES = {
     BALANCE: 'balance',
     TRANSACTIONS: 'transactions',
     ADMIN_GRANT: 'admin/points/grant',
+  },
   WISHLIST: {
     BASE: 'wishlist',
     PRODUCT: ':productId',

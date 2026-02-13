@@ -39,3 +39,7 @@ lerna-debug.log*
 .env
 .env.local
 .env.*.local
+
+# FrontEnd artifacts (monorepo)
+FrontEnd/node_modules/
+FrontEnd/.next/

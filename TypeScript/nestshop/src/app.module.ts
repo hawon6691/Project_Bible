@@ -16,6 +16,7 @@ import { PointModule } from './point/point.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { CommunityModule } from './community/community.module';
 import { AddressModule } from './address/address.module';
+import { InquiryModule } from './inquiry/inquiry.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { AddressModule } from './address/address.module';
     WishlistModule,
     CommunityModule,
     AddressModule,
+    InquiryModule,
   ],
 })
 export class AppModule {}

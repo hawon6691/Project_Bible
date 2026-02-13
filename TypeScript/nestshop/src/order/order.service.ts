@@ -1,6 +1,6 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, In } from 'typeorm';
+import { Repository, DataSource, In, EntityManager } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { Payment, PaymentStatus } from './entities/payment.entity';
@@ -250,7 +250,7 @@ export class OrderService {
     try {
       const payment = await queryRunner.manager.findOne(Payment, {
         where: { id: paymentId },
-        relations: ['order'],
+        relations: ['order', 'order.items'],
       });
       if (!payment) {
         throw new BusinessException('RESOURCE_NOT_FOUND', HttpStatus.NOT_FOUND);
@@ -278,6 +278,8 @@ export class OrderService {
 
       // 반품 요청 주문은 환불 완료 시 RETURNED로 마무리한다.
       if (payment.order.status === OrderStatus.RETURN_REQUESTED) {
+        await this.restoreOrderInventory(queryRunner.manager, payment.order.items || []);
+        await this.refundUsedPoints(queryRunner.manager, payment.order.userId, payment.order.pointUsed);
         this.assertStatusTransition(payment.order.status, OrderStatus.RETURNED);
         payment.order.status = OrderStatus.RETURNED;
         await queryRunner.manager.save(payment.order);
@@ -326,6 +328,32 @@ export class OrderService {
     return this.toDetail(order);
   }
 
+  // ORD-04 확장: 반품 요청
+  // DELIVERED/CONFIRMED 상태에서만 반품 요청을 허용한다.
+  async requestReturn(userId: number, orderId: number) {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId, userId },
+      relations: ['items', 'payments'],
+    });
+    if (!order) {
+      throw new BusinessException('ORDER_NOT_FOUND', HttpStatus.NOT_FOUND);
+    }
+
+    if (![OrderStatus.DELIVERED, OrderStatus.CONFIRMED].includes(order.status)) {
+      throw new BusinessException(
+        'ORDER_CANNOT_CANCEL',
+        HttpStatus.BAD_REQUEST,
+        '배송 완료 또는 구매 확정 상태에서만 반품 요청할 수 있습니다.',
+      );
+    }
+
+    this.assertStatusTransition(order.status, OrderStatus.RETURN_REQUESTED);
+    order.status = OrderStatus.RETURN_REQUESTED;
+    await this.orderRepository.save(order);
+
+    return this.findOne(userId, order.id);
+  }
+
   // ORD-04: 주문 취소
   // 결제 완료 이력이 있으면 직접 취소를 막고 환불 경로를 강제한다.
   async cancel(userId: number, orderId: number) {
@@ -355,18 +383,8 @@ export class OrderService {
         throw new BusinessException('ORDER_CANNOT_CANCEL', HttpStatus.BAD_REQUEST, '결제 완료된 주문은 먼저 환불 처리가 필요합니다.');
       }
 
-      for (const item of order.items) {
-        await queryRunner.manager.increment(Product, { id: item.productId }, 'stock', item.quantity);
-        await queryRunner.manager.decrement(Product, { id: item.productId }, 'salesCount', item.quantity);
-      }
-
-      if (order.pointUsed > 0) {
-        const user = await queryRunner.manager.findOne(User, { where: { id: userId } });
-        if (user) {
-          user.point += order.pointUsed;
-          await queryRunner.manager.save(user);
-        }
-      }
+      await this.restoreOrderInventory(queryRunner.manager, order.items);
+      await this.refundUsedPoints(queryRunner.manager, userId, order.pointUsed);
 
       order.status = OrderStatus.CANCELLED;
       await queryRunner.manager.save(order);
@@ -401,42 +419,67 @@ export class OrderService {
   // ORD-06: 주문 상태 변경 (Admin)
   // Admin도 상태머신 규칙을 우회하지 못하게 동일 전이 검증을 적용한다.
   async updateStatus(orderId: number, status: OrderStatus) {
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId },
-      relations: ['items', 'payments'],
-    });
-    if (!order) {
-      throw new BusinessException('ORDER_NOT_FOUND', HttpStatus.NOT_FOUND);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const order = await queryRunner.manager.findOne(Order, {
+        where: { id: orderId },
+        relations: ['items', 'payments'],
+      });
+      if (!order) {
+        throw new BusinessException('ORDER_NOT_FOUND', HttpStatus.NOT_FOUND);
+      }
+
+      if (order.status === status) {
+        await queryRunner.commitTransaction();
+        return this.toDetail(order);
+      }
+
+      this.assertStatusTransition(order.status, status);
+
+      const hasCompletedPayment = (order.payments || []).some(
+        (payment) => payment.status === PaymentStatus.COMPLETED,
+      );
+      const hasRefundedPayment = (order.payments || []).some(
+        (payment) => payment.status === PaymentStatus.REFUNDED,
+      );
+
+      if (status === OrderStatus.PAYMENT_CONFIRMED && !hasCompletedPayment) {
+        throw new BusinessException('PAYMENT_FAILED', HttpStatus.BAD_REQUEST, '결제 완료 내역이 없어 PAYMENT_CONFIRMED로 변경할 수 없습니다.');
+      }
+
+      if (status === OrderStatus.CANCELLED && hasCompletedPayment && !hasRefundedPayment) {
+        throw new BusinessException('ORDER_CANNOT_CANCEL', HttpStatus.BAD_REQUEST, '결제 완료 주문은 환불 처리 후 취소 상태로 변경할 수 있습니다.');
+      }
+
+      if (status === OrderStatus.RETURNED && hasCompletedPayment && !hasRefundedPayment) {
+        throw new BusinessException('PAYMENT_FAILED', HttpStatus.BAD_REQUEST, '환불 처리 후 RETURNED 상태로 변경할 수 있습니다.');
+      }
+
+      // Admin 경로에서도 도메인 정합성을 맞추기 위해 롤백 처리 로직을 동일 적용한다.
+      if (status === OrderStatus.CANCELLED && [OrderStatus.ORDER_PLACED, OrderStatus.PAYMENT_PENDING].includes(order.status)) {
+        await this.restoreOrderInventory(queryRunner.manager, order.items || []);
+        await this.refundUsedPoints(queryRunner.manager, order.userId, order.pointUsed);
+      }
+
+      if (status === OrderStatus.RETURNED && order.status === OrderStatus.RETURN_REQUESTED) {
+        await this.restoreOrderInventory(queryRunner.manager, order.items || []);
+        await this.refundUsedPoints(queryRunner.manager, order.userId, order.pointUsed);
+      }
+
+      order.status = status;
+      const saved = await queryRunner.manager.save(order);
+
+      await queryRunner.commitTransaction();
+      return this.toDetail(saved);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-
-    if (order.status === status) {
-      return this.toDetail(order);
-    }
-
-    this.assertStatusTransition(order.status, status);
-
-    const hasCompletedPayment = (order.payments || []).some(
-      (payment) => payment.status === PaymentStatus.COMPLETED,
-    );
-    const hasRefundedPayment = (order.payments || []).some(
-      (payment) => payment.status === PaymentStatus.REFUNDED,
-    );
-
-    if (status === OrderStatus.PAYMENT_CONFIRMED && !hasCompletedPayment) {
-      throw new BusinessException('PAYMENT_FAILED', HttpStatus.BAD_REQUEST, '결제 완료 내역이 없어 PAYMENT_CONFIRMED로 변경할 수 없습니다.');
-    }
-
-    if (status === OrderStatus.CANCELLED && hasCompletedPayment && !hasRefundedPayment) {
-      throw new BusinessException('ORDER_CANNOT_CANCEL', HttpStatus.BAD_REQUEST, '결제 완료 주문은 환불 처리 후 취소 상태로 변경할 수 있습니다.');
-    }
-
-    if (status === OrderStatus.RETURNED && hasCompletedPayment && !hasRefundedPayment) {
-      throw new BusinessException('PAYMENT_FAILED', HttpStatus.BAD_REQUEST, '환불 처리 후 RETURNED 상태로 변경할 수 있습니다.');
-    }
-
-    order.status = status;
-    const saved = await this.orderRepository.save(order);
-    return this.toDetail(saved);
   }
 
   // 주문 상태머신 규칙
@@ -535,5 +578,28 @@ export class OrderService {
       memo: order.memo,
       createdAt: order.createdAt,
     };
+  }
+
+  // 취소/반품 시 주문 항목 수량만큼 재고와 판매량을 되돌린다.
+  private async restoreOrderInventory(manager: EntityManager, items: OrderItem[]) {
+    for (const item of items) {
+      await manager.increment(Product, { id: item.productId }, 'stock', item.quantity);
+      await manager.decrement(Product, { id: item.productId }, 'salesCount', item.quantity);
+    }
+  }
+
+  // 주문에서 사용한 포인트를 사용자에게 환원한다.
+  private async refundUsedPoints(manager: EntityManager, userId: number, pointUsed: number) {
+    if (pointUsed <= 0) {
+      return;
+    }
+
+    const user = await manager.findOne(User, { where: { id: userId } });
+    if (!user) {
+      throw new BusinessException('USER_NOT_FOUND', HttpStatus.NOT_FOUND);
+    }
+
+    user.point += pointUsed;
+    await manager.save(user);
   }
 }

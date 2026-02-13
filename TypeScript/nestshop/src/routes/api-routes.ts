@@ -27,6 +27,8 @@ export const API_ROUTES = {
   },
   ORDERS: {
     BASE: 'orders',
+    CANCEL: ':id/cancel',
+    RETURN_REQUEST: ':id/return-request',
   },
   PAYMENTS: {
     BASE: 'payments',

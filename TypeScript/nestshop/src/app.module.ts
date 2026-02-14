@@ -18,6 +18,7 @@ import { CommunityModule } from './community/community.module';
 import { AddressModule } from './address/address.module';
 import { InquiryModule } from './inquiry/inquiry.module';
 import { SupportModule } from './support/support.module';
+import { FaqModule } from './faq/faq.module';
 
 @Module({
   imports: [
@@ -64,7 +65,9 @@ import { SupportModule } from './support/support.module';
     AddressModule,
     InquiryModule,
     SupportModule,
+    FaqModule,
   ],
 })
 export class AppModule {}
+
 

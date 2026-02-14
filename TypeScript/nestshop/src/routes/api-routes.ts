@@ -83,6 +83,13 @@ export const API_ROUTES = {
     ADMIN_TICKETS: 'admin/support/tickets',
     ANSWER: ':id/answer',
   },
+  FAQ: {
+    BASE: 'faq',
+    SEARCH: 'search',
+    ADMIN_FAQ: 'admin/faq',
+    NOTICES: 'notices',
+    ADMIN_NOTICES: 'admin/notices',
+  },
   CHAT: {
     BASE: 'chat',
     ROOMS: 'rooms',
@@ -91,4 +98,5 @@ export const API_ROUTES = {
     BASE: 'health',
   },
 } as const;
+
 

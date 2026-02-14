@@ -22,6 +22,7 @@ import { FaqModule } from './faq/faq.module';
 import { ActivityModule } from './activity/activity.module';
 import { ChatModule } from './chat/chat.module';
 import { PushModule } from './push/push.module';
+import { PredictionModule } from './prediction/prediction.module';
 
 @Module({
   imports: [
@@ -72,9 +73,12 @@ import { PushModule } from './push/push.module';
     ActivityModule,
     ChatModule,
     PushModule,
+    PredictionModule,
   ],
 })
 export class AppModule {}
+
+
 
 
 

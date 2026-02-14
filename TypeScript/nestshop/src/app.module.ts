@@ -17,6 +17,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
 import { CommunityModule } from './community/community.module';
 import { AddressModule } from './address/address.module';
 import { InquiryModule } from './inquiry/inquiry.module';
+import { SupportModule } from './support/support.module';
 
 @Module({
   imports: [
@@ -62,6 +63,8 @@ import { InquiryModule } from './inquiry/inquiry.module';
     CommunityModule,
     AddressModule,
     InquiryModule,
+    SupportModule,
   ],
 })
 export class AppModule {}
+

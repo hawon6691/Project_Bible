@@ -76,6 +76,13 @@ export const API_ROUTES = {
     ANSWER: ':id/answer',
     ME: 'me',
   },
+  SUPPORT: {
+    BASE: 'support',
+    TICKETS: 'tickets',
+    MY_TICKETS: 'tickets/me',
+    ADMIN_TICKETS: 'admin/support/tickets',
+    ANSWER: ':id/answer',
+  },
   CHAT: {
     BASE: 'chat',
     ROOMS: 'rooms',
@@ -84,3 +91,4 @@ export const API_ROUTES = {
     BASE: 'health',
   },
 } as const;
+

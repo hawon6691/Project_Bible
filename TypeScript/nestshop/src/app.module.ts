@@ -31,6 +31,7 @@ import { TrustModule } from './trust/trust.module';
 import { I18nModule } from './i18n/i18n.module';
 import { ImageModule } from './image/image.module';
 import { BadgeModule } from './badge/badge.module';
+import { PcBuilderModule } from './pc-builder/pc-builder.module';
 
 @Module({
   imports: [
@@ -90,9 +91,11 @@ import { BadgeModule } from './badge/badge.module';
     I18nModule,
     ImageModule,
     BadgeModule,
+    PcBuilderModule,
   ],
 })
 export class AppModule {}
+
 
 
 

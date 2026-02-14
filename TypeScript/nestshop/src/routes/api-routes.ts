@@ -107,6 +107,10 @@ export const API_ROUTES = {
     UNSUBSCRIBE: 'subscriptions/unsubscribe',
     PREFERENCES: 'preferences',
   },
+  PREDICTION: {
+    BASE: 'predictions',
+    PRODUCT_PRICE_TREND: 'products/:productId/price-trend',
+  },
   DEAL: {
     BASE: 'deals',
     ADMIN: 'admin',
@@ -127,6 +131,7 @@ export const API_ROUTES = {
     BASE: 'health',
   },
 } as const;
+
 
 
 

@@ -19,6 +19,7 @@ import { AddressModule } from './address/address.module';
 import { InquiryModule } from './inquiry/inquiry.module';
 import { SupportModule } from './support/support.module';
 import { FaqModule } from './faq/faq.module';
+import { ActivityModule } from './activity/activity.module';
 
 @Module({
   imports: [
@@ -66,8 +67,10 @@ import { FaqModule } from './faq/faq.module';
     InquiryModule,
     SupportModule,
     FaqModule,
+    ActivityModule,
   ],
 })
 export class AppModule {}
+
 
 

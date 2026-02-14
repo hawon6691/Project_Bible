@@ -90,6 +90,11 @@ export const API_ROUTES = {
     NOTICES: 'notices',
     ADMIN_NOTICES: 'admin/notices',
   },
+  ACTIVITY: {
+    BASE: 'activities',
+    RECENT_PRODUCTS: 'recent-products',
+    SEARCHES: 'searches',
+  },
   CHAT: {
     BASE: 'chat',
     ROOMS: 'rooms',
@@ -98,5 +103,6 @@ export const API_ROUTES = {
     BASE: 'health',
   },
 } as const;
+
 
 

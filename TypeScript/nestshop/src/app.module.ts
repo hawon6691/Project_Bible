@@ -33,6 +33,7 @@ import { ImageModule } from './image/image.module';
 import { BadgeModule } from './badge/badge.module';
 import { PcBuilderModule } from './pc-builder/pc-builder.module';
 import { FriendModule } from './friend/friend.module';
+import { VideoModule } from './video/video.module';
 
 @Module({
   imports: [
@@ -94,9 +95,11 @@ import { FriendModule } from './friend/friend.module';
     BadgeModule,
     PcBuilderModule,
     FriendModule,
+    VideoModule,
   ],
 })
 export class AppModule {}
+
 
 
 

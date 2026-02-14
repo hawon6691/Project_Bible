@@ -155,6 +155,27 @@ export const API_ROUTES = {
     VARIANTS: ':id/variants',
     DETAIL: ':id',
   },
+  BADGE: {
+    BASE: 'badges',
+    ME: 'badges/me',
+    USER_BADGES: 'users/:id/badges',
+    ADMIN_BASE: 'admin/badges',
+    ADMIN_DETAIL: 'admin/badges/:id',
+    ADMIN_GRANT: 'admin/badges/:id/grant',
+    ADMIN_REVOKE: 'admin/badges/:id/revoke/:userId',
+  },
+  PC_BUILDER: {
+    BASE: 'pc-builds',
+    DETAIL: ':id',
+    PARTS: ':id/parts',
+    PART_DETAIL: ':id/parts/:partId',
+    COMPATIBILITY: ':id/compatibility',
+    SHARE: ':id/share',
+    SHARED: 'shared/:shareCode',
+    POPULAR: 'popular',
+    ADMIN_COMPATIBILITY_RULES: 'admin/compatibility-rules',
+    ADMIN_COMPATIBILITY_RULE_DETAIL: 'admin/compatibility-rules/:id',
+  },
   FRIEND: {
     BASE: 'friends',
     REQUEST: 'request/:userId',
@@ -166,10 +187,15 @@ export const API_ROUTES = {
     BLOCK: 'block/:userId',
     DETAIL: ':userId',
   },
+  SHORTFORM: {
+    BASE: 'shortforms',
+    DETAIL: ':id',
+    LIKE: ':id/like',
+    COMMENTS: ':id/comments',
+    RANKING: 'ranking/list',
+    USER: 'user/:userId',
+  },
   HEALTH: {
     BASE: 'health',
   },
 } as const;
-
-
-

@@ -30,6 +30,7 @@ import { FraudModule } from './fraud/fraud.module';
 import { TrustModule } from './trust/trust.module';
 import { I18nModule } from './i18n/i18n.module';
 import { ImageModule } from './image/image.module';
+import { BadgeModule } from './badge/badge.module';
 
 @Module({
   imports: [
@@ -88,9 +89,11 @@ import { ImageModule } from './image/image.module';
     TrustModule,
     I18nModule,
     ImageModule,
+    BadgeModule,
   ],
 })
 export class AppModule {}
+
 
 
 

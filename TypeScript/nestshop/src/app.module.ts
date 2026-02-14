@@ -21,6 +21,7 @@ import { SupportModule } from './support/support.module';
 import { FaqModule } from './faq/faq.module';
 import { ActivityModule } from './activity/activity.module';
 import { ChatModule } from './chat/chat.module';
+import { PushModule } from './push/push.module';
 
 @Module({
   imports: [
@@ -70,9 +71,12 @@ import { ChatModule } from './chat/chat.module';
     FaqModule,
     ActivityModule,
     ChatModule,
+    PushModule,
   ],
 })
 export class AppModule {}
+
+
 
 
 

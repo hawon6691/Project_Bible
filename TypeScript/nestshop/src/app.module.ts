@@ -28,6 +28,7 @@ import { RecommendationModule } from './recommendation/recommendation.module';
 import { RankingModule } from './ranking/ranking.module';
 import { FraudModule } from './fraud/fraud.module';
 import { TrustModule } from './trust/trust.module';
+import { I18nModule } from './i18n/i18n.module';
 
 @Module({
   imports: [
@@ -82,11 +83,14 @@ import { TrustModule } from './trust/trust.module';
     DealModule,
     RecommendationModule,
     RankingModule,
-       FraudModule,
+    FraudModule,
     TrustModule,
+    I18nModule,
   ],
 })
 export class AppModule {}
+
+
 
 
 

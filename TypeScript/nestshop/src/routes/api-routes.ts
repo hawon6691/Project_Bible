@@ -134,16 +134,21 @@ export const API_ROUTES = {
     ADMIN_SCAN: 'admin/products/:productId/scan',
     ADMIN_FLAGS: 'admin/products/:productId/flags',
   },
-  TRUST: {
-    BASE: 'trust',
-    SELLER: 'sellers/:sellerId',
-    HISTORY: 'sellers/:sellerId/history',
-    ADMIN_RECALCULATE: 'admin/sellers/:sellerId/recalculate',
+
+  I18N: {
+    BASE: 'i18n',
+    TRANSLATIONS: 'translations',
+    ADMIN_TRANSLATIONS: 'admin/translations',
+    ADMIN_TRANSLATION_DETAIL: 'admin/translations/:id',
+    EXCHANGE_RATES: 'exchange-rates',
+    ADMIN_EXCHANGE_RATES: 'admin/exchange-rates',
+    CONVERT: 'convert',
   },
   HEALTH: {
     BASE: 'health',
   },
 } as const;
+
 
 
 

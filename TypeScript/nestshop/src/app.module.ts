@@ -23,6 +23,9 @@ import { ActivityModule } from './activity/activity.module';
 import { ChatModule } from './chat/chat.module';
 import { PushModule } from './push/push.module';
 import { PredictionModule } from './prediction/prediction.module';
+import { DealModule } from './deal/deal.module';
+import { RecommendationModule } from './recommendation/recommendation.module';
+import { RankingModule } from './ranking/ranking.module';
 
 @Module({
   imports: [
@@ -74,9 +77,13 @@ import { PredictionModule } from './prediction/prediction.module';
     ChatModule,
     PushModule,
     PredictionModule,
+    DealModule,
+    RecommendationModule,
+    RankingModule,
   ],
 })
 export class AppModule {}
+
 
 
 

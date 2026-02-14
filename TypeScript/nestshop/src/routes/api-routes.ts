@@ -98,11 +98,14 @@ export const API_ROUTES = {
   CHAT: {
     BASE: 'chat',
     ROOMS: 'rooms',
+    JOIN_ROOM: 'rooms/:id/join',
+    MESSAGES: 'rooms/:id/messages',
   },
   HEALTH: {
     BASE: 'health',
   },
 } as const;
+
 
 
 

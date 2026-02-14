@@ -107,10 +107,17 @@ export const API_ROUTES = {
     UNSUBSCRIBE: 'subscriptions/unsubscribe',
     PREFERENCES: 'preferences',
   },
+  RANKING: {
+    BASE: 'rankings',
+    POPULAR_PRODUCTS: 'products/popular',
+    POPULAR_KEYWORDS: 'keywords/popular',
+    ADMIN_RECALCULATE: 'admin/recalculate',
+  },
   HEALTH: {
     BASE: 'health',
   },
 } as const;
+
 
 
 

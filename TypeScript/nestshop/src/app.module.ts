@@ -32,6 +32,7 @@ import { I18nModule } from './i18n/i18n.module';
 import { ImageModule } from './image/image.module';
 import { BadgeModule } from './badge/badge.module';
 import { PcBuilderModule } from './pc-builder/pc-builder.module';
+import { FriendModule } from './friend/friend.module';
 
 @Module({
   imports: [
@@ -92,9 +93,11 @@ import { PcBuilderModule } from './pc-builder/pc-builder.module';
     ImageModule,
     BadgeModule,
     PcBuilderModule,
+    FriendModule,
   ],
 })
 export class AppModule {}
+
 
 
 

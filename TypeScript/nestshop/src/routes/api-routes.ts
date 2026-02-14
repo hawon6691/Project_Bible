@@ -107,6 +107,11 @@ export const API_ROUTES = {
     UNSUBSCRIBE: 'subscriptions/unsubscribe',
     PREFERENCES: 'preferences',
   },
+  DEAL: {
+    BASE: 'deals',
+    ADMIN: 'admin',
+    ADMIN_DETAIL: 'admin/:id',
+  },
   RECOMMENDATION: {
     BASE: 'recommendations',
     PERSONAL: 'personal',

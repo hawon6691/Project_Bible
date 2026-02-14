@@ -68,6 +68,7 @@ export class RankingService {
       await this.productRepository.save(product);
     }
 
+    return { updatedCount: products.length };
     return {
       updatedCount: products.length,
     };

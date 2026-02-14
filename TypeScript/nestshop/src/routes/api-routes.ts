@@ -155,21 +155,21 @@ export const API_ROUTES = {
     VARIANTS: ':id/variants',
     DETAIL: ':id',
   },
-  PC_BUILDER: {
-    BASE: 'pc-builds',
-    DETAIL: ':id',
-    PARTS: ':id/parts',
-    PART_DETAIL: ':id/parts/:partId',
-    COMPATIBILITY: ':id/compatibility',
-    SHARE: ':id/share',
-    SHARED: 'shared/:shareCode',
-    POPULAR: 'popular',
-    ADMIN_COMPATIBILITY_RULES: 'admin/compatibility-rules',
-    ADMIN_COMPATIBILITY_RULE_DETAIL: 'admin/compatibility-rules/:id',
+  FRIEND: {
+    BASE: 'friends',
+    REQUEST: 'request/:userId',
+    ACCEPT: 'request/:friendshipId/accept',
+    REJECT: 'request/:friendshipId/reject',
+    REQUESTS_RECEIVED: 'requests/received',
+    REQUESTS_SENT: 'requests/sent',
+    FEED: 'feed',
+    BLOCK: 'block/:userId',
+    DETAIL: ':userId',
   },
   HEALTH: {
     BASE: 'health',
   },
 } as const;
+
 
 

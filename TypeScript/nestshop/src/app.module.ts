@@ -26,6 +26,7 @@ import { PredictionModule } from './prediction/prediction.module';
 import { DealModule } from './deal/deal.module';
 import { RecommendationModule } from './recommendation/recommendation.module';
 import { RankingModule } from './ranking/ranking.module';
+import { FraudModule } from './fraud/fraud.module';
 
 @Module({
   imports: [
@@ -80,9 +81,12 @@ import { RankingModule } from './ranking/ranking.module';
     DealModule,
     RecommendationModule,
     RankingModule,
+    FraudModule,
   ],
 })
 export class AppModule {}
+
+
 
 
 

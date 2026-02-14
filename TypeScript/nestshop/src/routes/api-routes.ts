@@ -127,10 +127,18 @@ export const API_ROUTES = {
     POPULAR_KEYWORDS: 'keywords/popular',
     ADMIN_RECALCULATE: 'admin/recalculate',
   },
+  FRAUD: {
+    BASE: 'fraud',
+    EFFECTIVE_PRICES: 'products/:productId/effective-prices',
+    ANOMALIES: 'products/:productId/anomalies',
+    ADMIN_SCAN: 'admin/products/:productId/scan',
+    ADMIN_FLAGS: 'admin/products/:productId/flags',
+  },
   HEALTH: {
     BASE: 'health',
   },
 } as const;
+
 
 
 

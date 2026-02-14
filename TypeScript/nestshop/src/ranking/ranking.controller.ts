@@ -31,7 +31,6 @@ export class RankingController {
   @Post('admin/recalculate')
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: '인기 점수 재계산 (Admin)' })
-  recalculate() {
   recalculatePopularityScore() {
     return this.rankingService.recalculatePopularityScore();
   }

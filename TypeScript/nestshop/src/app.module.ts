@@ -22,6 +22,7 @@ import { FaqModule } from './faq/faq.module';
 import { ActivityModule } from './activity/activity.module';
 import { ChatModule } from './chat/chat.module';
 import { PushModule } from './push/push.module';
+import { RecommendationModule } from './recommendation/recommendation.module';
 import { RankingModule } from './ranking/ranking.module';
 
 @Module({
@@ -73,6 +74,7 @@ import { RankingModule } from './ranking/ranking.module';
     ActivityModule,
     ChatModule,
     PushModule,
+    RecommendationModule,
     RankingModule,
   ],
 })

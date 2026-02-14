@@ -10,6 +10,7 @@ import { RankingService } from './ranking.service';
 export class RankingController {
   constructor(private readonly rankingService: RankingService) {}
 
+  // 인기 상품 랭킹
   @Public()
   @Get('products/popular')
   @ApiOperation({ summary: '인기 상품 랭킹 조회' })
@@ -17,6 +18,7 @@ export class RankingController {
     return this.rankingService.getPopularProducts(query);
   }
 
+  // 인기 검색어 랭킹
   @Public()
   @Get('keywords/popular')
   @ApiOperation({ summary: '인기 검색어 랭킹 조회' })
@@ -24,11 +26,13 @@ export class RankingController {
     return this.rankingService.getPopularKeywords(query);
   }
 
+  // 인기 점수 재계산 (Admin)
   @ApiBearerAuth()
   @Post('admin/recalculate')
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: '인기 점수 재계산 (Admin)' })
   recalculate() {
+  recalculatePopularityScore() {
     return this.rankingService.recalculatePopularityScore();
   }
 }

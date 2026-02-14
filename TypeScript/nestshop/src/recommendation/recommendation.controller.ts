@@ -13,6 +13,10 @@ export class RecommendationController {
   @ApiBearerAuth()
   @Get('personal')
   @ApiOperation({ summary: '개인화 추천 조회' })
+  // RECO-01: 개인화 추천
+  @ApiBearerAuth()
+  @Get('personal')
+  @ApiOperation({ summary: '개인화 추천 상품 조회' })
   getPersonalRecommendations(@CurrentUser() user: JwtPayload, @Query() query: RecommendationQueryDto) {
     return this.recommendationService.getPersonalRecommendations(user.sub, query);
   }
@@ -20,6 +24,10 @@ export class RecommendationController {
   @Public()
   @Get('trending')
   @ApiOperation({ summary: '트렌딩 추천 조회' })
+  // RECO-02: 트렌딩 추천
+  @Public()
+  @Get('trending')
+  @ApiOperation({ summary: '트렌딩 추천 상품 조회' })
   getTrendingRecommendations(@Query() query: RecommendationQueryDto) {
     return this.recommendationService.getTrendingRecommendations(query);
   }

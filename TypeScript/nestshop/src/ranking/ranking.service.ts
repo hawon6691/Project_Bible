@@ -14,6 +14,7 @@ export class RankingService {
     private searchHistoryRepository: Repository<SearchHistory>,
   ) {}
 
+  // 인기 상품 랭킹 조회
   async getPopularProducts(query: RankingQueryDto) {
     const items = await this.productRepository.find({
       order: {
@@ -38,6 +39,7 @@ export class RankingService {
     }));
   }
 
+  // 인기 검색어 랭킹 조회
   async getPopularKeywords(query: RankingQueryDto) {
     const raw = await this.searchHistoryRepository
       .createQueryBuilder('search')
@@ -56,6 +58,7 @@ export class RankingService {
     }));
   }
 
+  // 인기 점수 재계산: (조회수*0.3) + (리뷰수*0.5) + (판매량*0.2)
   async recalculatePopularityScore() {
     const products = await this.productRepository.find();
 
@@ -66,5 +69,8 @@ export class RankingService {
     }
 
     return { updatedCount: products.length };
+    return {
+      updatedCount: products.length,
+    };
   }
 }

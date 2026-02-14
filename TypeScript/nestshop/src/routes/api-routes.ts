@@ -101,10 +101,17 @@ export const API_ROUTES = {
     JOIN_ROOM: 'rooms/:id/join',
     MESSAGES: 'rooms/:id/messages',
   },
+  PUSH: {
+    BASE: 'push',
+    SUBSCRIPTIONS: 'subscriptions',
+    UNSUBSCRIBE: 'subscriptions/unsubscribe',
+    PREFERENCES: 'preferences',
+  },
   HEALTH: {
     BASE: 'health',
   },
 } as const;
+
 
 
 

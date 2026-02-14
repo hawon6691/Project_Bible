@@ -111,6 +111,11 @@ export const API_ROUTES = {
     BASE: 'recommendations',
     PERSONAL: 'personal',
     TRENDING: 'trending',
+  RANKING: {
+    BASE: 'rankings',
+    POPULAR_PRODUCTS: 'products/popular',
+    POPULAR_KEYWORDS: 'keywords/popular',
+    ADMIN_RECALCULATE: 'admin/recalculate',
   },
   HEALTH: {
     BASE: 'health',

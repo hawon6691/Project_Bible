@@ -155,7 +155,17 @@ export const API_ROUTES = {
     VARIANTS: ':id/variants',
     DETAIL: ':id',
   },
+  BADGE: {
+    BASE: 'badges',
+    ME: 'badges/me',
+    USER_BADGES: 'users/:id/badges',
+    ADMIN_BASE: 'admin/badges',
+    ADMIN_DETAIL: 'admin/badges/:id',
+    ADMIN_GRANT: 'admin/badges/:id/grant',
+    ADMIN_REVOKE: 'admin/badges/:id/revoke/:userId',
+  },
   HEALTH: {
     BASE: 'health',
   },
 } as const;
+

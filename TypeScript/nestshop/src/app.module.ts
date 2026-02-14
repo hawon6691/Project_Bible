@@ -20,6 +20,7 @@ import { InquiryModule } from './inquiry/inquiry.module';
 import { SupportModule } from './support/support.module';
 import { FaqModule } from './faq/faq.module';
 import { ActivityModule } from './activity/activity.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -68,9 +69,12 @@ import { ActivityModule } from './activity/activity.module';
     SupportModule,
     FaqModule,
     ActivityModule,
+    ChatModule,
   ],
 })
 export class AppModule {}
+
+
 
 
 

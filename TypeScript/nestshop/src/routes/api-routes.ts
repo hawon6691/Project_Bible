@@ -187,6 +187,14 @@ export const API_ROUTES = {
     BLOCK: 'block/:userId',
     DETAIL: ':userId',
   },
+  MEDIA: {
+    BASE: 'media',
+    UPLOAD: 'upload',
+    PRESIGNED_URL: 'presigned-url',
+    STREAM: 'stream/:id',
+    DETAIL: ':id',
+    METADATA: ':id/metadata',
+  },
   SHORTFORM: {
     BASE: 'shortforms',
     DETAIL: ':id',
@@ -199,3 +207,4 @@ export const API_ROUTES = {
     BASE: 'health',
   },
 } as const;
+

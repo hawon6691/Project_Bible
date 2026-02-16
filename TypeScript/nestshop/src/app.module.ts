@@ -36,6 +36,7 @@ import { FriendModule } from './friend/friend.module';
 import { VideoModule } from './video/video.module';
 import { MediaModule } from './media/media.module';
 import { NewsModule } from './news/news.module';
+import { MatchingModule } from './matching/matching.module';
 
 @Module({
   imports: [
@@ -100,9 +101,11 @@ import { NewsModule } from './news/news.module';
     VideoModule,
     MediaModule,
     NewsModule,
+    MatchingModule,
   ],
 })
 export class AppModule {}
+
 
 
 

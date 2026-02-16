@@ -7,6 +7,12 @@ export enum FraudFlagSeverity {
   HIGH = 'HIGH',
 }
 
+export enum FraudFlagStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+
 @Entity('fraud_flags')
 export class FraudFlag extends BaseEntity {
   @Index('idx_fraud_flags_product_id')
@@ -34,4 +40,14 @@ export class FraudFlag extends BaseEntity {
 
   @Column({ type: 'enum', enum: FraudFlagSeverity, default: FraudFlagSeverity.LOW })
   severity: FraudFlagSeverity;
+
+  @Index('idx_fraud_flags_status')
+  @Column({ type: 'enum', enum: FraudFlagStatus, default: FraudFlagStatus.PENDING })
+  status: FraudFlagStatus;
+
+  @Column({ name: 'reviewed_by', type: 'int', nullable: true })
+  reviewedBy: number | null;
+
+  @Column({ name: 'reviewed_at', type: 'timestamp', nullable: true })
+  reviewedAt: Date | null;
 }

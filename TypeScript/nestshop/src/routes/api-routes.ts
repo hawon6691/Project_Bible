@@ -192,6 +192,22 @@ export const API_ROUTES = {
     CATEGORIES: 'categories',
     DETAIL: ':id',
   },
+  MATCHING: {
+    BASE: 'matching',
+    PENDING: 'pending',
+    APPROVE: ':id/approve',
+    REJECT: ':id/reject',
+    AUTO_MATCH: 'auto-match',
+    STATS: 'stats',
+  },
+  MEDIA: {
+    BASE: 'media',
+    UPLOAD: 'upload',
+    PRESIGNED_URL: 'presigned-url',
+    STREAM: 'stream/:id',
+    DETAIL: ':id',
+    METADATA: ':id/metadata',
+  },
   SHORTFORM: {
     BASE: 'shortforms',
     DETAIL: ':id',
@@ -204,5 +220,3 @@ export const API_ROUTES = {
     BASE: 'health',
   },
 } as const;
-
-

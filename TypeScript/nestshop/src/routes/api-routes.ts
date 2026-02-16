@@ -129,6 +129,10 @@ export const API_ROUTES = {
   },
   FRAUD: {
     BASE: 'fraud',
+    ALERTS: 'alerts',
+    ALERT_APPROVE: 'alerts/:id/approve',
+    ALERT_REJECT: 'alerts/:id/reject',
+    REAL_PRICE: 'products/:id/real-price',
     EFFECTIVE_PRICES: 'products/:productId/effective-prices',
     ANOMALIES: 'products/:productId/anomalies',
     ADMIN_SCAN: 'admin/products/:productId/scan',

@@ -1,11 +1,14 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PaginationResponseDto } from '../common/dto/pagination.dto';
 import { BusinessException } from '../common/exceptions/business.exception';
 import { PriceEntry, ShippingType } from '../price/entities/price-entry.entity';
 import { Product } from '../product/entities/product.entity';
+import { FraudAlertQueryDto } from './dto/fraud-alert-query.dto';
 import { FraudScanQueryDto } from './dto/fraud-scan-query.dto';
-import { FraudFlag, FraudFlagSeverity } from './entities/fraud-flag.entity';
+import { RealPriceQueryDto } from './dto/real-price-query.dto';
+import { FraudFlag, FraudFlagSeverity, FraudFlagStatus } from './entities/fraud-flag.entity';
 
 @Injectable()
 export class FraudService {
@@ -73,7 +76,8 @@ export class FraudService {
       .filter((item) => item.effectivePrice <= lowerBound || item.effectivePrice >= upperBound)
       .map((item) => {
         const gap = Math.abs(item.effectivePrice - avg) / Math.max(avg, 1);
-        const severity = gap >= 0.7 ? FraudFlagSeverity.HIGH : gap >= 0.4 ? FraudFlagSeverity.MEDIUM : FraudFlagSeverity.LOW;
+        const severity =
+          gap >= 0.7 ? FraudFlagSeverity.HIGH : gap >= 0.4 ? FraudFlagSeverity.MEDIUM : FraudFlagSeverity.LOW;
 
         return {
           priceEntryId: item.entry.id,
@@ -100,6 +104,9 @@ export class FraudService {
           effectivePrice: item.effectivePrice,
           baselineAverage: item.baselineAverage,
           severity: item.severity,
+          status: FraudFlagStatus.PENDING,
+          reviewedBy: null,
+          reviewedAt: null,
         }),
       );
       await this.fraudFlagRepository.save(flags);
@@ -134,8 +141,84 @@ export class FraudService {
       effectivePrice: item.effectivePrice,
       baselineAverage: item.baselineAverage,
       severity: item.severity,
+      status: item.status,
       createdAt: item.createdAt,
     }));
+  }
+
+  async getAlerts(query: FraudAlertQueryDto) {
+    const [items, total] = await this.fraudFlagRepository.findAndCount({
+      where: query.status ? { status: query.status } : {},
+      order: { createdAt: 'DESC' },
+      skip: query.skip,
+      take: query.limit,
+    });
+
+    const mapped = items.map((item) => ({
+      id: item.id,
+      productId: item.productId,
+      priceEntryId: item.priceEntryId,
+      sellerId: item.sellerId,
+      reason: item.reason,
+      rawPrice: item.rawPrice,
+      effectivePrice: item.effectivePrice,
+      baselineAverage: item.baselineAverage,
+      severity: item.severity,
+      status: item.status,
+      reviewedBy: item.reviewedBy,
+      reviewedAt: item.reviewedAt,
+      createdAt: item.createdAt,
+    }));
+
+    return new PaginationResponseDto(mapped, total, query.page, query.limit);
+  }
+
+  async approveAlert(alertId: number, adminUserId: number) {
+    const alert = await this.ensureAlert(alertId);
+    alert.status = FraudFlagStatus.APPROVED;
+    alert.reviewedBy = adminUserId;
+    alert.reviewedAt = new Date();
+    await this.fraudFlagRepository.save(alert);
+
+    return { success: true, message: '이상 가격 알림을 승인했습니다.' };
+  }
+
+  // 거절된 이상 가격 데이터는 노출 제외를 위해 해당 가격 엔트리를 비활성화한다.
+  async rejectAlert(alertId: number, adminUserId: number) {
+    const alert = await this.ensureAlert(alertId);
+    alert.status = FraudFlagStatus.REJECTED;
+    alert.reviewedBy = adminUserId;
+    alert.reviewedAt = new Date();
+    await this.fraudFlagRepository.save(alert);
+
+    await this.priceEntryRepository.update({ id: alert.priceEntryId }, { isAvailable: false });
+    return { success: true, message: '이상 가격 알림을 거절했습니다.' };
+  }
+
+  async getRealPrice(productId: number, query: RealPriceQueryDto) {
+    await this.ensureProduct(productId);
+
+    const where = query.sellerId
+      ? { productId, sellerId: query.sellerId, isAvailable: true }
+      : { productId, isAvailable: true };
+
+    const entry = await this.priceEntryRepository.findOne({
+      where,
+      order: { price: 'ASC' },
+    });
+
+    if (!entry) {
+      throw new BusinessException('RESOURCE_NOT_FOUND', HttpStatus.NOT_FOUND);
+    }
+
+    return {
+      productId,
+      sellerId: entry.sellerId,
+      productPrice: entry.price,
+      shippingFee: entry.shippingFee,
+      shippingType: entry.shippingType,
+      totalPrice: this.calculateEffectivePrice(entry),
+    };
   }
 
   private calculateEffectivePrice(entry: PriceEntry) {
@@ -152,5 +235,13 @@ export class FraudService {
     if (!product) {
       throw new BusinessException('PRODUCT_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
+  }
+
+  private async ensureAlert(alertId: number) {
+    const alert = await this.fraudFlagRepository.findOne({ where: { id: alertId } });
+    if (!alert) {
+      throw new BusinessException('RESOURCE_NOT_FOUND', HttpStatus.NOT_FOUND);
+    }
+    return alert;
   }
 }

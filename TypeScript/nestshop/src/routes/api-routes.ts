@@ -204,6 +204,11 @@ export const API_ROUTES = {
     AUTO_MATCH: 'auto-match',
     STATS: 'stats',
   },
+  ANALYTICS: {
+    BASE: 'analytics',
+    LOWEST_EVER: 'products/:id/lowest-ever',
+    UNIT_PRICE: 'products/:id/unit-price',
+  },
   MEDIA: {
     BASE: 'media',
     UPLOAD: 'upload',
@@ -224,3 +229,4 @@ export const API_ROUTES = {
     BASE: 'health',
   },
 } as const;
+

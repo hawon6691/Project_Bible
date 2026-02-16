@@ -34,6 +34,7 @@ import { BadgeModule } from './badge/badge.module';
 import { PcBuilderModule } from './pc-builder/pc-builder.module';
 import { FriendModule } from './friend/friend.module';
 import { VideoModule } from './video/video.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
   imports: [
@@ -96,9 +97,11 @@ import { VideoModule } from './video/video.module';
     PcBuilderModule,
     FriendModule,
     VideoModule,
+    MediaModule,
   ],
 })
 export class AppModule {}
+
 
 
 

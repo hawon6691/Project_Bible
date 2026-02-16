@@ -37,6 +37,7 @@ import { VideoModule } from './video/video.module';
 import { MediaModule } from './media/media.module';
 import { NewsModule } from './news/news.module';
 import { MatchingModule } from './matching/matching.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -102,9 +103,11 @@ import { MatchingModule } from './matching/matching.module';
     MediaModule,
     NewsModule,
     MatchingModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule {}
+
 
 
 

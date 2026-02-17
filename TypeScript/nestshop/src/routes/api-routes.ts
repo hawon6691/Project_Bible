@@ -209,6 +209,12 @@ export const API_ROUTES = {
     LOWEST_EVER: 'products/:id/lowest-ever',
     UNIT_PRICE: 'products/:id/unit-price',
   },
+  USED_MARKET: {
+    BASE: 'used-market',
+    PRODUCT_PRICE: 'products/:id/price',
+    CATEGORY_PRICES: 'categories/:id/prices',
+    PC_BUILD_ESTIMATE: 'pc-builds/:buildId/estimate',
+  },
   MEDIA: {
     BASE: 'media',
     UPLOAD: 'upload',

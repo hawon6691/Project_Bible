@@ -38,6 +38,7 @@ import { MediaModule } from './media/media.module';
 import { NewsModule } from './news/news.module';
 import { MatchingModule } from './matching/matching.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { UsedMarketModule } from './used-market/used-market.module';
 
 @Module({
   imports: [
@@ -104,6 +105,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     NewsModule,
     MatchingModule,
     AnalyticsModule,
+    UsedMarketModule,
   ],
 })
 export class AppModule {}

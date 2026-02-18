@@ -215,6 +215,13 @@ export const API_ROUTES = {
     CATEGORY_PRICES: 'categories/:id/prices',
     PC_BUILD_ESTIMATE: 'pc-builds/:buildId/estimate',
   },
+  AUTO: {
+    BASE: 'auto',
+    MODELS: 'models',
+    MODEL_TRIMS: 'models/:id/trims',
+    ESTIMATE: 'estimate',
+    LEASE_OFFERS: 'models/:id/lease-offers',
+  },
   MEDIA: {
     BASE: 'media',
     UPLOAD: 'upload',

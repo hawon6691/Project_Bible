@@ -40,6 +40,7 @@ import { MatchingModule } from './matching/matching.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { UsedMarketModule } from './used-market/used-market.module';
 import { AutoModule } from './auto/auto.module';
+import { AuctionModule } from './auction/auction.module';
 
 @Module({
   imports: [
@@ -108,6 +109,7 @@ import { AutoModule } from './auto/auto.module';
     AnalyticsModule,
     UsedMarketModule,
     AutoModule,
+    AuctionModule,
   ],
 })
 export class AppModule {}

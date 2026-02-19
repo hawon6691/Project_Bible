@@ -222,6 +222,13 @@ export const API_ROUTES = {
     ESTIMATE: 'estimate',
     LEASE_OFFERS: 'models/:id/lease-offers',
   },
+  AUCTION: {
+    BASE: 'auctions',
+    DETAIL: ':id',
+    BIDS: ':id/bids',
+    BID_DETAIL: ':id/bids/:bidId',
+    BID_SELECT: ':id/bids/:bidId/select',
+  },
   MEDIA: {
     BASE: 'media',
     UPLOAD: 'upload',

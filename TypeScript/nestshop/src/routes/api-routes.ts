@@ -235,6 +235,12 @@ export const API_ROUTES = {
     DETAIL: 'detail',
     PRODUCT: ':productId',
   },
+  ADMIN_SETTINGS: {
+    BASE: 'admin/settings',
+    EXTENSIONS: 'extensions',
+    UPLOAD_LIMITS: 'upload-limits',
+    REVIEW_POLICY: 'review-policy',
+  },
   MEDIA: {
     BASE: 'media',
     UPLOAD: 'upload',

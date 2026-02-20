@@ -42,6 +42,7 @@ import { UsedMarketModule } from './used-market/used-market.module';
 import { AutoModule } from './auto/auto.module';
 import { AuctionModule } from './auction/auction.module';
 import { CompareModule } from './compare/compare.module';
+import { AdminSettingsModule } from './admin-settings/admin-settings.module';
 
 @Module({
   imports: [
@@ -112,6 +113,7 @@ import { CompareModule } from './compare/compare.module';
     AutoModule,
     AuctionModule,
     CompareModule,
+    AdminSettingsModule,
   ],
 })
 export class AppModule {}

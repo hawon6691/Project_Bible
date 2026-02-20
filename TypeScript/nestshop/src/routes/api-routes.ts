@@ -58,6 +58,10 @@ export const API_ROUTES = {
     BASE: 'search',
     AUTOCOMPLETE: 'autocomplete',
     POPULAR: 'popular',
+    RECENT: 'recent',
+    RECENT_DETAIL: 'recent/:id',
+    PREFERENCES: 'preferences',
+    ADMIN_WEIGHTS: 'admin/weights',
   },
   PRICES: {
     BASE: 'prices',
@@ -270,6 +274,7 @@ export const API_ROUTES = {
     BASE: 'health',
   },
 } as const;
+
 
 
 

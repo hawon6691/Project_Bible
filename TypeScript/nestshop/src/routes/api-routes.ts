@@ -229,6 +229,12 @@ export const API_ROUTES = {
     BID_DETAIL: ':id/bids/:bidId',
     BID_SELECT: ':id/bids/:bidId/select',
   },
+  COMPARE_BAR: {
+    BASE: 'compare',
+    ADD: 'add',
+    DETAIL: 'detail',
+    PRODUCT: ':productId',
+  },
   MEDIA: {
     BASE: 'media',
     UPLOAD: 'upload',

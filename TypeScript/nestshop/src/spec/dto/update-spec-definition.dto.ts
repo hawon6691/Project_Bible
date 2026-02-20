@@ -35,6 +35,23 @@ export class UpdateSpecDefinitionDto {
   @MaxLength(20)
   unit?: string;
 
+  @ApiPropertyOptional({ description: '스펙 그룹명' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  groupName?: string;
+
+  @ApiPropertyOptional({ description: '부모 스펙 정의 ID' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  parentDefinitionId?: number;
+
+  @ApiPropertyOptional({ description: '수치 비교 시 높을수록 좋은지 여부' })
+  @IsOptional()
+  @IsBoolean()
+  higherIsBetter?: boolean;
+
   @ApiPropertyOptional({ description: '비교 대상 여부' })
   @IsOptional()
   @IsBoolean()

@@ -42,6 +42,15 @@ export class SpecDefinition {
   @Column({ type: 'varchar', length: 20, nullable: true })
   unit: string | null;
 
+  @Column({ name: 'group_name', type: 'varchar', length: 50, nullable: true })
+  groupName: string | null;
+
+  @Column({ name: 'parent_definition_id', type: 'int', nullable: true })
+  parentDefinitionId: number | null;
+
+  @Column({ name: 'higher_is_better', type: 'boolean', default: true })
+  higherIsBetter: boolean;
+
   @Column({ name: 'is_comparable', type: 'boolean', default: true })
   isComparable: boolean;
 

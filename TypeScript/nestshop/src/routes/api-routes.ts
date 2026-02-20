@@ -257,8 +257,20 @@ export const API_ROUTES = {
     RANKING: 'ranking/list',
     USER: 'user/:userId',
   },
+  CRAWLER: {
+    BASE: 'crawler',
+    ADMIN_JOBS: 'admin/jobs',
+    ADMIN_JOB_DETAIL: 'admin/jobs/:id',
+    ADMIN_JOB_RUN: 'admin/jobs/:id/run',
+    ADMIN_TRIGGERS: 'admin/triggers',
+    ADMIN_RUNS: 'admin/runs',
+    ADMIN_MONITORING: 'admin/monitoring',
+  },
   HEALTH: {
     BASE: 'health',
   },
 } as const;
+
+
+
 

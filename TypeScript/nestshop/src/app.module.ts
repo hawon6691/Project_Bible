@@ -44,6 +44,7 @@ import { AuctionModule } from './auction/auction.module';
 import { CompareModule } from './compare/compare.module';
 import { AdminSettingsModule } from './admin-settings/admin-settings.module';
 import { HealthModule } from './health/health.module';
+import { CrawlerModule } from './crawler/crawler.module';
 
 @Module({
   imports: [
@@ -116,9 +117,13 @@ import { HealthModule } from './health/health.module';
     CompareModule,
     AdminSettingsModule,
     HealthModule,
+    CrawlerModule,
   ],
 })
 export class AppModule {}
+
+
+
 
 
 

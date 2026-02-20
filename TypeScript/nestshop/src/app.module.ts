@@ -43,6 +43,7 @@ import { AutoModule } from './auto/auto.module';
 import { AuctionModule } from './auction/auction.module';
 import { CompareModule } from './compare/compare.module';
 import { AdminSettingsModule } from './admin-settings/admin-settings.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -114,9 +115,12 @@ import { AdminSettingsModule } from './admin-settings/admin-settings.module';
     AuctionModule,
     CompareModule,
     AdminSettingsModule,
+    HealthModule,
   ],
 })
 export class AppModule {}
+
+
 
 
 

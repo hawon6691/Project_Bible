@@ -93,6 +93,20 @@ export class VideoController {
   }
 
   @Public()
+  @Get(':id/transcode-status')
+  @ApiOperation({ summary: '숏폼 트랜스코딩 상태 조회' })
+  getTranscodeStatus(@Param('id', ParseIntPipe) id: number) {
+    return this.videoService.getTranscodeStatus(id);
+  }
+
+  @ApiBearerAuth()
+  @Post(':id/transcode/retry')
+  @ApiOperation({ summary: '숏폼 트랜스코딩 재시도' })
+  retryTranscode(@CurrentUser() user: JwtPayload, @Param('id', ParseIntPipe) id: number) {
+    return this.videoService.retryTranscode(user.sub, id);
+  }
+
+  @Public()
   @Get('user/:userId')
   @ApiOperation({ summary: '특정 유저 숏폼 목록 조회' })
   getUserShortforms(

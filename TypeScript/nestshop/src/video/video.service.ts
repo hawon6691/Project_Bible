@@ -1,5 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Queue } from 'bull';
 import { In, LessThan, Repository } from 'typeorm';
 import { PaginationResponseDto } from '../common/dto/pagination.dto';
 import { BusinessException } from '../common/exceptions/business.exception';
@@ -12,7 +14,8 @@ import { ShortformRankingPeriod, ShortformRankingQueryDto } from './dto/shortfor
 import { ShortformComment } from './entities/shortform-comment.entity';
 import { ShortformLike } from './entities/shortform-like.entity';
 import { ShortformProduct } from './entities/shortform-product.entity';
-import { Shortform } from './entities/shortform.entity';
+import { Shortform, ShortformTranscodeStatus } from './entities/shortform.entity';
+import { VideoTranscodeJobData } from './video.processor';
 
 @Injectable()
 export class VideoService {
@@ -30,6 +33,8 @@ export class VideoService {
     private shortformProductRepository: Repository<ShortformProduct>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectQueue('video-transcode')
+    private readonly videoTranscodeQueue: Queue<VideoTranscodeJobData>,
   ) {}
 
   // 숏폼 업로드 메타데이터를 생성한다.
@@ -50,6 +55,10 @@ export class VideoService {
       viewCount: 0,
       likeCount: 0,
       commentCount: 0,
+      transcodeStatus: ShortformTranscodeStatus.PENDING,
+      transcodedVideoUrl: null,
+      transcodeError: null,
+      transcodedAt: null,
     });
 
     const saved = await this.shortformRepository.save(shortform);
@@ -60,6 +69,17 @@ export class VideoService {
       );
       await this.shortformProductRepository.save(products);
     }
+
+    // 업로드 직후 비디오 트랜스코딩 작업을 큐에 등록한다.
+    await this.videoTranscodeQueue.add(
+      'transcode',
+      { shortformId: saved.id },
+      {
+        attempts: 3,
+        backoff: { type: 'fixed', delay: 1000 },
+        removeOnComplete: true,
+      },
+    );
 
     return this.getShortformDetail(saved.id, userId);
   }
@@ -191,6 +211,41 @@ export class VideoService {
     return { success: true, message: '숏폼이 삭제되었습니다.' };
   }
 
+  async getTranscodeStatus(shortformId: number) {
+    const shortform = await this.ensureShortform(shortformId);
+    return {
+      shortformId: shortform.id,
+      transcodeStatus: shortform.transcodeStatus,
+      transcodedVideoUrl: shortform.transcodedVideoUrl,
+      transcodeError: shortform.transcodeError,
+      transcodedAt: shortform.transcodedAt,
+    };
+  }
+
+  async retryTranscode(userId: number, shortformId: number) {
+    const shortform = await this.ensureShortform(shortformId);
+    if (shortform.userId !== userId) {
+      throw new BusinessException('AUTH_FORBIDDEN', HttpStatus.FORBIDDEN);
+    }
+
+    await this.shortformRepository.update(shortform.id, {
+      transcodeStatus: ShortformTranscodeStatus.PENDING,
+      transcodeError: null,
+    });
+
+    await this.videoTranscodeQueue.add(
+      'transcode',
+      { shortformId: shortform.id },
+      {
+        attempts: 3,
+        backoff: { type: 'fixed', delay: 1000 },
+        removeOnComplete: true,
+      },
+    );
+
+    return { success: true, message: '트랜스코딩 재시도 작업이 등록되었습니다.' };
+  }
+
   async getUserShortforms(userId: number, query: ShortformFeedQueryDto, viewerId?: number) {
     const [items, total] = await this.shortformRepository.findAndCount({
       where: { userId },
@@ -240,6 +295,10 @@ export class VideoService {
       viewCount: item.viewCount,
       likeCount: item.likeCount,
       commentCount: item.commentCount,
+      transcodeStatus: item.transcodeStatus,
+      transcodedVideoUrl: item.transcodedVideoUrl,
+      transcodeError: item.transcodeError,
+      transcodedAt: item.transcodedAt,
       productIds: productMap.get(item.id) ?? [],
       liked: viewerId ? likedSet.has(item.id) : false,
       createdAt: item.createdAt,

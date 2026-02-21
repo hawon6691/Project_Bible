@@ -4,6 +4,13 @@ import { ShortformComment } from './shortform-comment.entity';
 import { ShortformLike } from './shortform-like.entity';
 import { ShortformProduct } from './shortform-product.entity';
 
+export enum ShortformTranscodeStatus {
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+}
+
 @Entity('shortforms')
 export class Shortform extends BaseEntity {
   @Index('idx_shortforms_user_id')
@@ -30,6 +37,23 @@ export class Shortform extends BaseEntity {
 
   @Column({ name: 'comment_count', type: 'int', default: 0 })
   commentCount: number;
+
+  @Column({
+    name: 'transcode_status',
+    type: 'enum',
+    enum: ShortformTranscodeStatus,
+    default: ShortformTranscodeStatus.PENDING,
+  })
+  transcodeStatus: ShortformTranscodeStatus;
+
+  @Column({ name: 'transcoded_video_url', type: 'varchar', length: 500, nullable: true })
+  transcodedVideoUrl: string | null;
+
+  @Column({ name: 'transcode_error', type: 'varchar', length: 500, nullable: true })
+  transcodeError: string | null;
+
+  @Column({ name: 'transcoded_at', type: 'timestamp', nullable: true })
+  transcodedAt: Date | null;
 
   @OneToMany(() => ShortformLike, (like) => like.shortform)
   likes: ShortformLike[];

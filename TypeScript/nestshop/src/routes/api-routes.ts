@@ -271,6 +271,8 @@ export const API_ROUTES = {
     DETAIL: ':id',
     LIKE: ':id/like',
     COMMENTS: ':id/comments',
+    TRANSCODE_STATUS: ':id/transcode-status',
+    TRANSCODE_RETRY: ':id/transcode/retry',
     RANKING: 'ranking/list',
     USER: 'user/:userId',
   },

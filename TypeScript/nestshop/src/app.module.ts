@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommonModule } from './common/common.module';
@@ -70,6 +71,25 @@ import { SearchModule } from './search/search.module';
         synchronize: configService.get<boolean>('DB_SYNCHRONIZE', false),
         logging: configService.get<boolean>('DB_LOGGING', false),
       }),
+    }),
+
+    // Bull Queue Redis 연결 (백그라운드 작업)
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const host =
+          configService.get<string>('BULL_REDIS_HOST') ??
+          configService.get<string>('REDIS_HOST', 'localhost');
+        const port =
+          configService.get<number>('BULL_REDIS_PORT') ??
+          configService.get<number>('REDIS_PORT', 6379);
+        const password = configService.get<string>('REDIS_PASSWORD');
+
+        return {
+          redis: { host, port, password },
+        };
+      },
     }),
 
     // 공통 모듈 (전역 가드, 필터, 인터셉터)

@@ -10,6 +10,7 @@ import { User } from '../user/entities/user.entity';
 import { CartItem } from '../cart/entities/cart-item.entity';
 import { Address } from '../address/entities/address.entity';
 import { ResilienceService } from '../resilience/resilience.service';
+import { DistributedLock, RedlockService } from '../redlock/redlock.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CreatePaymentDto, RefundPaymentDto } from './dto/payment.dto';
 import { BusinessException } from '../common/exceptions/business.exception';
@@ -31,6 +32,7 @@ export class OrderService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private resilienceService: ResilienceService,
+    private redlockService: RedlockService,
     private dataSource: DataSource,
   ) {}
 
@@ -38,10 +40,19 @@ export class OrderService {
   // 재고 차감/포인트 사용/주문 생성을 하나의 트랜잭션으로 묶어 정합성을 보장한다.
   async create(userId: number, dto: CreateOrderDto) {
     const queryRunner = this.dataSource.createQueryRunner();
+    let locks: DistributedLock[] = [];
     await queryRunner.connect();
     await queryRunner.startTransaction('SERIALIZABLE');
 
     try {
+      // 동시 주문 시 상품별 재고 경합을 줄이기 위해 상품 단위 분산 락을 선점한다.
+      const lockKeys = [...new Set(dto.items.map((item) => `lock:stock:product:${item.productId}`))];
+      locks = await this.redlockService.acquireLocks(lockKeys, {
+        ttlMs: 5000,
+        maxRetries: 5,
+        retryDelayMs: 120,
+      });
+
       // 주문 시점의 배송지 스냅샷을 남기기 위해 배송지 엔티티를 조회한다.
       const address = await queryRunner.manager.findOne(Address, {
         where: { id: dto.addressId, userId },
@@ -154,6 +165,7 @@ export class OrderService {
       await queryRunner.rollbackTransaction();
       throw error;
     } finally {
+      await this.redlockService.releaseLocks(locks);
       await queryRunner.release();
     }
   }

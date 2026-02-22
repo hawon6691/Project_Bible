@@ -10,10 +10,12 @@ import { Seller } from '../seller/entities/seller.entity';
 import { User } from '../user/entities/user.entity';
 import { CartItem } from '../cart/entities/cart-item.entity';
 import { Address } from '../address/entities/address.entity';
+import { ResilienceModule } from '../resilience/resilience.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Order, OrderItem, Payment, Product, Seller, User, CartItem, Address]),
+    ResilienceModule,
   ],
   controllers: [OrderController],
   providers: [OrderService],

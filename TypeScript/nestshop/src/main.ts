@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { securityHeadersMiddleware } from './common/middlewares/security-headers.middleware';
 
 function resolveLoggerLevels() {
   const env = process.env.NODE_ENV ?? 'development';
@@ -21,6 +22,9 @@ async function bootstrap() {
     logger: [...resolveLoggerLevels()],
   });
   const configService = app.get(ConfigService);
+
+  // Helmet 대체 보안 헤더 적용
+  app.use(securityHeadersMiddleware);
 
   // Global prefix
   const apiPrefix = configService.get<string>('API_PREFIX', 'api/v1');

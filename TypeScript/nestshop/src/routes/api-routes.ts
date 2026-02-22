@@ -285,6 +285,11 @@ export const API_ROUTES = {
     ADMIN_RUNS: 'admin/runs',
     ADMIN_MONITORING: 'admin/monitoring',
   },
+  RESILIENCE: {
+    BASE: 'resilience/circuit-breakers',
+    DETAIL: ':name',
+    RESET: ':name/reset',
+  },
   HEALTH: {
     BASE: 'health',
   },

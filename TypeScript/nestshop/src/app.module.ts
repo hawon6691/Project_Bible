@@ -47,6 +47,7 @@ import { AdminSettingsModule } from './admin-settings/admin-settings.module';
 import { HealthModule } from './health/health.module';
 import { CrawlerModule } from './crawler/crawler.module';
 import { SearchModule } from './search/search.module';
+import { ResilienceModule } from './resilience/resilience.module';
 
 @Module({
   imports: [
@@ -140,6 +141,7 @@ import { SearchModule } from './search/search.module';
     HealthModule,
     CrawlerModule,
     SearchModule,
+    ResilienceModule,
   ],
 })
 export class AppModule {}

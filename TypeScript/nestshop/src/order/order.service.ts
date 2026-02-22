@@ -9,6 +9,7 @@ import { Seller } from '../seller/entities/seller.entity';
 import { User } from '../user/entities/user.entity';
 import { CartItem } from '../cart/entities/cart-item.entity';
 import { Address } from '../address/entities/address.entity';
+import { ResilienceService } from '../resilience/resilience.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CreatePaymentDto, RefundPaymentDto } from './dto/payment.dto';
 import { BusinessException } from '../common/exceptions/business.exception';
@@ -29,6 +30,7 @@ export class OrderService {
     private sellerRepository: Repository<Seller>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private resilienceService: ResilienceService,
     private dataSource: DataSource,
   ) {}
 
@@ -208,6 +210,31 @@ export class OrderService {
         refundedAt: null,
       });
       const savedPayment = await queryRunner.manager.save(payment);
+
+      // 외부 결제 호출은 Circuit Breaker로 감싸 장애가 반복될 때 빠르게 차단한다.
+      try {
+        await this.resilienceService.execute(
+          'payment_gateway',
+          async () => this.simulateExternalPayment(dto.method, dto.amount),
+          {
+            failureThreshold: 3,
+            openTimeoutMs: 30_000,
+            halfOpenSuccessThreshold: 2,
+          },
+        );
+      } catch (error) {
+        savedPayment.status = PaymentStatus.FAILED;
+        await queryRunner.manager.save(savedPayment);
+
+        const isCircuitOpen = error instanceof Error && error.message === 'CIRCUIT_OPEN';
+        throw new BusinessException(
+          'PAYMENT_FAILED',
+          HttpStatus.SERVICE_UNAVAILABLE,
+          isCircuitOpen
+            ? '외부 결제 서비스가 일시적으로 차단되었습니다. 잠시 후 다시 시도해주세요.'
+            : '외부 결제 승인에 실패했습니다.',
+        );
+      }
 
       savedPayment.status = PaymentStatus.COMPLETED;
       savedPayment.paidAt = new Date();
@@ -602,5 +629,18 @@ export class OrderService {
 
     user.point += pointUsed;
     await manager.save(user);
+  }
+
+  // 실제 PG 연동 전 모의 결제 게이트웨이 호출. 환경변수로 실패 시나리오를 테스트할 수 있다.
+  private async simulateExternalPayment(method: string, amount: number) {
+    if (process.env.PAYMENT_GATEWAY_FORCE_FAIL === 'true') {
+      throw new Error('Forced gateway failure');
+    }
+
+    if (!method || amount <= 0) {
+      throw new Error('Invalid payment request');
+    }
+
+    return { approved: true };
   }
 }

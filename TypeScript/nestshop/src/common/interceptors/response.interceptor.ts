@@ -5,11 +5,14 @@ import {
   CallHandler,
 } from '@nestjs/common';
 import { Observable, map } from 'rxjs';
+import { Request, Response } from 'express';
+import { getOrCreateRequestId } from '../utils/request-id.util';
 
 export interface SuccessResponse<T> {
   success: true;
   data: T;
   meta?: Record<string, unknown>;
+  requestId: string;
   timestamp: string;
 }
 
@@ -21,6 +24,11 @@ export class ResponseInterceptor<T>
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<SuccessResponse<unknown>> {
+    const http = context.switchToHttp();
+    const request = http.getRequest<Request>();
+    const response = http.getResponse<Response>();
+    const requestId = getOrCreateRequestId(request, response);
+
     return next.handle().pipe(
       map((payload) => {
         const { data, meta } = this.normalizePayload(payload);
@@ -29,6 +37,7 @@ export class ResponseInterceptor<T>
           success: true as const,
           data,
           ...(meta ? { meta } : {}),
+          requestId,
           timestamp: new Date().toISOString(),
         };
       }),

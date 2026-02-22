@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { getOrCreateRequestId } from '../utils/request-id.util';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -16,6 +17,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
+    const requestId = getOrCreateRequestId(request, response);
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let errorCode = 'COMMON_003';
@@ -41,11 +43,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
         message = exceptionResponse as string;
       }
 
-      this.logHttpException(request, status, errorCode, message, exception);
+      this.logHttpException(
+        request,
+        status,
+        errorCode,
+        message,
+        requestId,
+        exception,
+      );
     } else if (exception instanceof Error) {
       message = exception.message;
       this.logger.error(
-        `${request.method} ${request.originalUrl} 500 COMMON_003 ${exception.message}`,
+        `${request.method} ${request.originalUrl} 500 COMMON_003 ${exception.message} requestId:${requestId}`,
         exception.stack,
       );
     }
@@ -61,6 +70,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       errorCode,
       message,
       ...(details ? { details } : {}),
+      requestId,
       timestamp: new Date().toISOString(),
       path: request.url,
     };
@@ -73,9 +83,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     status: number,
     errorCode: string,
     message: string,
+    requestId: string,
     exception: HttpException,
   ) {
-    const context = `${request.method} ${request.originalUrl} ${status} ${errorCode} ${message}`;
+    const context = `${request.method} ${request.originalUrl} ${status} ${errorCode} ${message} requestId:${requestId}`;
 
     if (status >= 500) {
       this.logger.error(context, exception.stack);

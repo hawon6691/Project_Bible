@@ -4,22 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
-function resolveLoggerLevels() {
-  const env = process.env.NODE_ENV ?? 'development';
-  if (env === 'production') {
-    return ['warn', 'error'] as const;
-  }
-  if (env === 'test') {
-    return ['error'] as const;
-  }
-  return ['debug', 'log', 'warn', 'error'] as const;
-}
-
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    // 환경별 로그 레벨 분리: dev(debug), prod(warn)
-    logger: [...resolveLoggerLevels()],
-  });
+  const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
   // Global prefix

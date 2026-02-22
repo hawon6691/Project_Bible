@@ -110,6 +110,7 @@ export const API_ROUTES = {
   ACTIVITY: {
     BASE: 'activities',
     RECENT_PRODUCTS: 'recent-products',
+    RECENT_PRODUCT_TRACK: 'recent-products/:productId',
     SEARCHES: 'searches',
   },
   CHAT: {

@@ -8,6 +8,7 @@ import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { LocaleInterceptor } from './interceptors/locale.interceptor';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
+import { RateLimitGuard } from './guards/rate-limit.guard';
 
 @Global()
 @Module({
@@ -31,7 +32,11 @@ import { RolesGuard } from './guards/roles.guard';
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,
     },
-    // 전역 가드 (순서: JWT → Roles)
+    // 전역 가드 (순서: RateLimit → JWT → Roles)
+    {
+      provide: APP_GUARD,
+      useClass: RateLimitGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

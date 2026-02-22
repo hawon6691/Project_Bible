@@ -11,11 +11,13 @@ import { User } from '../user/entities/user.entity';
 import { CartItem } from '../cart/entities/cart-item.entity';
 import { Address } from '../address/entities/address.entity';
 import { ResilienceModule } from '../resilience/resilience.module';
+import { RedlockModule } from '../redlock/redlock.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Order, OrderItem, Payment, Product, Seller, User, CartItem, Address]),
     ResilienceModule,
+    RedlockModule,
   ],
   controllers: [OrderController],
   providers: [OrderService],

@@ -48,6 +48,7 @@ import { HealthModule } from './health/health.module';
 import { CrawlerModule } from './crawler/crawler.module';
 import { SearchModule } from './search/search.module';
 import { ResilienceModule } from './resilience/resilience.module';
+import { RedlockModule } from './redlock/redlock.module';
 
 @Module({
   imports: [
@@ -142,6 +143,7 @@ import { ResilienceModule } from './resilience/resilience.module';
     CrawlerModule,
     SearchModule,
     ResilienceModule,
+    RedlockModule,
   ],
 })
 export class AppModule {}

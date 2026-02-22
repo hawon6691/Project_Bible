@@ -1,5 +1,7 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Queue } from 'bull';
 import { Repository } from 'typeorm';
 import { PaginationRequestDto, PaginationResponseDto } from '../common/dto/pagination.dto';
 import { BusinessException } from '../common/exceptions/business.exception';
@@ -23,6 +25,8 @@ export class ActivityService {
     private orderRepository: Repository<Order>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectQueue('activity-log')
+    private readonly activityQueue: Queue,
   ) {}
 
   // ACT-01: 활동 내역 통합 조회
@@ -69,8 +73,24 @@ export class ActivityService {
     );
   }
 
-  // 최근 본 상품 기록 추가/갱신
-  async addRecentProduct(userId: number, productId: number) {
+  // ACT-01 확장: 활동 이력 비동기 저장 (Queue)
+  async enqueueRecentProduct(userId: number, productId: number) {
+    await this.activityQueue.add(
+      'recent-product',
+      { userId, productId },
+      { attempts: 3, backoff: { type: 'fixed', delay: 300 }, removeOnComplete: true },
+    );
+
+    return {
+      queued: true,
+      event: 'recent-product',
+      userId,
+      productId,
+    };
+  }
+
+  // 워커에서 호출하는 실제 저장 로직
+  async persistRecentProduct(userId: number, productId: number) {
     const product = await this.productRepository.findOne({ where: { id: productId } });
     if (!product) {
       throw new BusinessException('PRODUCT_NOT_FOUND', HttpStatus.NOT_FOUND);
@@ -126,8 +146,29 @@ export class ActivityService {
     );
   }
 
-  // 검색 기록 추가
-  async addSearchHistory(userId: number, dto: CreateSearchHistoryDto) {
+  // ACT-01 확장: 활동 이력 비동기 저장 (Queue)
+  async enqueueSearchHistory(userId: number, dto: CreateSearchHistoryDto) {
+    const keyword = dto.keyword.trim();
+    if (!keyword) {
+      throw new BusinessException('VALIDATION_FAILED', HttpStatus.BAD_REQUEST, '검색어는 공백일 수 없습니다.');
+    }
+
+    await this.activityQueue.add(
+      'search-history',
+      { userId, keyword },
+      { attempts: 3, backoff: { type: 'fixed', delay: 300 }, removeOnComplete: true },
+    );
+
+    return {
+      queued: true,
+      event: 'search-history',
+      userId,
+      keyword,
+    };
+  }
+
+  // 워커에서 호출하는 실제 저장 로직
+  async persistSearchHistory(userId: number, keywordInput: string) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new BusinessException('USER_NOT_FOUND', HttpStatus.NOT_FOUND);
@@ -137,7 +178,7 @@ export class ActivityService {
       return { saved: false, reason: 'searchHistoryDisabled' };
     }
 
-    const keyword = dto.keyword.trim();
+    const keyword = keywordInput.trim();
     if (!keyword) {
       throw new BusinessException('VALIDATION_FAILED', HttpStatus.BAD_REQUEST, '검색어는 공백일 수 없습니다.');
     }

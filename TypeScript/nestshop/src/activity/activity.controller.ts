@@ -38,7 +38,7 @@ export class ActivityController {
   @Post('recent-products/:productId')
   @ApiOperation({ summary: '최근 본 상품 기록 추가' })
   addRecentProduct(@CurrentUser() user: JwtPayload, @Param('productId', ParseIntPipe) productId: number) {
-    return this.activityService.addRecentProduct(user.sub, productId);
+    return this.activityService.enqueueRecentProduct(user.sub, productId);
   }
 
   // ACT-03: 검색 기록 조회
@@ -52,7 +52,7 @@ export class ActivityController {
   @Post('searches')
   @ApiOperation({ summary: '검색 기록 추가' })
   addSearchHistory(@CurrentUser() user: JwtPayload, @Body() dto: CreateSearchHistoryDto) {
-    return this.activityService.addSearchHistory(user.sub, dto);
+    return this.activityService.enqueueSearchHistory(user.sub, dto);
   }
 
   // ACT-04: 검색 기록 삭제 (개별)

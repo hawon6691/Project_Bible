@@ -21,6 +21,13 @@ export const API_ROUTES = {
     BASE: 'products',
     COMPARE: 'compare',
   },
+  QUERY: {
+    BASE: 'query',
+    PRODUCTS: 'query/products',
+    PRODUCT_DETAIL: 'query/products/:productId',
+    ADMIN_SYNC_PRODUCT: 'admin/query/products/:productId/sync',
+    ADMIN_REBUILD: 'admin/query/products/rebuild',
+  },
   CATEGORIES: {
     BASE: 'categories',
     TREE: 'tree',

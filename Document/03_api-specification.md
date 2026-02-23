@@ -1891,6 +1891,7 @@ Response: 200 OK
 | Method | Endpoint | 설명 | 권한 | Request | Response |
 |--------|----------|------|------|---------|----------|
 | GET | `/admin/queues/supported` | 운영 대상 큐 목록 조회 | Admin | - | `{ items[] }` |
+| GET | `/admin/queues/stats` | 큐별 상태 통계 조회 | Admin | - | `{ total, items: [{ queueName, paused, counts }] }` |
 | GET | `/admin/queues/:queueName/failed` | 실패 Job 목록 조회 | Admin | `?page&limit&newestFirst` | `FailedJob[]` |
 | POST | `/admin/queues/:queueName/failed/retry` | 실패 Job 일괄 재시도 | Admin | `?limit` | `{ requested, requeuedCount, jobIds[] }` |
 | POST | `/admin/queues/:queueName/jobs/:jobId/retry` | 실패 Job 개별 재시도 | Admin | - | `{ retried: true }` |

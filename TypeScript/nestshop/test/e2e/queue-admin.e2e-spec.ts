@@ -12,6 +12,16 @@ describe('Queue Admin E2E', () => {
     getSupportedQueues: jest
       .fn()
       .mockReturnValue(['activity-log', 'video-transcode', 'crawler-collect', 'search-index-sync']),
+    getQueueStats: jest.fn().mockResolvedValue({
+      total: 4,
+      items: [
+        {
+          queueName: 'video-transcode',
+          paused: false,
+          counts: { waiting: 2, active: 1, delayed: 0, completed: 100, failed: 3 },
+        },
+      ],
+    }),
     getFailedJobs: jest.fn().mockResolvedValue({
       items: [{ id: '1001', name: 'transcode', failedReason: 'ffmpeg error' }],
       meta: { page: 1, limit: 20, totalItems: 1, totalPages: 1 },
@@ -51,6 +61,15 @@ describe('Queue Admin E2E', () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(Array.isArray(res.body.data.items)).toBe(true);
+  });
+
+  it('GET /admin/queues/stats should return queue counts', async () => {
+    const res = await client.get('/admin/queues/stats');
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.total).toBe(4);
+    expect(Array.isArray(res.body.data.items)).toBe(true);
+    expect(res.body.data.items[0].queueName).toBe('video-transcode');
   });
 
   it('GET /admin/queues/:queueName/failed should validate pagination', async () => {

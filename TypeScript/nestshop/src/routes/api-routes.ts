@@ -69,6 +69,9 @@ export const API_ROUTES = {
     RECENT_DETAIL: 'recent/:id',
     PREFERENCES: 'preferences',
     ADMIN_WEIGHTS: 'admin/weights',
+    ADMIN_INDEX_STATUS: 'admin/index/status',
+    ADMIN_INDEX_REINDEX: 'admin/index/reindex',
+    ADMIN_INDEX_PRODUCT_REINDEX: 'admin/index/products/:id/reindex',
   },
   SPECS: {
     BASE: 'specs',

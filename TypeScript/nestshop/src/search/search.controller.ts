@@ -88,4 +88,28 @@ export class SearchController {
   updateWeights(@Body() dto: UpdateSearchWeightDto) {
     return this.searchService.updateWeights(dto);
   }
+
+  @ApiBearerAuth()
+  @Roles(UserRole.ADMIN)
+  @Get(API_ROUTES.SEARCH.ADMIN_INDEX_STATUS)
+  @ApiOperation({ summary: '검색 인덱스 상태 조회 (Admin)' })
+  getIndexStatus() {
+    return this.searchService.getIndexStatus();
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRole.ADMIN)
+  @Post(API_ROUTES.SEARCH.ADMIN_INDEX_REINDEX)
+  @ApiOperation({ summary: '검색 인덱스 전체 재색인 (Admin)' })
+  reindexAllProducts() {
+    return this.searchService.reindexAllProducts();
+  }
+
+  @ApiBearerAuth()
+  @Roles(UserRole.ADMIN)
+  @Post(API_ROUTES.SEARCH.ADMIN_INDEX_PRODUCT_REINDEX)
+  @ApiOperation({ summary: '단일 상품 검색 인덱스 재색인 (Admin)' })
+  reindexProduct(@Param('id', ParseIntPipe) id: number) {
+    return this.searchService.reindexProduct(id);
+  }
 }

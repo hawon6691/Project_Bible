@@ -1,8 +1,8 @@
 ---
 name: "♻️ Refactor Request"
-about: 새로운 기능 제안
+about: 기능 수정 제안
 title: "[REFACT] "
-labels: feature
+labels: refactor
 assignees: ""
 ---
 

@@ -1,8 +1,8 @@
 ---
-name: "🧪 Feature Request"
-about: 새로운 기능 제안
+name: "🧪 Test Request"
+about: 새로운 테스트 제안
 title: "[FEAT] "
-labels: feature
+labels: test
 assignees: ""
 ---
 

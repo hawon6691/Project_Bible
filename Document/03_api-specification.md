@@ -1886,6 +1886,18 @@ Response: 200 OK
 
 ---
 
+## 49. 큐 운영 복구 (Queue Admin) — Admin
+
+| Method | Endpoint | 설명 | 권한 | Request | Response |
+|--------|----------|------|------|---------|----------|
+| GET | `/admin/queues/supported` | 운영 대상 큐 목록 조회 | Admin | - | `{ items[] }` |
+| GET | `/admin/queues/:queueName/failed` | 실패 Job 목록 조회 | Admin | `?page&limit&newestFirst` | `FailedJob[]` |
+| POST | `/admin/queues/:queueName/failed/retry` | 실패 Job 일괄 재시도 | Admin | `?limit` | `{ requested, requeuedCount, jobIds[] }` |
+| POST | `/admin/queues/:queueName/jobs/:jobId/retry` | 실패 Job 개별 재시도 | Admin | - | `{ retried: true }` |
+| DELETE | `/admin/queues/:queueName/jobs/:jobId` | Job 개별 삭제 | Admin | - | `{ removed: true }` |
+
+---
+
 ## 공통 에러 코드
 
 | HTTP Status | 코드 | 설명 |

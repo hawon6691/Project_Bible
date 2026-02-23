@@ -24,5 +24,11 @@ export async function startTestServer(app: INestApplication) {
       });
       return { status: res.status, body: await res.json() };
     },
+    async delete(path: string): Promise<HttpResult> {
+      const res = await fetch(`${baseUrl}${path}`, {
+        method: 'DELETE',
+      });
+      return { status: res.status, body: await res.json() };
+    },
   };
 }

@@ -11,6 +11,9 @@ export const API_ROUTES = {
     PASSWORD_RESET: 'password-reset',
     SOCIAL: ':provider',
     SOCIAL_CALLBACK: ':provider/callback',
+    SOCIAL_SIGNUP_COMPLETE: 'social/signup-complete',
+    SOCIAL_LINK: 'social/link',
+    SOCIAL_UNLINK: 'social/:provider',
   },
   USERS: {
     BASE: 'users',

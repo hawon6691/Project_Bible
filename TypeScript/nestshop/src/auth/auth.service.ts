@@ -17,6 +17,12 @@ import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
 import { VerifyResetCodeDto } from './dto/verify-reset-code.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { TokenResponseDto } from './dto/token-response.dto';
+import {
+  CompleteSocialSignupDto,
+  LinkSocialAccountDto,
+  SocialCallbackDto,
+} from './dto/social-auth.dto';
+import { SocialAccount, SocialProvider } from './entities/social-account.entity';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +33,8 @@ export class AuthService {
     private userRepository: Repository<User>,
     @InjectRepository(EmailVerification)
     private verificationRepository: Repository<EmailVerification>,
+    @InjectRepository(SocialAccount)
+    private socialAccountRepository: Repository<SocialAccount>,
     private jwtService: JwtService,
     private configService: ConfigService,
     private mailService: MailService,
@@ -334,6 +342,246 @@ export class AuthService {
     return { message: '비밀번호가 성공적으로 변경되었습니다.' };
   }
 
+  // ─── AUTH-11: 소셜 로그인 URL 생성 ───
+  async getSocialAuthUrl(provider: SocialProvider, state?: string, redirectUri?: string) {
+    const clientId = this.configService.get<string>(`${provider.toUpperCase()}_CLIENT_ID`) ?? 'dev-client-id';
+    const resolvedRedirect =
+      redirectUri ??
+      this.configService.get<string>('SOCIAL_REDIRECT_URI') ??
+      `http://localhost:3000/api/v1/auth/${provider}/callback`;
+
+    // 실제 인가 URL은 provider별 SDK/전략으로 대체 가능하며, 현재는 API 계약을 우선 제공한다.
+    const authorizationUrl =
+      `https://auth.${provider}.example/authorize?client_id=${encodeURIComponent(clientId)}` +
+      `&redirect_uri=${encodeURIComponent(resolvedRedirect)}` +
+      `&response_type=code` +
+      `${state ? `&state=${encodeURIComponent(state)}` : ''}`;
+
+    return {
+      provider,
+      authorizationUrl,
+      state: state ?? null,
+      redirectUri: resolvedRedirect,
+    };
+  }
+
+  // ─── AUTH-12: 소셜 콜백 처리 ───
+  async socialCallback(provider: SocialProvider, dto: SocialCallbackDto) {
+    const profile = await this.resolveSocialProfile(provider, dto.code, dto.mockEmail, dto.mockName);
+
+    let social = await this.socialAccountRepository.findOne({
+      where: { provider, providerUserId: profile.providerUserId },
+    });
+
+    if (social) {
+      const user = await this.userRepository.findOne({ where: { id: social.userId } });
+      if (!user) {
+        throw new BusinessException('USER_NOT_FOUND', HttpStatus.NOT_FOUND);
+      }
+
+      const tokens = await this.generateTokens(user);
+      await this.userRepository.update(user.id, { refreshToken: await hashPassword(tokens.refreshToken) });
+      return {
+        ...tokens,
+        provider,
+        isNewUser: false,
+      };
+    }
+
+    if (profile.email) {
+      const existingUser = await this.userRepository.findOne({ where: { email: profile.email } });
+      if (existingUser) {
+        social = this.socialAccountRepository.create({
+          userId: existingUser.id,
+          provider,
+          providerUserId: profile.providerUserId,
+          providerEmail: profile.email,
+          providerName: profile.name,
+        });
+        await this.socialAccountRepository.save(social);
+
+        const tokens = await this.generateTokens(existingUser);
+        await this.userRepository.update(existingUser.id, { refreshToken: await hashPassword(tokens.refreshToken) });
+        return {
+          ...tokens,
+          provider,
+          isNewUser: false,
+        };
+      }
+    }
+
+    if (!dto.signupName || !dto.signupPhone) {
+      const signupToken = await this.jwtService.signAsync(
+        {
+          type: 'social_signup',
+          provider,
+          providerUserId: profile.providerUserId,
+          email: profile.email,
+          name: profile.name,
+        },
+        {
+          secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+          expiresIn: '10m',
+        },
+      );
+
+      return {
+        provider,
+        isNewUser: true,
+        requiresSignup: true,
+        signupToken,
+        message: '추가 정보 입력 후 가입을 완료해주세요.',
+      };
+    }
+
+    return this.completeSocialSignup({
+      signupToken: await this.jwtService.signAsync(
+        {
+          type: 'social_signup',
+          provider,
+          providerUserId: profile.providerUserId,
+          email: profile.email,
+          name: profile.name,
+        },
+        {
+          secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+          expiresIn: '10m',
+        },
+      ),
+      name: dto.signupName,
+      phone: dto.signupPhone,
+    });
+  }
+
+  // ─── AUTH-15: 신규 소셜 유저 가입 완료 ───
+  async completeSocialSignup(dto: CompleteSocialSignupDto) {
+    let payload: {
+      type: string;
+      provider: SocialProvider;
+      providerUserId: string;
+      email: string | null;
+      name: string | null;
+    };
+
+    try {
+      payload = this.jwtService.verify(dto.signupToken, {
+        secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+      });
+    } catch {
+      throw new BusinessException('AUTH_TOKEN_INVALID', HttpStatus.UNAUTHORIZED, '유효하지 않은 소셜 가입 토큰입니다.');
+    }
+
+    if (payload.type !== 'social_signup') {
+      throw new BusinessException('AUTH_TOKEN_INVALID', HttpStatus.UNAUTHORIZED);
+    }
+
+    const existingSocial = await this.socialAccountRepository.findOne({
+      where: {
+        provider: payload.provider,
+        providerUserId: payload.providerUserId,
+      },
+    });
+    if (existingSocial) {
+      throw new BusinessException('AUTH_INVALID_CREDENTIALS', HttpStatus.CONFLICT, '이미 가입된 소셜 계정입니다.');
+    }
+
+    const email = payload.email ?? `${payload.provider}_${payload.providerUserId}@social.local`;
+    const existingUser = await this.userRepository.findOne({ where: { email } });
+    if (existingUser) {
+      throw new BusinessException('AUTH_EMAIL_ALREADY_EXISTS', HttpStatus.CONFLICT);
+    }
+
+    const nickname = await this.generateUniqueNickname(email.split('@')[0]);
+    const user = this.userRepository.create({
+      email,
+      password: null,
+      name: dto.name,
+      phone: dto.phone.replace(/[\s-]/g, ''),
+      nickname,
+      emailVerified: true,
+      emailVerifiedAt: new Date(),
+    });
+    const savedUser = await this.userRepository.save(user);
+
+    const social = this.socialAccountRepository.create({
+      userId: savedUser.id,
+      provider: payload.provider,
+      providerUserId: payload.providerUserId,
+      providerEmail: payload.email,
+      providerName: payload.name ?? dto.name,
+    });
+    await this.socialAccountRepository.save(social);
+
+    const tokens = await this.generateTokens(savedUser);
+    await this.userRepository.update(savedUser.id, { refreshToken: await hashPassword(tokens.refreshToken) });
+
+    return {
+      ...tokens,
+      provider: payload.provider,
+      isNewUser: true,
+    };
+  }
+
+  // ─── AUTH-13: 소셜 계정 연동 ───
+  async linkSocialAccount(userId: number, dto: LinkSocialAccountDto) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new BusinessException('USER_NOT_FOUND', HttpStatus.NOT_FOUND);
+    }
+
+    const profile = await this.resolveSocialProfile(dto.provider, dto.code, dto.mockEmail, dto.mockName);
+
+    const taken = await this.socialAccountRepository.findOne({
+      where: { provider: dto.provider, providerUserId: profile.providerUserId },
+    });
+    if (taken && taken.userId !== userId) {
+      throw new BusinessException('AUTH_FORBIDDEN', HttpStatus.CONFLICT, '다른 계정에 이미 연결된 소셜 계정입니다.');
+    }
+
+    const already = await this.socialAccountRepository.findOne({
+      where: { userId, provider: dto.provider },
+    });
+    if (already) {
+      return { success: true, message: '이미 연동된 소셜 계정입니다.' };
+    }
+
+    const social = this.socialAccountRepository.create({
+      userId,
+      provider: dto.provider,
+      providerUserId: profile.providerUserId,
+      providerEmail: profile.email,
+      providerName: profile.name,
+    });
+    await this.socialAccountRepository.save(social);
+    return { success: true, message: '소셜 계정이 연동되었습니다.' };
+  }
+
+  // ─── AUTH-14: 소셜 계정 연동 해제 ───
+  async unlinkSocialAccount(userId: number, provider: SocialProvider) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new BusinessException('USER_NOT_FOUND', HttpStatus.NOT_FOUND);
+    }
+
+    const social = await this.socialAccountRepository.findOne({ where: { userId, provider } });
+    if (!social) {
+      throw new BusinessException('RESOURCE_NOT_FOUND', HttpStatus.NOT_FOUND, '연동된 소셜 계정이 없습니다.');
+    }
+
+    const socialCount = await this.socialAccountRepository.count({ where: { userId } });
+    const hasPassword = !!user.password;
+    if (!hasPassword && socialCount <= 1) {
+      throw new BusinessException(
+        'AUTH_FORBIDDEN',
+        HttpStatus.BAD_REQUEST,
+        '일반 로그인 수단이 없어 소셜 연동을 해제할 수 없습니다.',
+      );
+    }
+
+    await this.socialAccountRepository.softDelete({ id: social.id });
+    return { success: true, message: '소셜 계정 연동이 해제되었습니다.' };
+  }
+
   // ─── 헬퍼: 토큰 생성 ───
   private async generateTokens(user: User): Promise<TokenResponseDto> {
     const payload = { sub: user.id, email: user.email, role: user.role };
@@ -378,5 +626,39 @@ export class AuthService {
     } else {
       await this.mailService.sendPasswordResetEmail(user.email, code, user.name);
     }
+  }
+
+  private async resolveSocialProfile(
+    provider: SocialProvider,
+    code: string,
+    mockEmail?: string,
+    mockName?: string,
+  ) {
+    const normalized = code.trim();
+    if (!normalized) {
+      throw new BusinessException('AUTH_INVALID_CREDENTIALS', HttpStatus.BAD_REQUEST, '유효한 소셜 code가 필요합니다.');
+    }
+
+    // 외부 OAuth API 연동 전 단계에서는 code 기반 식별자를 생성해 안정적으로 재로그인을 보장한다.
+    const providerUserId = `${provider}_${normalized.slice(0, 40)}`;
+    const email = mockEmail?.trim() || `${provider}_${normalized.slice(0, 20)}@social.local`;
+    const name = mockName?.trim() || `${provider}_user`;
+
+    return { providerUserId, email, name };
+  }
+
+  private async generateUniqueNickname(base: string) {
+    const prefix = base.replace(/[^a-zA-Z0-9가-힣]/g, '').slice(0, 20) || 'user';
+
+    for (let i = 0; i < 20; i++) {
+      const suffix = Math.floor(Math.random() * 100000)
+        .toString()
+        .padStart(5, '0');
+      const candidate = `${prefix}${suffix}`.slice(0, 30);
+      const exists = await this.userRepository.findOne({ where: { nickname: candidate } });
+      if (!exists) return candidate;
+    }
+
+    throw new BusinessException('VALIDATION_FAILED', HttpStatus.CONFLICT, '닉네임 생성에 실패했습니다.');
   }
 }

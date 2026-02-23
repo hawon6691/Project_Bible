@@ -1,9 +1,14 @@
 import {
   Controller,
+  Delete,
+  Get,
+  Param,
+  ParseEnumPipe,
   Post,
   Body,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -17,6 +22,12 @@ import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
 import { VerifyResetCodeDto } from './dto/verify-reset-code.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import {
+  CompleteSocialSignupDto,
+  LinkSocialAccountDto,
+  SocialCallbackDto,
+} from './dto/social-auth.dto';
+import { SocialProvider } from './entities/social-account.entity';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -93,5 +104,60 @@ export class AuthController {
   @ApiOperation({ summary: '새 비밀번호 설정' })
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
+  }
+
+  // AUTH-11: 소셜 로그인 요청 URL 반환
+  @Public()
+  @Get(':provider')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '소셜 로그인 요청 URL 생성' })
+  getSocialAuthUrl(
+    @Param('provider', new ParseEnumPipe(SocialProvider)) provider: SocialProvider,
+    @Query('state') state?: string,
+    @Query('redirectUri') redirectUri?: string,
+  ) {
+    return this.authService.getSocialAuthUrl(provider, state, redirectUri);
+  }
+
+  // AUTH-12: 소셜 콜백 처리
+  @Public()
+  @Post(':provider/callback')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '소셜 로그인 콜백 처리' })
+  socialCallback(
+    @Param('provider', new ParseEnumPipe(SocialProvider)) provider: SocialProvider,
+    @Body() dto: SocialCallbackDto,
+  ) {
+    return this.authService.socialCallback(provider, dto);
+  }
+
+  // AUTH-15: 신규 소셜 유저 추가 정보 입력 후 가입 완료
+  @Public()
+  @Post('social/signup-complete')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '신규 소셜 유저 가입 완료' })
+  completeSocialSignup(@Body() dto: CompleteSocialSignupDto) {
+    return this.authService.completeSocialSignup(dto);
+  }
+
+  // AUTH-13: 소셜 계정 연동
+  @Post('social/link')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '소셜 계정 연동' })
+  linkSocialAccount(@CurrentUser() user: JwtPayload, @Body() dto: LinkSocialAccountDto) {
+    return this.authService.linkSocialAccount(user.sub, dto);
+  }
+
+  // AUTH-14: 소셜 계정 연동 해제
+  @Delete('social/:provider')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '소셜 계정 연동 해제' })
+  unlinkSocialAccount(
+    @CurrentUser() user: JwtPayload,
+    @Param('provider', new ParseEnumPipe(SocialProvider)) provider: SocialProvider,
+  ) {
+    return this.authService.unlinkSocialAccount(user.sub, provider);
   }
 }

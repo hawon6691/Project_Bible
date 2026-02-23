@@ -6,7 +6,7 @@ labels: bug
 issue: "[BUG] Queue Admin 파라미터 파싱 오류 수정"
 commit: "bug: (#153) queue-admin newestFirst/jobId 파라미터 처리 버그 수정"
 branch: "bug/#153/queue-admin-param-fix"
-assignees: ""
+assignees: " "
 ---
 
 ## 🐛 버그 요약

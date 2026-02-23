@@ -43,14 +43,15 @@ export class VideoService {
     this.validateVideo(file, dto.durationSec);
     const video = file as Express.Multer.File;
 
-    const token = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    const extension = this.getExtension(video.originalname);
+    const storedFileName = video.filename ?? `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.mp4`;
+    const fileBaseName = storedFileName.replace(/\.[^/.]+$/, '');
 
     const shortform = this.shortformRepository.create({
       userId,
       title: dto.title,
-      videoUrl: `/uploads/shortforms/${token}.${extension}`,
-      thumbnailUrl: `/uploads/shortforms/thumb/${token}.jpg`,
+      // 원본은 raw 경로에 저장하고, 트랜스코딩 완료 후 별도 URL을 채운다.
+      videoUrl: `/uploads/shortforms/raw/${storedFileName}`,
+      thumbnailUrl: `/uploads/shortforms/thumb/${fileBaseName}.jpg`,
       durationSec: dto.durationSec ?? 0,
       viewCount: 0,
       likeCount: 0,
@@ -338,10 +339,5 @@ export class VideoService {
     if (durationSec !== undefined && durationSec > 60) {
       throw new BusinessException('VALIDATION_FAILED', HttpStatus.BAD_REQUEST, '숏폼 길이는 최대 60초입니다.');
     }
-  }
-
-  private getExtension(filename: string) {
-    const parts = filename.split('.');
-    return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : 'mp4';
   }
 }

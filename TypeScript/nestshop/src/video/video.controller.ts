@@ -12,6 +12,9 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { mkdirSync } from 'fs';
+import { extname, join } from 'path';
 import { CurrentUser, JwtPayload } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import { CreateShortformCommentDto } from './dto/create-shortform-comment.dto';
@@ -24,11 +27,38 @@ import { VideoService } from './video.service';
 @ApiTags('Shortform')
 @Controller('shortforms')
 export class VideoController {
+  private static readonly ALLOWED_MIME = new Set(['video/mp4', 'video/webm', 'video/quicktime']);
+
   constructor(private readonly videoService: VideoService) {}
 
   @ApiBearerAuth()
   @Post()
-  @UseInterceptors(FileInterceptor('video'))
+  @UseInterceptors(
+    FileInterceptor('video', {
+      // FFmpeg 워커가 접근할 수 있도록 원본 파일을 디스크에 저장한다.
+      storage: diskStorage({
+        destination: (_req, _file, cb) => {
+          const uploadDir = join(process.cwd(), 'uploads', 'shortforms', 'raw');
+          mkdirSync(uploadDir, { recursive: true });
+          cb(null, uploadDir);
+        },
+        filename: (_req, file, cb) => {
+          const token = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+          const extension = extname(file.originalname || '').toLowerCase() || '.mp4';
+          cb(null, `${token}${extension}`);
+        },
+      }),
+      fileFilter: (_req, file, cb) => {
+        if (!VideoController.ALLOWED_MIME.has(file.mimetype)) {
+          return cb(new Error('허용되지 않은 영상 형식입니다.'), false);
+        }
+        return cb(null, true);
+      },
+      limits: {
+        fileSize: 200 * 1024 * 1024,
+      },
+    }),
+  )
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: '숏폼 업로드' })
   createShortform(

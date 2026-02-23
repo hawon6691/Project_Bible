@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { CACHE_KEYS, CACHE_KEY_PREFIX, CACHE_TTL_SECONDS } from '../common/cache/cache-policy.constants';
 import { CacheService } from '../common/cache/cache.service';
+import { SearchSyncService } from '../search-sync/search-sync.service';
 import { PriceEntry } from './entities/price-entry.entity';
 import { PriceHistory } from './entities/price-history.entity';
 import { PriceAlert } from './entities/price-alert.entity';
@@ -22,6 +23,7 @@ export class PriceService {
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
     private readonly cacheService: CacheService,
+    private readonly searchSyncService: SearchSyncService,
   ) {}
 
   // ─── PRICE-01, SELL-05: 판매처별 가격비교 조회 ───
@@ -94,6 +96,7 @@ export class PriceService {
     // 상품 최저가/판매처수 비정규화 갱신
     await this.updateProductPriceStats(productId);
     await this.invalidatePriceCache(productId);
+    await this.searchSyncService.enqueuePriceChanged(productId, saved.id);
 
     return saved;
   }
@@ -114,6 +117,7 @@ export class PriceService {
     const saved = await this.priceEntryRepository.save(entry);
     await this.updateProductPriceStats(entry.productId);
     await this.invalidatePriceCache(entry.productId);
+    await this.searchSyncService.enqueuePriceChanged(entry.productId, saved.id);
     return saved;
   }
 
@@ -124,9 +128,11 @@ export class PriceService {
       throw new BusinessException('RESOURCE_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
     const productId = entry.productId;
+    const entryId = entry.id;
     await this.priceEntryRepository.remove(entry);
     await this.updateProductPriceStats(productId);
     await this.invalidatePriceCache(productId);
+    await this.searchSyncService.enqueuePriceChanged(productId, entryId);
     return { message: '가격이 삭제되었습니다.' };
   }
 

@@ -246,6 +246,20 @@ export class SearchService implements OnModuleInit {
     return { success: true, productId };
   }
 
+  async removeProductDocument(productId: number) {
+    try {
+      await this.elasticsearchService.delete({
+        index: this.indexName,
+        id: String(productId),
+        refresh: true,
+      });
+    } catch {
+      // 이미 삭제된 문서는 무시한다.
+    }
+
+    return { success: true, productId };
+  }
+
   private async searchByElasticsearch(query: SearchQueryDto, keyword: string) {
     const weights = (await this.getOrCreateWeightSetting()).weights;
     const must: any[] = [];

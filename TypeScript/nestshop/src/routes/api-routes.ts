@@ -78,6 +78,9 @@ export const API_ROUTES = {
     ADMIN_INDEX_STATUS: 'admin/index/status',
     ADMIN_INDEX_REINDEX: 'admin/index/reindex',
     ADMIN_INDEX_PRODUCT_REINDEX: 'admin/index/products/:id/reindex',
+    ADMIN_INDEX_OUTBOX_BASE: 'search/admin/index/outbox',
+    ADMIN_INDEX_OUTBOX_SUMMARY: 'summary',
+    ADMIN_INDEX_OUTBOX_REQUEUE_FAILED: 'requeue-failed',
   },
   SPECS: {
     BASE: 'specs',

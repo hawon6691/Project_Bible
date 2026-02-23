@@ -19,6 +19,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e:critical": "jest --config ./test/jest-e2e.json test/e2e/auth-search.e2e-spec.ts test/e2e/public-api.e2e-spec.ts test/e2e/admin-platform.e2e-spec.ts --runInBand",
     "test:perf:search-ranking": "k6 run test/performance/search-ranking.perf.js",
     "test:perf:price": "k6 run test/performance/price-compare.perf.js",
     "test:perf:smoke": "k6 run test/performance/smoke.perf.js",

@@ -10,12 +10,14 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { RateLimitGuard } from './guards/rate-limit.guard';
 import { ErrorCodeController } from './controllers/error-code.controller';
+import { CacheService } from './cache/cache.service';
 
 @Global()
 @Module({
   imports: [ConfigModule, JwtModule],
   controllers: [ErrorCodeController],
   providers: [
+    CacheService,
     // 전역 예외 필터
     {
       provide: APP_FILTER,
@@ -48,6 +50,6 @@ import { ErrorCodeController } from './controllers/error-code.controller';
       useClass: RolesGuard,
     },
   ],
-  exports: [JwtModule],
+  exports: [JwtModule, CacheService],
 })
 export class CommonModule {}

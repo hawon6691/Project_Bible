@@ -1,6 +1,8 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { CACHE_KEYS, CACHE_KEY_PREFIX, CACHE_TTL_SECONDS } from '../common/cache/cache-policy.constants';
+import { CacheService } from '../common/cache/cache.service';
 import { Product } from './entities/product.entity';
 import { ProductOption } from './entities/product-option.entity';
 import { ProductImage } from './entities/product-image.entity';
@@ -18,10 +20,17 @@ export class ProductService {
     private optionRepository: Repository<ProductOption>,
     @InjectRepository(ProductImage)
     private imageRepository: Repository<ProductImage>,
+    private readonly cacheService: CacheService,
   ) {}
 
   // ─── PROD-01, PROD-08: 상품 목록 조회 (필터/정렬/페이징) ───
   async findAll(query: ProductQueryDto) {
+    const cacheKey = CACHE_KEYS.productList(this.hashQuery(query));
+    const cached = await this.cacheService.getJson<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const qb = this.productRepository
       .createQueryBuilder('p')
       .where('p.deleted_at IS NULL');
@@ -73,7 +82,7 @@ export class ProductService {
       .take(limit)
       .getMany();
 
-    return {
+    const result = {
       data: items.map((p) => this.toSummary(p)),
       meta: {
         page: query.page || 1,
@@ -82,10 +91,19 @@ export class ProductService {
         totalPages: Math.ceil(totalItems / limit),
       },
     };
+    await this.cacheService.setJson(cacheKey, result, CACHE_TTL_SECONDS.PRODUCT_LIST);
+    return result;
   }
 
   // ─── PROD-02: 상품 상세 조회 ───
   async findOne(id: number) {
+    const cacheKey = CACHE_KEYS.productDetail(id);
+    const cached = await this.cacheService.getJson<any>(cacheKey);
+    if (cached) {
+      await this.productRepository.increment({ id }, 'viewCount', 1);
+      return cached;
+    }
+
     const product = await this.productRepository.findOne({
       where: { id },
       relations: ['category', 'options', 'images'],
@@ -97,7 +115,9 @@ export class ProductService {
     // 조회수 증가
     await this.productRepository.increment({ id }, 'viewCount', 1);
 
-    return this.toDetail(product);
+    const result = this.toDetail(product);
+    await this.cacheService.setJson(cacheKey, result, CACHE_TTL_SECONDS.PRODUCT_DETAIL);
+    return result;
   }
 
   // ─── PROD-03: 상품 등록 ───
@@ -140,6 +160,7 @@ export class ProductService {
       await this.imageRepository.save(images);
     }
 
+    await this.invalidateProductCache(saved.id);
     return this.findOne(saved.id);
   }
 
@@ -160,6 +181,7 @@ export class ProductService {
     if (dto.status !== undefined) product.status = dto.status;
 
     await this.productRepository.save(product);
+    await this.invalidateProductCache(id);
     return this.findOne(id);
   }
 
@@ -171,6 +193,7 @@ export class ProductService {
     }
 
     await this.productRepository.softDelete(id);
+    await this.invalidateProductCache(id);
     return { message: '상품이 삭제되었습니다.' };
   }
 
@@ -184,6 +207,7 @@ export class ProductService {
       values: dto.values,
     });
     const saved = await this.optionRepository.save(option);
+    await this.invalidateProductCache(productId);
     return this.toOptionResponse(saved);
   }
 
@@ -201,6 +225,7 @@ export class ProductService {
     option.name = dto.name;
     option.values = dto.values;
     const saved = await this.optionRepository.save(option);
+    await this.invalidateProductCache(productId);
     return this.toOptionResponse(saved);
   }
 
@@ -216,6 +241,7 @@ export class ProductService {
     }
 
     await this.optionRepository.remove(option);
+    await this.invalidateProductCache(productId);
     return { message: '옵션이 삭제되었습니다.' };
   }
 
@@ -233,6 +259,7 @@ export class ProductService {
 
     const image = this.imageRepository.create({ productId, url, isMain, sortOrder });
     const saved = await this.imageRepository.save(image);
+    await this.invalidateProductCache(productId);
     return {
       id: saved.id,
       url: saved.url,
@@ -253,6 +280,7 @@ export class ProductService {
     }
 
     await this.imageRepository.remove(image);
+    await this.invalidateProductCache(productId);
     return { message: '이미지가 삭제되었습니다.' };
   }
 
@@ -336,5 +364,25 @@ export class ProductService {
       name: option.name,
       values: option.values,
     };
+  }
+
+  private hashQuery(query: ProductQueryDto) {
+    return Buffer.from(
+      JSON.stringify({
+        page: query.page,
+        limit: query.limit,
+        categoryId: query.categoryId ?? null,
+        search: query.search ?? null,
+        minPrice: query.minPrice ?? null,
+        maxPrice: query.maxPrice ?? null,
+        specs: query.specs ?? null,
+        sort: query.sort ?? null,
+      }),
+    ).toString('base64url');
+  }
+
+  private async invalidateProductCache(productId: number) {
+    await this.cacheService.del(CACHE_KEYS.productDetail(productId));
+    await this.cacheService.delByPattern(`${CACHE_KEY_PREFIX.PRODUCT}:list:*`);
   }
 }

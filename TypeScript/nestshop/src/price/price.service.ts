@@ -1,6 +1,8 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { CACHE_KEYS, CACHE_KEY_PREFIX, CACHE_TTL_SECONDS } from '../common/cache/cache-policy.constants';
+import { CacheService } from '../common/cache/cache.service';
 import { PriceEntry } from './entities/price-entry.entity';
 import { PriceHistory } from './entities/price-history.entity';
 import { PriceAlert } from './entities/price-alert.entity';
@@ -19,10 +21,17 @@ export class PriceService {
     private priceAlertRepository: Repository<PriceAlert>,
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
+    private readonly cacheService: CacheService,
   ) {}
 
   // ─── PRICE-01, SELL-05: 판매처별 가격비교 조회 ───
   async getProductPrices(productId: number) {
+    const cacheKey = CACHE_KEYS.priceCompare(productId);
+    const cached = await this.cacheService.getJson<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const product = await this.productRepository.findOne({ where: { id: productId } });
     if (!product) {
       throw new BusinessException('PRODUCT_NOT_FOUND', HttpStatus.NOT_FOUND);
@@ -39,7 +48,7 @@ export class PriceService {
     const highestPrice = prices.length > 0 ? Math.max(...prices) : null;
     const averagePrice = prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : null;
 
-    return {
+    const result = {
       lowestPrice,
       averagePrice,
       highestPrice,
@@ -58,6 +67,8 @@ export class PriceService {
         updatedAt: e.updatedAt,
       })),
     };
+    await this.cacheService.setJson(cacheKey, result, CACHE_TTL_SECONDS.PRICE_COMPARE);
+    return result;
   }
 
   // ─── SELL-04: 판매처 가격 등록 ───
@@ -82,6 +93,7 @@ export class PriceService {
 
     // 상품 최저가/판매처수 비정규화 갱신
     await this.updateProductPriceStats(productId);
+    await this.invalidatePriceCache(productId);
 
     return saved;
   }
@@ -101,6 +113,7 @@ export class PriceService {
 
     const saved = await this.priceEntryRepository.save(entry);
     await this.updateProductPriceStats(entry.productId);
+    await this.invalidatePriceCache(entry.productId);
     return saved;
   }
 
@@ -113,11 +126,18 @@ export class PriceService {
     const productId = entry.productId;
     await this.priceEntryRepository.remove(entry);
     await this.updateProductPriceStats(productId);
+    await this.invalidatePriceCache(productId);
     return { message: '가격이 삭제되었습니다.' };
   }
 
   // ─── PRICE-02: 가격 추이 조회 ───
   async getPriceHistory(productId: number, period: string = '3m') {
+    const cacheKey = CACHE_KEYS.priceHistory(productId, period);
+    const cached = await this.cacheService.getJson<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const product = await this.productRepository.findOne({ where: { id: productId } });
     if (!product) {
       throw new BusinessException('PRODUCT_NOT_FOUND', HttpStatus.NOT_FOUND);
@@ -138,7 +158,7 @@ export class PriceService {
     const allLowest = allHistory.length > 0 ? Math.min(...allHistory.map((h) => h.lowestPrice)) : null;
     const allHighest = allHistory.length > 0 ? Math.max(...allHistory.map((h) => h.highestPrice)) : null;
 
-    return {
+    const result = {
       productId,
       productName: product.name,
       allTimeLowest: allLowest,
@@ -149,6 +169,8 @@ export class PriceService {
         averagePrice: h.averagePrice,
       })),
     };
+    await this.cacheService.setJson(cacheKey, result, CACHE_TTL_SECONDS.PRICE_HISTORY);
+    return result;
   }
 
   // ─── PRICE-03: 최저가 알림 등록 ───
@@ -238,5 +260,10 @@ export class PriceService {
       case '3m': default: now.setMonth(now.getMonth() - 3); break;
     }
     return now.toISOString().split('T')[0];
+  }
+
+  private async invalidatePriceCache(productId: number) {
+    await this.cacheService.del(CACHE_KEYS.priceCompare(productId));
+    await this.cacheService.delByPattern(`${CACHE_KEY_PREFIX.PRICE}:history:${productId}:*`);
   }
 }

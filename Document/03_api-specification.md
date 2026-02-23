@@ -1113,10 +1113,18 @@ Response: 201 Created
 | GET | `/search` | 통합 검색 | Public | QueryParams | `SearchResult` |
 | GET | `/search/autocomplete` | 자동완성 | Public | `?q` | `AutocompleteResult` |
 | GET | `/search/popular` | 인기 검색어 | Public | `?limit` | `PopularKeyword[]` |
-| POST | `/admin/search/synonyms` | 동의어 등록 | Admin | Body | `Synonym` |
-| GET | `/admin/search/synonyms` | 동의어 목록 | Admin | `?page&limit` | `Synonym[]` |
-| DELETE | `/admin/search/synonyms/:id` | 동의어 삭제 | Admin | - | `{ message }` |
-| POST | `/admin/search/reindex` | 전체 재인덱싱 | Admin | - | `{ message }` |
+| POST | `/search/recent` | 최근 검색어 저장 | User | `{ keyword }` | `{ id, keyword, createdAt }` |
+| GET | `/search/recent` | 최근 검색어 조회 | User | - | `RecentKeyword[]` |
+| DELETE | `/search/recent/:id` | 최근 검색어 개별 삭제 | User | - | `{ message }` |
+| DELETE | `/search/recent` | 최근 검색어 전체 삭제 | User | - | `{ message }` |
+| PATCH | `/search/preferences` | 최근 검색어 자동 저장 설정 | User | `{ saveRecentSearches }` | `{ saveRecentSearches }` |
+| GET | `/search/admin/weights` | 검색 가중치 조회 | Admin | - | `SearchWeightConfig` |
+| PATCH | `/search/admin/weights` | 검색 가중치 수정 | Admin | `{ nameWeight, keywordWeight, clickWeight }` | `SearchWeightConfig` |
+| GET | `/search/admin/index/status` | 검색 인덱스 상태 조회 | Admin | - | `IndexStatusResponse` |
+| POST | `/search/admin/index/reindex` | 전체 재색인 실행 | Admin | - | `{ message, queued }` |
+| POST | `/search/admin/index/products/:id/reindex` | 단일 상품 재색인 실행 | Admin | - | `{ message, productId }` |
+| GET | `/search/admin/index/outbox/summary` | 인덱스 동기화 Outbox 요약 | Admin | - | `OutboxSummary` |
+| POST | `/search/admin/index/outbox/requeue-failed` | 실패 Outbox 재큐잉 | Admin | `?limit` | `{ requeuedCount }` |
 
 ### 상세
 
@@ -1187,15 +1195,16 @@ Response: 200 OK
 }
 ```
 
-#### POST `/admin/search/synonyms`
+#### POST `/search/admin/index/reindex`
 ```
-Request:
-{
-  "word": "노트북",
-  "synonyms": ["랩탑", "laptop", "노트북컴퓨터"]
-}
-
 Response: 201 Created
+{
+  "success": true,
+  "data": {
+    "message": "전체 재색인 작업이 큐에 등록되었습니다.",
+    "queued": true
+  }
+}
 ```
 
 ---
@@ -1204,18 +1213,18 @@ Response: 201 Created
 
 | Method | Endpoint | 설명 | 권한 | Request | Response |
 |--------|----------|------|------|---------|----------|
-| GET | `/admin/crawlers` | 크롤러 작업 목록 | Admin | `?status&page&limit` | `CrawlerJob[]` |
-| POST | `/admin/crawlers` | 크롤러 작업 생성 | Admin | Body | `CrawlerJob` |
-| GET | `/admin/crawlers/:id` | 작업 상세 + 로그 | Admin | - | `CrawlerJobDetail` |
-| POST | `/admin/crawlers/:id/run` | 수동 실행 | Admin | - | `{ message }` |
-| PATCH | `/admin/crawlers/:id` | 작업 수정 | Admin | Body | `CrawlerJob` |
-| DELETE | `/admin/crawlers/:id` | 작업 삭제 | Admin | - | `{ message }` |
-| PATCH | `/admin/crawlers/:id/toggle` | 활성/비활성 토글 | Admin | - | `CrawlerJob` |
-| GET | `/admin/crawlers/:id/logs` | 실행 로그 목록 | Admin | `?page&limit` | `CrawlerLog[]` |
+| GET | `/crawler/admin/jobs` | 크롤러 작업 목록 | Admin | `?status&page&limit` | `CrawlerJob[]` |
+| POST | `/crawler/admin/jobs` | 크롤러 작업 생성 | Admin | `CreateCrawlerJobDto` | `CrawlerJob` |
+| PATCH | `/crawler/admin/jobs/:id` | 작업 수정 | Admin | `UpdateCrawlerJobDto` | `CrawlerJob` |
+| DELETE | `/crawler/admin/jobs/:id` | 작업 삭제 | Admin | - | `{ message }` |
+| POST | `/crawler/admin/jobs/:id/run` | 작업 단위 수동 실행 | Admin | - | `{ message, runId }` |
+| POST | `/crawler/admin/triggers` | 판매처/상품 수동 트리거 | Admin | `TriggerCrawlerDto` | `{ message, runId }` |
+| GET | `/crawler/admin/runs` | 실행 이력 조회 | Admin | `?status&jobId&page&limit` | `CrawlerRun[]` |
+| GET | `/crawler/admin/monitoring` | 큐/수집 모니터링 요약 | Admin | - | `CrawlerMonitoringSummary` |
 
 ### 상세
 
-#### POST `/admin/crawlers`
+#### POST `/crawler/admin/jobs`
 ```
 Request:
 {
@@ -1246,7 +1255,7 @@ Response: 201 Created
 }
 ```
 
-#### GET `/admin/crawlers/:id/logs`
+#### GET `/crawler/admin/runs`
 ```
 Response: 200 OK
 {
@@ -1274,11 +1283,11 @@ Response: 200 OK
 
 | Method | Endpoint | 설명 | 권한 | Request | Response |
 |--------|----------|------|------|---------|----------|
-| GET | `/products/:id/prediction` | 가격 예측 조회 | Public | QueryParams | `PricePrediction` |
+| GET | `/predictions/products/:productId/price-trend` | 상품 가격 추세 예측 조회 | Public | `?days` | `PricePrediction` |
 
 ### 상세
 
-#### GET `/products/:id/prediction`
+#### GET `/predictions/products/:productId/price-trend`
 ```
 Query Parameters:
 - days: number (default: 30, max: 90, 예측 일수)
@@ -1723,7 +1732,9 @@ Response: 200 OK
 | POST | `/shortforms/:id/like` | 좋아요 토글 | User | - | `{ liked, likeCount }` |
 | POST | `/shortforms/:id/comments` | 댓글 작성 | User | `{ content }` | `CommentResponse` |
 | GET | `/shortforms/:id/comments` | 댓글 목록 | Public | `?page&limit` | `CommentResponse[]` |
-| GET | `/shortforms/ranking` | 인기 숏폼 랭킹 | Public | `?period=day,week,month` | `ShortFormResponse[]` |
+| GET | `/shortforms/ranking/list` | 인기 숏폼 랭킹 | Public | `?period=day,week,month` | `ShortFormResponse[]` |
+| GET | `/shortforms/:id/transcode-status` | 트랜스코딩 상태 조회 | Public | - | `{ status, errorMessage, transcodedAt }` |
+| POST | `/shortforms/:id/transcode/retry` | 트랜스코딩 재시도 | User | - | `{ message, queued }` |
 | DELETE | `/shortforms/:id` | 숏폼 삭제 | Owner | - | `{ message }` |
 | GET | `/shortforms/user/:userId` | 특정 유저의 숏폼 | Public | `?page&limit` | `ShortFormResponse[]` |
 
@@ -1853,6 +1864,25 @@ Response: 200 OK
 | Method | Endpoint | 설명 | 권한 | Request | Response |
 |--------|----------|------|------|---------|----------|
 | GET | `/health` | 전체 시스템 상태 확인 | Public | - | `{ status, checks: { db, redis, elasticsearch } }` |
+
+---
+
+## 47. 장애복원력 (Resilience / Circuit Breaker) — Admin
+
+| Method | Endpoint | 설명 | 권한 | Request | Response |
+|--------|----------|------|------|---------|----------|
+| GET | `/resilience/circuit-breakers` | Circuit Breaker 상태 목록 | Admin | - | `{ items[] }` |
+| GET | `/resilience/circuit-breakers/:name` | Circuit Breaker 단건 상태 | Admin | - | `CircuitBreakerSnapshot` |
+| POST | `/resilience/circuit-breakers/:name/reset` | Circuit Breaker 수동 초기화 | Admin | - | `{ message, name }` |
+
+---
+
+## 48. 에러 코드 카탈로그 (Error Code Catalog)
+
+| Method | Endpoint | 설명 | 권한 | Request | Response |
+|--------|----------|------|------|---------|----------|
+| GET | `/errors/codes` | 시스템 에러코드 전체 목록 | Public | - | `{ total, items[] }` |
+| GET | `/errors/codes/:key` | 시스템 에러코드 단건 조회 | Public | - | `ErrorCode \| null` |
 
 ---
 

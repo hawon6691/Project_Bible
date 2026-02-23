@@ -9,11 +9,12 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { User } from '../user/entities/user.entity';
 import { EmailVerification } from './entities/email-verification.entity';
+import { SocialAccount } from './entities/social-account.entity';
 import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, EmailVerification]),
+    TypeOrmModule.forFeature([User, EmailVerification, SocialAccount]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

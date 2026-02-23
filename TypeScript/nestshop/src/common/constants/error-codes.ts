@@ -53,3 +53,18 @@ export const ERROR_CODES = {
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_CODES;
+
+export interface ErrorCodeItem {
+  key: ErrorCode;
+  code: string;
+  message: string;
+}
+
+// 운영/문서화에서 재사용할 수 있도록 에러코드 목록을 평탄화해 제공한다.
+export const ERROR_CODE_CATALOG: ErrorCodeItem[] = (
+  Object.entries(ERROR_CODES) as [ErrorCode, (typeof ERROR_CODES)[ErrorCode]][]
+).map(([key, value]) => ({
+  key,
+  code: value.code,
+  message: value.message,
+}));

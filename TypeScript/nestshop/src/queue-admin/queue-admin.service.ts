@@ -2,23 +2,21 @@ import { InjectQueue } from '@nestjs/bull';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Job, Queue } from 'bull';
 import { PaginationResponseDto } from '../common/dto/pagination.dto';
+import { MANAGED_QUEUE_NAMES, ManagedQueueName, QUEUE_NAMES } from '../common/constants/queue-names';
 import { BusinessException } from '../common/exceptions/business.exception';
 import { FailedJobsQueryDto } from './dto/failed-jobs-query.dto';
 import { RetryFailedJobsDto } from './dto/retry-failed-jobs.dto';
 
-const SUPPORTED_QUEUES = ['activity-log', 'video-transcode', 'crawler-collect', 'search-index-sync'] as const;
-type SupportedQueueName = (typeof SUPPORTED_QUEUES)[number];
-
 @Injectable()
 export class QueueAdminService {
   constructor(
-    @InjectQueue('activity-log')
+    @InjectQueue(QUEUE_NAMES.ACTIVITY_LOG)
     private readonly activityQueue: Queue,
-    @InjectQueue('video-transcode')
+    @InjectQueue(QUEUE_NAMES.VIDEO_TRANSCODE)
     private readonly videoTranscodeQueue: Queue,
-    @InjectQueue('crawler-collect')
+    @InjectQueue(QUEUE_NAMES.CRAWLER_COLLECT)
     private readonly crawlerCollectQueue: Queue,
-    @InjectQueue('search-index-sync')
+    @InjectQueue(QUEUE_NAMES.SEARCH_INDEX_SYNC)
     private readonly searchIndexSyncQueue: Queue,
   ) {}
 
@@ -93,26 +91,26 @@ export class QueueAdminService {
   }
 
   getSupportedQueues() {
-    return [...SUPPORTED_QUEUES];
+    return [...MANAGED_QUEUE_NAMES];
   }
 
   private resolveQueue(queueName: string) {
-    const map: Record<SupportedQueueName, Queue> = {
-      'activity-log': this.activityQueue,
-      'video-transcode': this.videoTranscodeQueue,
-      'crawler-collect': this.crawlerCollectQueue,
-      'search-index-sync': this.searchIndexSyncQueue,
+    const map: Record<ManagedQueueName, Queue> = {
+      [QUEUE_NAMES.ACTIVITY_LOG]: this.activityQueue,
+      [QUEUE_NAMES.VIDEO_TRANSCODE]: this.videoTranscodeQueue,
+      [QUEUE_NAMES.CRAWLER_COLLECT]: this.crawlerCollectQueue,
+      [QUEUE_NAMES.SEARCH_INDEX_SYNC]: this.searchIndexSyncQueue,
     };
 
-    if (!SUPPORTED_QUEUES.includes(queueName as SupportedQueueName)) {
+    if (!MANAGED_QUEUE_NAMES.includes(queueName as ManagedQueueName)) {
       throw new BusinessException(
         'VALIDATION_FAILED',
         HttpStatus.BAD_REQUEST,
-        `지원하지 않는 큐입니다. (${SUPPORTED_QUEUES.join(', ')})`,
+        `지원하지 않는 큐입니다. (${MANAGED_QUEUE_NAMES.join(', ')})`,
       );
     }
 
-    return map[queueName as SupportedQueueName];
+    return map[queueName as ManagedQueueName];
   }
 
   private toJobSnapshot(job: Job) {

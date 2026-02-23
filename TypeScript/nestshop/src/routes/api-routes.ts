@@ -63,6 +63,9 @@ export const API_ROUTES = {
   },
   CART: {
     BASE: 'cart',
+    GUEST: 'guest',
+    GUEST_DETAIL: 'guest/:itemId',
+    GUEST_MERGE: 'guest/merge',
   },
   SEARCH: {
     BASE: 'search',

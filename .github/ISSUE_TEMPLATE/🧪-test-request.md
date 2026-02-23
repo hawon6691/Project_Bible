@@ -1,7 +1,7 @@
 ---
 name: "🧪 Test Request"
 about: 새로운 테스트 제안
-title: "[FEAT] "
+title: "[TEST] "
 labels: test
 assignees: ""
 ---

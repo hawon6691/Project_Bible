@@ -27,3 +27,9 @@ export class UpdateCartQuantityDto {
   @Min(1)
   quantity: number;
 }
+
+export class MergeGuestCartDto {
+  @ApiProperty({ description: '비회원 장바구니 키', example: 'guest_abcd1234' })
+  @IsString()
+  guestCartKey: string;
+}

@@ -1,6 +1,8 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { CACHE_KEYS, CACHE_KEY_PREFIX, CACHE_TTL_SECONDS } from '../common/cache/cache-policy.constants';
+import { CacheService } from '../common/cache/cache.service';
 import { PaginationResponseDto } from '../common/dto/pagination.dto';
 import { BusinessException } from '../common/exceptions/business.exception';
 import { Product } from '../product/entities/product.entity';
@@ -23,11 +25,20 @@ export class NewsService {
     private newsProductRepository: Repository<NewsProduct>,
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
+    private readonly cacheService: CacheService,
   ) {}
 
   async getCategories() {
+    const cacheKey = CACHE_KEYS.newsCategories();
+    const cached = await this.cacheService.getJson<ReturnType<NewsService['toCategoryList']>>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const categories = await this.newsCategoryRepository.find({ order: { id: 'ASC' } });
-    return categories.map((item) => this.toCategoryDetail(item));
+    const result = this.toCategoryList(categories);
+    await this.cacheService.setJson(cacheKey, result, CACHE_TTL_SECONDS.NEWS_CATEGORIES);
+    return result;
   }
 
   async createCategory(dto: CreateNewsCategoryDto) {
@@ -45,6 +56,7 @@ export class NewsService {
     });
 
     const saved = await this.newsCategoryRepository.save(category);
+    await this.invalidateNewsCache();
     return this.toCategoryDetail(saved);
   }
 
@@ -60,10 +72,17 @@ export class NewsService {
     }
 
     await this.newsCategoryRepository.softDelete({ id: categoryId });
+    await this.invalidateNewsCache();
     return { success: true, message: '뉴스 카테고리가 삭제되었습니다.' };
   }
 
   async getNewsList(query: NewsListQueryDto) {
+    const cacheKey = CACHE_KEYS.newsList(this.hashQuery(query));
+    const cached = await this.cacheService.getJson<PaginationResponseDto<any>>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const qb = this.newsRepository
       .createQueryBuilder('news')
       .leftJoinAndSelect('news.category', 'category')
@@ -78,10 +97,19 @@ export class NewsService {
     const [items, total] = await qb.getManyAndCount();
     const mapped = items.map((item) => this.toNewsSummary(item));
 
-    return new PaginationResponseDto(mapped, total, query.page, query.limit);
+    const result = new PaginationResponseDto(mapped, total, query.page, query.limit);
+    await this.cacheService.setJson(cacheKey, result, CACHE_TTL_SECONDS.NEWS_LIST);
+    return result;
   }
 
   async getNewsDetail(newsId: number) {
+    const cacheKey = CACHE_KEYS.newsDetail(newsId);
+    const cached = await this.cacheService.getJson<any>(cacheKey);
+    if (cached) {
+      await this.newsRepository.increment({ id: newsId }, 'viewCount', 1);
+      return cached;
+    }
+
     const news = await this.newsRepository.findOne({
       where: { id: newsId },
       relations: { category: true },
@@ -99,7 +127,7 @@ export class NewsService {
       ? await this.productRepository.find({ where: { id: In(productIds) } })
       : [];
 
-    return {
+    const result = {
       ...this.toNewsDetail(news),
       relatedProducts: relatedProducts.map((product) => ({
         id: product.id,
@@ -108,6 +136,8 @@ export class NewsService {
         lowestPrice: product.lowestPrice,
       })),
     };
+    await this.cacheService.setJson(cacheKey, result, CACHE_TTL_SECONDS.NEWS_DETAIL);
+    return result;
   }
 
   // 뉴스 작성 시 카테고리/연관상품 유효성을 함께 검증한다.
@@ -125,6 +155,7 @@ export class NewsService {
 
     const saved = await this.newsRepository.save(news);
     await this.syncNewsProducts(saved.id, dto.productIds ?? []);
+    await this.invalidateNewsCache();
 
     return this.getNewsDetail(saved.id);
   }
@@ -150,6 +181,7 @@ export class NewsService {
       await this.ensureProducts(dto.productIds);
       await this.syncNewsProducts(newsId, dto.productIds);
     }
+    await this.invalidateNewsCache(newsId);
 
     return this.getNewsDetail(newsId);
   }
@@ -162,8 +194,33 @@ export class NewsService {
 
     await this.newsProductRepository.softDelete({ newsId });
     await this.newsRepository.softDelete({ id: newsId });
+    await this.invalidateNewsCache(newsId);
 
     return { success: true, message: '뉴스가 삭제되었습니다.' };
+  }
+
+  private toCategoryList(categories: NewsCategory[]) {
+    return categories.map((item) => this.toCategoryDetail(item));
+  }
+
+  private hashQuery(query: NewsListQueryDto) {
+    return Buffer.from(
+      JSON.stringify({
+        page: query.page,
+        limit: query.limit,
+        category: query.category ?? null,
+      }),
+    ).toString('base64url');
+  }
+
+  private async invalidateNewsCache(newsId?: number) {
+    await this.cacheService.delByPattern(`${CACHE_KEY_PREFIX.NEWS}:list:*`);
+    await this.cacheService.del(CACHE_KEYS.newsCategories());
+    if (newsId) {
+      await this.cacheService.del(CACHE_KEYS.newsDetail(newsId));
+    } else {
+      await this.cacheService.delByPattern(`${CACHE_KEY_PREFIX.NEWS}:detail:*`);
+    }
   }
 
   private async ensureCategory(categoryId: number) {

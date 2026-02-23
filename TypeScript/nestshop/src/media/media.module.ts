@@ -3,9 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MediaController } from './media.controller';
 import { MediaService } from './media.service';
 import { MediaAsset } from './entities/media-asset.entity';
+import { UploadSecurityModule } from '../upload/upload-security.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MediaAsset])],
+  imports: [TypeOrmModule.forFeature([MediaAsset]), UploadSecurityModule],
   controllers: [MediaController],
   providers: [MediaService],
   exports: [MediaService],

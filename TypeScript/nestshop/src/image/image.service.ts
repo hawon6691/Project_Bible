@@ -2,6 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BusinessException } from '../common/exceptions/business.exception';
+import { UploadSecurityService } from '../upload/upload-security.service';
 import { UploadImageDto } from './dto/upload-image.dto';
 import { ImageAsset, ImageProcessingStatus } from './entities/image-asset.entity';
 import { ImageVariant, ImageVariantType } from './entities/image-variant.entity';
@@ -16,11 +17,12 @@ export class ImageService {
     private imageAssetRepository: Repository<ImageAsset>,
     @InjectRepository(ImageVariant)
     private imageVariantRepository: Repository<ImageVariant>,
+    private readonly uploadSecurityService: UploadSecurityService,
   ) {}
 
   // Image 업로드 후 원본/변환본 메타데이터를 생성한다.
   async upload(file: Express.Multer.File | undefined, dto: UploadImageDto, userId: number) {
-    this.validateFile(file);
+    await this.validateFile(file);
     const imageFile = file as Express.Multer.File;
 
     const fileExtension = this.getExtension(imageFile.originalname);
@@ -103,7 +105,7 @@ export class ImageService {
     return image;
   }
 
-  private validateFile(file: Express.Multer.File | undefined) {
+  private async validateFile(file: Express.Multer.File | undefined) {
     if (!file) {
       throw new BusinessException('FILE_UPLOAD_FAILED', HttpStatus.BAD_REQUEST, '업로드할 파일이 필요합니다.');
     }
@@ -115,6 +117,8 @@ export class ImageService {
     if (!ImageService.ALLOWED_MIME_TYPES.has(file.mimetype)) {
       throw new BusinessException('FILE_TYPE_NOT_ALLOWED', HttpStatus.BAD_REQUEST);
     }
+
+    await this.uploadSecurityService.validateFile(file);
   }
 
   private getExtension(filename: string) {

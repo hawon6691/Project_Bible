@@ -2,6 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BusinessException } from '../common/exceptions/business.exception';
+import { UploadSecurityService } from '../upload/upload-security.service';
 import { CreatePresignedUrlDto } from './dto/create-presigned-url.dto';
 import { UploadMediaDto } from './dto/upload-media.dto';
 import { MediaAsset, MediaType } from './entities/media-asset.entity';
@@ -13,6 +14,7 @@ export class MediaService {
   constructor(
     @InjectRepository(MediaAsset)
     private mediaAssetRepository: Repository<MediaAsset>,
+    private readonly uploadSecurityService: UploadSecurityService,
   ) {}
 
   // 업로드된 파일들을 미디어 메타데이터로 저장한다.
@@ -24,7 +26,7 @@ export class MediaService {
     const created: MediaAsset[] = [];
 
     for (const file of files) {
-      this.validateFile(file);
+      await this.validateFile(file);
 
       const fileKey = this.generateFileKey(file.originalname);
       const type = this.resolveMediaType(file.mimetype);
@@ -111,10 +113,12 @@ export class MediaService {
     return media;
   }
 
-  private validateFile(file: Express.Multer.File) {
+  private async validateFile(file: Express.Multer.File) {
     if (file.size > MediaService.MAX_FILE_SIZE) {
       throw new BusinessException('VALIDATION_FAILED', HttpStatus.BAD_REQUEST, '최대 500MB 파일만 업로드할 수 있습니다.');
     }
+
+    await this.uploadSecurityService.validateFile(file);
   }
 
   private resolveMediaType(mime: string) {

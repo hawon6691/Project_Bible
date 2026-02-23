@@ -5,6 +5,7 @@ import { Queue } from 'bull';
 import { In, LessThan, Repository } from 'typeorm';
 import { PaginationResponseDto } from '../common/dto/pagination.dto';
 import { BusinessException } from '../common/exceptions/business.exception';
+import { UploadSecurityService } from '../upload/upload-security.service';
 import { User } from '../user/entities/user.entity';
 import { CreateShortformCommentDto } from './dto/create-shortform-comment.dto';
 import { CreateShortformDto } from './dto/create-shortform.dto';
@@ -35,12 +36,13 @@ export class VideoService {
     private userRepository: Repository<User>,
     @InjectQueue('video-transcode')
     private readonly videoTranscodeQueue: Queue<VideoTranscodeJobData>,
+    private readonly uploadSecurityService: UploadSecurityService,
   ) {}
 
   // 숏폼 업로드 메타데이터를 생성한다.
   async createShortform(userId: number, file: Express.Multer.File | undefined, dto: CreateShortformDto) {
     await this.ensureUser(userId);
-    this.validateVideo(file, dto.durationSec);
+    await this.validateVideo(file, dto.durationSec);
     const video = file as Express.Multer.File;
 
     const storedFileName = video.filename ?? `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.mp4`;
@@ -323,7 +325,7 @@ export class VideoService {
     return shortform;
   }
 
-  private validateVideo(file: Express.Multer.File | undefined, durationSec?: number) {
+  private async validateVideo(file: Express.Multer.File | undefined, durationSec?: number) {
     if (!file) {
       throw new BusinessException('FILE_UPLOAD_FAILED', HttpStatus.BAD_REQUEST, '업로드할 영상 파일이 필요합니다.');
     }
@@ -339,5 +341,7 @@ export class VideoService {
     if (durationSec !== undefined && durationSec > 60) {
       throw new BusinessException('VALIDATION_FAILED', HttpStatus.BAD_REQUEST, '숏폼 길이는 최대 60초입니다.');
     }
+
+    await this.uploadSecurityService.validateFile(file);
   }
 }

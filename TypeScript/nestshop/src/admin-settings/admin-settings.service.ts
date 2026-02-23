@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CacheService } from '../common/cache/cache.service';
 import { SetAllowedExtensionsDto } from './dto/set-allowed-extensions.dto';
 import { UpdateReviewPolicyDto } from './dto/update-review-policy.dto';
 import { UpdateUploadLimitsDto } from './dto/update-upload-limits.dto';
@@ -15,6 +16,7 @@ export class AdminSettingsService {
   constructor(
     @InjectRepository(SystemSetting)
     private systemSettingRepository: Repository<SystemSetting>,
+    private readonly cacheService: CacheService,
   ) {}
 
   async getAllowedExtensions() {
@@ -25,6 +27,7 @@ export class AdminSettingsService {
   async setAllowedExtensions(dto: SetAllowedExtensionsDto) {
     const normalized = this.normalizeExtensions(dto.extensions);
     const setting = await this.upsert('allowed_extensions', { extensions: normalized });
+    await this.cacheService.del('settings:allowed_extensions');
     return { extensions: this.normalizeExtensions(setting.settingValue.extensions as string[]) };
   }
 

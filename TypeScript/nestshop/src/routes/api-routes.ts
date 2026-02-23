@@ -310,6 +310,11 @@ export const API_ROUTES = {
   HEALTH: {
     BASE: 'health',
   },
+  ERRORS: {
+    BASE: 'errors',
+    CODES: 'codes',
+    CODE_DETAIL: 'codes/:key',
+  },
 } as const;
 
 

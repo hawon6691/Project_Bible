@@ -9,10 +9,12 @@ import { LocaleInterceptor } from './interceptors/locale.interceptor';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { RateLimitGuard } from './guards/rate-limit.guard';
+import { ErrorCodeController } from './controllers/error-code.controller';
 
 @Global()
 @Module({
   imports: [ConfigModule, JwtModule],
+  controllers: [ErrorCodeController],
   providers: [
     // 전역 예외 필터
     {

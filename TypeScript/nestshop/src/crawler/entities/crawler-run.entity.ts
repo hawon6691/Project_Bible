@@ -2,6 +2,8 @@ import { Column, Entity, Index } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 
 export enum CrawlerRunStatus {
+  QUEUED = 'QUEUED',
+  PROCESSING = 'PROCESSING',
   SUCCESS = 'SUCCESS',
   FAILED = 'FAILED',
 }
@@ -26,6 +28,15 @@ export class CrawlerRun extends BaseEntity {
 
   @Column({ name: 'trigger_type', type: 'enum', enum: CrawlerTriggerType })
   triggerType: CrawlerTriggerType;
+
+  @Column({ name: 'collect_price', type: 'boolean', default: true })
+  collectPrice: boolean;
+
+  @Column({ name: 'collect_spec', type: 'boolean', default: true })
+  collectSpec: boolean;
+
+  @Column({ name: 'detect_anomaly', type: 'boolean', default: true })
+  detectAnomaly: boolean;
 
   @Column({ type: 'enum', enum: CrawlerRunStatus })
   status: CrawlerRunStatus;

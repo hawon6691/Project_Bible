@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles, UserRole } from '../common/decorators/roles.decorator';
 import { API_ROUTES } from '../routes/api-routes';
@@ -33,13 +33,13 @@ export class QueueAdminController {
 
   @Post(API_ROUTES.QUEUE_ADMIN.JOB_RETRY)
   @ApiOperation({ summary: '큐 실패 Job 개별 재시도 (Admin)' })
-  retryJob(@Param('queueName') queueName: string, @Param('jobId', ParseIntPipe) jobId: number) {
-    return this.queueAdminService.retryJob(queueName, String(jobId));
+  retryJob(@Param('queueName') queueName: string, @Param('jobId') jobId: string) {
+    return this.queueAdminService.retryJob(queueName, jobId);
   }
 
   @Delete(API_ROUTES.QUEUE_ADMIN.JOB_DETAIL)
   @ApiOperation({ summary: '큐 Job 개별 삭제 (Admin)' })
-  removeJob(@Param('queueName') queueName: string, @Param('jobId', ParseIntPipe) jobId: number) {
-    return this.queueAdminService.removeJob(queueName, String(jobId));
+  removeJob(@Param('queueName') queueName: string, @Param('jobId') jobId: string) {
+    return this.queueAdminService.removeJob(queueName, jobId);
   }
 }

@@ -28,9 +28,10 @@ export class QueueAdminService {
     const end = start + query.limit - 1;
     const jobs = await queue.getFailed(start, end);
     const totalFailed = await queue.getJobCountByTypes('failed');
+    const newestFirst = query.newestFirst !== 'false';
 
     const items = jobs.map((job) => this.toJobSnapshot(job));
-    if (query.newestFirst === false) {
+    if (!newestFirst) {
       items.reverse();
     }
 

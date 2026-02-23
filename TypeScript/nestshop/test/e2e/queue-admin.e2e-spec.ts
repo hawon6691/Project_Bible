@@ -63,6 +63,12 @@ describe('Queue Admin E2E', () => {
     expect(valid.status).toBe(200);
     expect(valid.body.success).toBe(true);
     expect(valid.body.meta.totalCount).toBe(1);
+
+    await client.get('/admin/queues/video-transcode/failed?page=1&limit=20&newestFirst=false');
+    expect(queueAdminServiceMock.getFailedJobs).toHaveBeenLastCalledWith(
+      'video-transcode',
+      expect.objectContaining({ newestFirst: 'false' }),
+    );
   });
 
   it('POST /admin/queues/:queueName/failed/retry should retry failed jobs', async () => {
@@ -80,9 +86,10 @@ describe('Queue Admin E2E', () => {
   });
 
   it('DELETE /admin/queues/:queueName/jobs/:jobId should remove job', async () => {
-    const res = await client.delete('/admin/queues/video-transcode/jobs/1001');
+    const res = await client.delete('/admin/queues/video-transcode/jobs/job-1001-a');
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data.removed).toBe(true);
+    expect(queueAdminServiceMock.removeJob).toHaveBeenLastCalledWith('video-transcode', 'job-1001-a');
   });
 });

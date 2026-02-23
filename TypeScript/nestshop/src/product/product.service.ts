@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { CACHE_KEYS, CACHE_KEY_PREFIX, CACHE_TTL_SECONDS } from '../common/cache/cache-policy.constants';
 import { CacheService } from '../common/cache/cache.service';
+import { SearchSyncService } from '../search-sync/search-sync.service';
 import { Product } from './entities/product.entity';
 import { ProductOption } from './entities/product-option.entity';
 import { ProductImage } from './entities/product-image.entity';
@@ -21,6 +22,7 @@ export class ProductService {
     @InjectRepository(ProductImage)
     private imageRepository: Repository<ProductImage>,
     private readonly cacheService: CacheService,
+    private readonly searchSyncService: SearchSyncService,
   ) {}
 
   // ─── PROD-01, PROD-08: 상품 목록 조회 (필터/정렬/페이징) ───
@@ -160,6 +162,7 @@ export class ProductService {
       await this.imageRepository.save(images);
     }
 
+    await this.searchSyncService.enqueueProductUpsert(saved.id, 'product_created');
     await this.invalidateProductCache(saved.id);
     return this.findOne(saved.id);
   }
@@ -181,6 +184,7 @@ export class ProductService {
     if (dto.status !== undefined) product.status = dto.status;
 
     await this.productRepository.save(product);
+    await this.searchSyncService.enqueueProductUpsert(id, 'product_updated');
     await this.invalidateProductCache(id);
     return this.findOne(id);
   }
@@ -193,6 +197,7 @@ export class ProductService {
     }
 
     await this.productRepository.softDelete(id);
+    await this.searchSyncService.enqueueProductDelete(id, 'product_deleted');
     await this.invalidateProductCache(id);
     return { message: '상품이 삭제되었습니다.' };
   }

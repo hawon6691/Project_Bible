@@ -318,6 +318,13 @@ export const API_ROUTES = {
     CODES: 'codes',
     CODE_DETAIL: 'codes/:key',
   },
+  QUEUE_ADMIN: {
+    BASE: 'admin/queues',
+    FAILED: ':queueName/failed',
+    JOB_RETRY: ':queueName/jobs/:jobId/retry',
+    JOB_DETAIL: ':queueName/jobs/:jobId',
+    FAILED_RETRY: ':queueName/failed/retry',
+  },
 } as const;
 
 

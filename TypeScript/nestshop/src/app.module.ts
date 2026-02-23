@@ -50,6 +50,7 @@ import { SearchModule } from './search/search.module';
 import { ResilienceModule } from './resilience/resilience.module';
 import { RedlockModule } from './redlock/redlock.module';
 import { QueryModule } from './query/query.module';
+import { QueueAdminModule } from './queue-admin/queue-admin.module';
 
 @Module({
   imports: [
@@ -146,6 +147,7 @@ import { QueryModule } from './query/query.module';
     ResilienceModule,
     RedlockModule,
     QueryModule,
+    QueueAdminModule,
   ],
 })
 export class AppModule {}

@@ -320,6 +320,7 @@ export const API_ROUTES = {
   },
   QUEUE_ADMIN: {
     BASE: 'admin/queues',
+    STATS: 'stats',
     FAILED: ':queueName/failed',
     JOB_RETRY: ':queueName/jobs/:jobId/retry',
     JOB_DETAIL: ':queueName/jobs/:jobId',

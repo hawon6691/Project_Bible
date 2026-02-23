@@ -36,6 +36,33 @@ export class QueueAdminService {
     return new PaginationResponseDto(items, totalFailed, query.page, query.limit);
   }
 
+  async getQueueStats() {
+    const items = await Promise.all(
+      MANAGED_QUEUE_NAMES.map(async (queueName) => {
+        const queue = this.resolveQueue(queueName);
+        const counts = await queue.getJobCounts();
+        const paused = await queue.isPaused();
+
+        return {
+          queueName,
+          paused,
+          counts: {
+            waiting: counts.waiting ?? 0,
+            active: counts.active ?? 0,
+            delayed: counts.delayed ?? 0,
+            completed: counts.completed ?? 0,
+            failed: counts.failed ?? 0,
+          },
+        };
+      }),
+    );
+
+    return {
+      items,
+      total: items.length,
+    };
+  }
+
   async retryFailedJobs(queueName: string, dto: RetryFailedJobsDto) {
     const queue = this.resolveQueue(queueName);
     const target = await queue.getFailed(0, (dto.limit ?? 50) - 1);

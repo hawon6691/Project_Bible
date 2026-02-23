@@ -19,6 +19,12 @@ export class QueueAdminController {
     return { items: this.queueAdminService.getSupportedQueues() };
   }
 
+  @Get(API_ROUTES.QUEUE_ADMIN.STATS)
+  @ApiOperation({ summary: '관리 대상 큐 상태 통계 조회 (Admin)' })
+  getQueueStats() {
+    return this.queueAdminService.getQueueStats();
+  }
+
   @Get(API_ROUTES.QUEUE_ADMIN.FAILED)
   @ApiOperation({ summary: '큐 실패 Job 목록 조회 (Admin)' })
   getFailedJobs(@Param('queueName') queueName: string, @Query() query: FailedJobsQueryDto) {

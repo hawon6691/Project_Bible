@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { CrawlerService } from '../crawler/crawler.service';
 import { HealthService } from '../health/health.service';
 import { QueueAdminService } from '../queue-admin/queue-admin.service';
@@ -11,6 +12,7 @@ export class OpsDashboardService {
     private readonly searchSyncService: SearchSyncService,
     private readonly crawlerService: CrawlerService,
     private readonly queueAdminService: QueueAdminService,
+    private readonly configService: ConfigService,
   ) {}
 
   // 운영자가 빠르게 상태를 판단할 수 있도록 핵심 운영 지표를 단일 응답으로 묶는다.
@@ -64,6 +66,10 @@ export class OpsDashboardService {
   }) {
     const alerts: Array<{ key: string; severity: 'warning' | 'critical'; message: string }> = [];
 
+    const searchFailedThreshold = this.readInt('OPS_ALERT_SEARCH_FAILED_THRESHOLD', 1, 0);
+    const crawlerFailedRunsThreshold = this.readInt('OPS_ALERT_CRAWLER_FAILED_RUNS_THRESHOLD', 1, 0);
+    const queueFailedThreshold = this.readInt('OPS_ALERT_QUEUE_FAILED_THRESHOLD', 1, 0);
+
     if (params.health?.status && params.health.status !== 'up') {
       alerts.push({
         key: 'health',
@@ -72,29 +78,29 @@ export class OpsDashboardService {
       });
     }
 
-    if ((params.searchSync?.failed ?? 0) > 0) {
+    if ((params.searchSync?.failed ?? 0) >= searchFailedThreshold && searchFailedThreshold > 0) {
       alerts.push({
         key: 'searchSync',
         severity: 'warning',
-        message: `검색 동기화 실패 건이 존재합니다. (failed: ${params.searchSync.failed})`,
+        message: `검색 동기화 실패 건이 임계치를 초과했습니다. (failed: ${params.searchSync.failed}, threshold: ${searchFailedThreshold})`,
       });
     }
 
-    if ((params.crawler?.failedRuns ?? 0) > 0) {
+    if ((params.crawler?.failedRuns ?? 0) >= crawlerFailedRunsThreshold && crawlerFailedRunsThreshold > 0) {
       alerts.push({
         key: 'crawler',
         severity: 'warning',
-        message: `크롤러 실패 실행 건이 존재합니다. (failedRuns: ${params.crawler.failedRuns})`,
+        message: `크롤러 실패 실행 건이 임계치를 초과했습니다. (failedRuns: ${params.crawler.failedRuns}, threshold: ${crawlerFailedRunsThreshold})`,
       });
     }
 
     const queueItems = params.queue?.items ?? [];
-    const failedQueue = queueItems.find((item: any) => (item?.counts?.failed ?? 0) > 0);
-    if (failedQueue) {
+    const failedQueue = queueItems.find((item: any) => (item?.counts?.failed ?? 0) >= queueFailedThreshold);
+    if (failedQueue && queueFailedThreshold > 0) {
       alerts.push({
         key: 'queue',
         severity: 'warning',
-        message: `실패 Job이 있는 큐가 있습니다. (${failedQueue.queueName}: ${failedQueue.counts.failed})`,
+        message: `실패 Job이 있는 큐가 임계치를 초과했습니다. (${failedQueue.queueName}: ${failedQueue.counts.failed}, threshold: ${queueFailedThreshold})`,
       });
     }
 
@@ -107,5 +113,14 @@ export class OpsDashboardService {
     }
 
     return alerts;
+  }
+
+  private readInt(key: string, fallback: number, min = Number.MIN_SAFE_INTEGER) {
+    const raw = this.configService.get<string>(key);
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed)) {
+      return fallback;
+    }
+    return Math.max(min, Math.trunc(parsed));
   }
 }

@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { CrawlerService } from '../../src/crawler/crawler.service';
 import { HealthService } from '../../src/health/health.service';
 import { OpsDashboardController } from '../../src/ops-dashboard/ops-dashboard.controller';
@@ -41,13 +42,21 @@ describe('Ops Dashboard Resilience E2E', () => {
             getQueueStats: jest.fn().mockResolvedValue({ total: 4, items: [] }),
           },
         },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue(undefined),
+          },
+        },
       ],
     });
     client = await startTestServer(app);
   });
 
   afterAll(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   it('GET /admin/ops-dashboard/summary should return degraded summary on partial failures', async () => {

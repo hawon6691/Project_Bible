@@ -81,6 +81,7 @@ npm run start:prod
 2. 개별 재시도: `POST /admin/queues/:queueName/jobs/:jobId/retry`
 3. 일괄 재시도: `POST /admin/queues/:queueName/failed/retry?limit=50`
 4. 불필요/유해 Job 삭제: `DELETE /admin/queues/:queueName/jobs/:jobId`
+5. 큐별 적체 현황 확인: `GET /admin/queues/stats`
 
 지원 큐:
 
@@ -88,6 +89,10 @@ npm run start:prod
 - `video-transcode`
 - `crawler-collect`
 - `search-index-sync`
+
+주의:
+- 개별 재시도 API는 `failed` 상태 Job에만 허용된다.
+- `failed`가 아닌 Job 재시도 요청은 `400 VALIDATION_FAILED`로 차단된다.
 
 ### 4.4 Circuit Breaker OPEN 상태 지속
 

@@ -22,6 +22,7 @@
     "test:e2e:critical": "jest --config ./test/jest-e2e.json test/e2e/auth-search.e2e-spec.ts test/e2e/public-api.e2e-spec.ts test/e2e/admin-platform.e2e-spec.ts test/e2e/queue-admin.e2e-spec.ts test/e2e/ops-dashboard.e2e-spec.ts test/e2e/ops-dashboard-resilience.e2e-spec.ts test/e2e/ops-dashboard-thresholds.e2e-spec.ts --runInBand",
     "test:e2e:ops": "jest --config ./test/jest-e2e.json test/e2e/admin-platform.e2e-spec.ts test/e2e/queue-admin.e2e-spec.ts test/e2e/ops-dashboard.e2e-spec.ts test/e2e/ops-dashboard-resilience.e2e-spec.ts test/e2e/ops-dashboard-thresholds.e2e-spec.ts --runInBand",
     "test:release:gate": "npm run lint:check && npx tsc -p tsconfig.json --noEmit --incremental false && npm run build && npm run test:e2e:critical && npm run test:e2e:ops",
+    "test:release:gate:report": "node -e \"require('fs').mkdirSync('test-results',{recursive:true})\" && npm run lint:check && npx tsc -p tsconfig.json --noEmit --incremental false && npm run build && npm run test:e2e:critical -- --json --outputFile=test-results/release-gate-e2e-critical.json && npm run test:e2e:ops -- --json --outputFile=test-results/release-gate-e2e-ops.json",
     "test:perf:mock-server": "ts-node test/performance/mock-perf-server.ts",
     "test:perf:search-ranking": "k6 run test/performance/search-ranking.perf.js",
     "test:perf:price": "k6 run test/performance/price-compare.perf.js",

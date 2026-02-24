@@ -31,9 +31,11 @@
 - [ ] `npm run test:e2e -- ops-dashboard-thresholds.e2e-spec.ts --runInBand`
 - [ ] `npm run test:e2e:contract`
 - [ ] `npm run test:e2e:admin-boundary`
+- [ ] `npm run test:e2e:rate-limit`
 - [ ] `npm run test:security:regression`
 - [ ] `npm run test:migration:validate`
 - [ ] `MIGRATION_ROUNDTRIP_ALLOW=true npm run test:migration:roundtrip` (테스트 DB에서만)
+- [ ] `LIVE_SMOKE_BASE_URL=<url> npm run test:smoke:live` (staging/prod smoke)
 - [ ] (선택) `BASE_URL=http://127.0.0.1:3310 npm run test:perf:smoke`
 
 핵심 E2E 포함 범위:
@@ -66,6 +68,8 @@ CI 아티팩트 확인:
 - [ ] `dependency-failure-e2e-report` (`workflow_dispatch run_dependency_failure=true` 실행 시)
 - [ ] `admin-boundary-e2e-report` (`workflow_dispatch run_admin_boundary=true` 실행 시)
 - [ ] `migration-roundtrip-report` (`workflow_dispatch run_migration_roundtrip=true` 실행 시)
+- [ ] `rate-limit-regression-e2e-report` (`workflow_dispatch run_rate_limit_regression=true` 실행 시)
+- [ ] `live-smoke-report` (`workflow_dispatch run_live_smoke=true` 실행 시)
 
 ---
 

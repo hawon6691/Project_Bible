@@ -1897,6 +1897,10 @@ Response: 200 OK
 | POST | `/admin/queues/:queueName/jobs/:jobId/retry` | 실패 Job 개별 재시도 | Admin | - | `{ retried: true }` |
 | DELETE | `/admin/queues/:queueName/jobs/:jobId` | Job 개별 삭제 | Admin | - | `{ removed: true }` |
 
+운영 규칙:
+- 개별 재시도 API(`POST /admin/queues/:queueName/jobs/:jobId/retry`)는 `failed` 상태 Job에서만 허용됩니다.
+- `failed` 외 상태(`waiting`, `active`, `completed`, `delayed` 등) 재시도 요청 시 `400 VALIDATION_FAILED`를 반환합니다.
+
 ---
 
 ## 공통 에러 코드

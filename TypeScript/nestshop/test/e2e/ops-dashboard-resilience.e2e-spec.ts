@@ -57,5 +57,8 @@ describe('Ops Dashboard Resilience E2E', () => {
     expect(res.body.data.overallStatus).toBe('degraded');
     expect(res.body.data.searchSync).toBeNull();
     expect(res.body.data.errors.searchSync).toBe('search sync unavailable');
+    expect(res.body.data.alertCount).toBeGreaterThan(0);
+    expect(Array.isArray(res.body.data.alerts)).toBe(true);
+    expect(res.body.data.alerts.some((item: { key: string }) => item.key === 'partial_failure')).toBe(true);
   });
 });

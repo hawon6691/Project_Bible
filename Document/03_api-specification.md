@@ -1907,11 +1907,12 @@ Response: 200 OK
 
 | Method | Endpoint | 설명 | 권한 | Request | Response |
 |--------|----------|------|------|---------|----------|
-| GET | `/admin/ops-dashboard/summary` | 운영 핵심 지표 통합 조회 | Admin | - | `{ checkedAt, overallStatus, health, searchSync, crawler, queue, errors }` |
+| GET | `/admin/ops-dashboard/summary` | 운영 핵심 지표 통합 조회 | Admin | - | `{ checkedAt, overallStatus, health, searchSync, crawler, queue, errors, alerts[], alertCount }` |
 
 운영 규칙:
 - 하위 지표 일부 조회가 실패해도 API는 200 응답을 유지하고 `overallStatus: degraded`로 반환합니다.
 - 실패한 지표는 `null`로 내려가며 원인은 `errors.{key}`에 포함됩니다.
+- 집계 결과를 바탕으로 경보 목록 `alerts`를 제공하며, 경보 개수는 `alertCount`에 포함됩니다.
 
 ---
 

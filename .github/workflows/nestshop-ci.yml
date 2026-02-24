@@ -28,6 +28,21 @@ on:
         required: true
         default: false
         type: boolean
+      run_contract_e2e:
+        description: 'Run API contract e2e test on manual dispatch'
+        required: true
+        default: false
+        type: boolean
+      run_stability_check:
+        description: 'Run critical e2e stability check (2 consecutive runs)'
+        required: true
+        default: false
+        type: boolean
+      run_perf_extended:
+        description: 'Run extended perf suite (soak + spike) on manual dispatch'
+        required: true
+        default: false
+        type: boolean
 
 concurrency:
   group: nestshop-ci-${{ github.ref }}
@@ -40,8 +55,8 @@ jobs:
     steps:
       - name: Validate Manual Inputs
         run: |
-          if [[ "${{ inputs.run_release_gate }}" != "true" && "${{ inputs.run_perf_smoke }}" != "true" ]]; then
-            echo "At least one manual job must be enabled (run_release_gate or run_perf_smoke)." >&2
+          if [[ "${{ inputs.run_release_gate }}" != "true" && "${{ inputs.run_perf_smoke }}" != "true" && "${{ inputs.run_contract_e2e }}" != "true" && "${{ inputs.run_stability_check }}" != "true" && "${{ inputs.run_perf_extended }}" != "true" ]]; then
+            echo "At least one manual job must be enabled." >&2
             exit 1
           fi
       - name: Write Validation Summary
@@ -52,6 +67,9 @@ jobs:
           echo "- Target ref: \`${{ inputs.target_ref }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- run_release_gate: \`${{ inputs.run_release_gate }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- run_perf_smoke: \`${{ inputs.run_perf_smoke }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_contract_e2e: \`${{ inputs.run_contract_e2e }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_stability_check: \`${{ inputs.run_stability_check }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_perf_extended: \`${{ inputs.run_perf_extended }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Result: \`${{ job.status }}\`" >> $GITHUB_STEP_SUMMARY
 
   quality:
@@ -291,3 +309,142 @@ jobs:
           echo "- Job result: \`${{ job.status }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Artifact: \`perf-smoke-manual-artifacts\`" >> $GITHUB_STEP_SUMMARY
           echo "- Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+
+  contract-e2e-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_contract_e2e
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: TypeScript/nestshop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: TypeScript/nestshop/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Contract E2E
+        run: |
+          mkdir -p test-results
+          npm run test:e2e:contract -- --json --outputFile=test-results/contract-e2e-report.json
+
+      - name: Upload Contract E2E Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-e2e-report
+          path: TypeScript/nestshop/test-results/contract-e2e-report.json
+          if-no-files-found: warn
+
+  stability-check-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_stability_check
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: TypeScript/nestshop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: TypeScript/nestshop/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Critical Stability Check
+        run: npm run test:e2e:critical:stability
+
+      - name: Upload Stability Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: critical-stability-reports
+          path: |
+            TypeScript/nestshop/test-results/critical-run-1.json
+            TypeScript/nestshop/test-results/critical-run-2.json
+          if-no-files-found: warn
+
+  perf-extended-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_perf_extended
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: TypeScript/nestshop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: TypeScript/nestshop/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Start Perf Mock Server
+        run: |
+          export PERF_PORT=3310
+          nohup npm run test:perf:mock-server > perf-server.log 2>&1 &
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:3310/health >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat perf-server.log
+          exit 1
+
+      - name: Run k6 Soak + Spike
+        run: |
+          mkdir -p test-results
+          docker run --rm --network host \
+            -e BASE_URL=http://127.0.0.1:3310 \
+            -e SOAK_DURATION=2m \
+            -v "${{ github.workspace }}/TypeScript/nestshop:/work" \
+            -w /work \
+            grafana/k6:0.49.0 run \
+            --summary-export /work/test-results/perf-soak-summary.json \
+            test/performance/soak.perf.js
+
+          docker run --rm --network host \
+            -e BASE_URL=http://127.0.0.1:3310 \
+            -v "${{ github.workspace }}/TypeScript/nestshop:/work" \
+            -w /work \
+            grafana/k6:0.49.0 run \
+            --summary-export /work/test-results/perf-spike-summary.json \
+            test/performance/spike-search.perf.js
+
+      - name: Upload Extended Perf Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-extended-artifacts
+          path: |
+            TypeScript/nestshop/test-results/perf-soak-summary.json
+            TypeScript/nestshop/test-results/perf-spike-summary.json
+            TypeScript/nestshop/perf-server.log
+          if-no-files-found: warn

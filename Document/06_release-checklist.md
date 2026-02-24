@@ -29,6 +29,9 @@
 - [ ] `npm run test:e2e:ops`
 - [ ] `npm run test:release:gate`
 - [ ] `npm run test:e2e -- ops-dashboard-thresholds.e2e-spec.ts --runInBand`
+- [ ] `npm run test:e2e:contract`
+- [ ] `npm run test:security:regression`
+- [ ] `npm run test:migration:validate`
 - [ ] (선택) `BASE_URL=http://127.0.0.1:3310 npm run test:perf:smoke`
 
 핵심 E2E 포함 범위:
@@ -56,6 +59,9 @@ CI 아티팩트 확인:
 - [ ] `contract-e2e-report` (`workflow_dispatch run_contract_e2e=true` 실행 시)
 - [ ] `critical-stability-reports` (`workflow_dispatch run_stability_check=true` 실행 시)
 - [ ] `perf-extended-artifacts` (`workflow_dispatch run_perf_extended=true` 실행 시)
+- [ ] `security-regression-report` (`workflow_dispatch run_security_regression=true` 실행 시)
+- [ ] `migration-validation-report` (`workflow_dispatch run_migration_validation=true` 실행 시)
+- [ ] `dependency-failure-e2e-report` (`workflow_dispatch run_dependency_failure=true` 실행 시)
 
 ---
 

@@ -13,6 +13,11 @@ on:
       - '.github/workflows/nestshop-ci.yml'
   workflow_dispatch:
     inputs:
+      target_ref:
+        description: 'Branch or tag to run manual jobs on (ex: main, develop, release/v1)'
+        required: true
+        default: 'main'
+        type: string
       run_release_gate:
         description: 'Run release gate suite (lint/type/build/critical+ops e2e)'
         required: true
@@ -159,6 +164,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -190,6 +197,7 @@ jobs:
           echo "## Release Gate Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- Trigger: \`workflow_dispatch\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Target ref: \`${{ inputs.target_ref }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Job result: \`${{ job.status }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Gate step result: \`${{ steps.run_release_gate.outcome }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Artifact: \`release-gate-report\`" >> $GITHUB_STEP_SUMMARY
@@ -204,6 +212,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -255,6 +265,7 @@ jobs:
           echo "## Perf Smoke Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- Trigger: \`workflow_dispatch\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Target ref: \`${{ inputs.target_ref }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Job result: \`${{ job.status }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- Artifact: \`perf-smoke-manual-artifacts\`" >> $GITHUB_STEP_SUMMARY
           echo "- Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY

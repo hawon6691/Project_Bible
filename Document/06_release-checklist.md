@@ -53,6 +53,9 @@ CI 아티팩트 확인:
 - [ ] `perf-smoke-artifacts` (`test-results/perf-smoke-summary.json`, `perf-server.log`)
 - [ ] `release-gate-report` (`test-results/release-gate-e2e-critical.json`, `test-results/release-gate-e2e-ops.json`)
 - [ ] `perf-smoke-manual-artifacts` (`workflow_dispatch run_perf_smoke=true` 실행 시)
+- [ ] `contract-e2e-report` (`workflow_dispatch run_contract_e2e=true` 실행 시)
+- [ ] `critical-stability-reports` (`workflow_dispatch run_stability_check=true` 실행 시)
+- [ ] `perf-extended-artifacts` (`workflow_dispatch run_perf_extended=true` 실행 시)
 
 ---
 

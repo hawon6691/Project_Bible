@@ -326,6 +326,10 @@ export const API_ROUTES = {
     JOB_DETAIL: ':queueName/jobs/:jobId',
     FAILED_RETRY: ':queueName/failed/retry',
   },
+  OPS_DASHBOARD: {
+    BASE: 'admin/ops-dashboard',
+    SUMMARY: 'summary',
+  },
 } as const;
 
 

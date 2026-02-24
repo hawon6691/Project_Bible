@@ -1903,6 +1903,14 @@ Response: 200 OK
 
 ---
 
+## 50. 운영 통합 대시보드 (Ops Dashboard) — Admin
+
+| Method | Endpoint | 설명 | 권한 | Request | Response |
+|--------|----------|------|------|---------|----------|
+| GET | `/admin/ops-dashboard/summary` | 운영 핵심 지표 통합 조회 | Admin | - | `{ checkedAt, health, searchSync, crawler, queue }` |
+
+---
+
 ## 공통 에러 코드
 
 | HTTP Status | 코드 | 설명 |

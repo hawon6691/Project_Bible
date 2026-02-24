@@ -26,6 +26,7 @@
 
 - [ ] `npm test -- --runInBand`
 - [ ] `npm run test:e2e:critical`
+- [ ] `npm run test:e2e:ops`
 - [ ] `npm run test:e2e -- ops-dashboard-thresholds.e2e-spec.ts --runInBand`
 - [ ] (선택) `BASE_URL=http://127.0.0.1:3310 npm run test:perf:smoke`
 

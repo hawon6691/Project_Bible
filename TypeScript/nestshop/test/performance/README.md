@@ -24,6 +24,9 @@ BASE_URL=http://localhost:3000/api/v1 SOAK_DURATION=10m npm run test:perf:soak
 
 # spike
 BASE_URL=http://localhost:3000/api/v1 npm run test:perf:spike
+
+# assert summary (example)
+npm run test:perf:assert -- test-results/perf-soak-summary.json soak
 ```
 
 ## Scenarios
@@ -33,3 +36,4 @@ BASE_URL=http://localhost:3000/api/v1 npm run test:perf:spike
 - `price-compare.perf.js`
 - `soak.perf.js`
 - `spike-search.perf.js`
+- `assert-summary.js`

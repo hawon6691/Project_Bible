@@ -166,6 +166,7 @@ jobs:
         run: npm ci
 
       - name: Run Release Gate
+        id: run_release_gate
         run: npm run test:release:gate:report
 
       - name: Upload Release Gate Report
@@ -177,3 +178,14 @@ jobs:
             TypeScript/nestshop/test-results/release-gate-e2e-critical.json
             TypeScript/nestshop/test-results/release-gate-e2e-ops.json
           if-no-files-found: warn
+
+      - name: Write Release Gate Summary
+        if: always()
+        run: |
+          echo "## Release Gate Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Trigger: \`workflow_dispatch\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Job result: \`${{ job.status }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Gate step result: \`${{ steps.run_release_gate.outcome }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Artifact: \`release-gate-report\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY

@@ -23,6 +23,7 @@
 - `GET /search/admin/index/outbox/summary`
 - `GET /crawler/admin/monitoring`
 - `GET /resilience/circuit-breakers`
+- `GET /admin/ops-dashboard/summary`
 
 ---
 
@@ -72,9 +73,10 @@ npm run start:prod
 ### 4.1 API 장애 (5xx 급증)
 
 1. `GET /health`로 인프라 체크
-2. 최근 배포/설정 변경 확인
-3. 로그에서 공통 에러코드/스택트레이스 확인
-4. 필요 시 직전 안정 버전 롤백
+2. `GET /admin/ops-dashboard/summary`의 `alerts`/`errors` 확인
+3. 최근 배포/설정 변경 확인
+4. 로그에서 공통 에러코드/스택트레이스 확인
+5. 필요 시 직전 안정 버전 롤백
 
 ### 4.2 검색 장애 (Elasticsearch)
 

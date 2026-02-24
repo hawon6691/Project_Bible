@@ -11,6 +11,7 @@ describe('Ops Dashboard E2E', () => {
   const opsDashboardServiceMock = {
     getSummary: jest.fn().mockResolvedValue({
       checkedAt: new Date().toISOString(),
+      overallStatus: 'up',
       health: {
         status: 'up',
         checks: {
@@ -38,6 +39,9 @@ describe('Ops Dashboard E2E', () => {
           },
         ],
       },
+      errors: {},
+      alerts: [],
+      alertCount: 0,
     }),
   };
 
@@ -59,6 +63,7 @@ describe('Ops Dashboard E2E', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data.health.status).toBe('up');
     expect(res.body.data.queue.total).toBe(4);
+    expect(res.body.data.alertCount).toBe(0);
     expect(opsDashboardServiceMock.getSummary).toHaveBeenCalledTimes(1);
   });
 });

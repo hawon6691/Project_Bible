@@ -34,6 +34,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  validate-dispatch-inputs:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Manual Inputs
+        run: |
+          if [[ "${{ inputs.run_release_gate }}" != "true" && "${{ inputs.run_perf_smoke }}" != "true" ]]; then
+            echo "At least one manual job must be enabled (run_release_gate or run_perf_smoke)." >&2
+            exit 1
+          fi
+      - name: Write Validation Summary
+        if: always()
+        run: |
+          echo "## Manual Dispatch Validation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Target ref: \`${{ inputs.target_ref }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_release_gate: \`${{ inputs.run_release_gate }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_perf_smoke: \`${{ inputs.run_perf_smoke }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Result: \`${{ job.status }}\`" >> $GITHUB_STEP_SUMMARY
+
   quality:
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -157,6 +177,7 @@ jobs:
 
   release-gate:
     if: github.event_name == 'workflow_dispatch' && inputs.run_release_gate
+    needs: validate-dispatch-inputs
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -205,6 +226,7 @@ jobs:
 
   perf-smoke-manual:
     if: github.event_name == 'workflow_dispatch' && inputs.run_perf_smoke
+    needs: validate-dispatch-inputs
     runs-on: ubuntu-latest
     defaults:
       run:

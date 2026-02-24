@@ -15,5 +15,6 @@ import { QueueAdminService } from './queue-admin.service';
   ],
   controllers: [QueueAdminController],
   providers: [QueueAdminService],
+  exports: [QueueAdminService],
 })
 export class QueueAdminModule {}

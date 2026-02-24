@@ -51,6 +51,7 @@ import { ResilienceModule } from './resilience/resilience.module';
 import { RedlockModule } from './redlock/redlock.module';
 import { QueryModule } from './query/query.module';
 import { QueueAdminModule } from './queue-admin/queue-admin.module';
+import { OpsDashboardModule } from './ops-dashboard/ops-dashboard.module';
 
 @Module({
   imports: [
@@ -148,6 +149,7 @@ import { QueueAdminModule } from './queue-admin/queue-admin.module';
     RedlockModule,
     QueryModule,
     QueueAdminModule,
+    OpsDashboardModule,
   ],
 })
 export class AppModule {}

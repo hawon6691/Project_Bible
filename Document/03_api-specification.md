@@ -1913,6 +1913,11 @@ Response: 200 OK
 - 하위 지표 일부 조회가 실패해도 API는 200 응답을 유지하고 `overallStatus: degraded`로 반환합니다.
 - 실패한 지표는 `null`로 내려가며 원인은 `errors.{key}`에 포함됩니다.
 - 집계 결과를 바탕으로 경보 목록 `alerts`를 제공하며, 경보 개수는 `alertCount`에 포함됩니다.
+- 경보 임계치는 환경변수로 제어합니다.
+  - `OPS_ALERT_SEARCH_FAILED_THRESHOLD`
+  - `OPS_ALERT_CRAWLER_FAILED_RUNS_THRESHOLD`
+  - `OPS_ALERT_QUEUE_FAILED_THRESHOLD`
+- 임계치 판정은 `현재값 >= 임계치` 기준이며, 임계치가 `0` 이하인 경우 해당 경보는 비활성화됩니다.
 
 ---
 

@@ -34,6 +34,12 @@ Ops Dashboard 경보 임계치 환경변수:
 - `OPS_ALERT_QUEUE_FAILED_THRESHOLD`
 큐 failed 건수 경보 임계치
 
+임계치 운영 규칙:
+
+- 판정 기준은 `현재값 >= 임계치`입니다.
+- 임계치를 `0` 이하로 설정하면 해당 경보를 사실상 비활성화할 수 있습니다.
+- 운영 권장값은 `1`이며, 장애 민감도를 낮추고 싶으면 값을 높입니다.
+
 ---
 
 ## 2. 서비스 기동 순서
@@ -185,6 +191,11 @@ CI 아티팩트 확인 경로:
 - `perf-smoke-artifacts` 아티팩트
   - `TypeScript/nestshop/test-results/perf-smoke-summary.json`
   - `TypeScript/nestshop/perf-server.log`
+
+Ops Dashboard 임계치 회귀 테스트:
+
+- `npm run test:e2e -- ops-dashboard-thresholds.e2e-spec.ts --runInBand`
+- 임계치 초과/미초과에 따라 `alerts`, `alertCount` 동작을 검증합니다.
 
 ---
 

@@ -57,6 +57,14 @@ npm run start:prod
   - e2e-critical
   - perf-smoke
 
+핵심 E2E(`test:e2e:critical`) 포함 시나리오:
+
+- Auth/Search 기본 플로우
+- Public API (`health`, `errors/codes`)
+- Admin 운영 API (`search admin`, `crawler`, `resilience`)
+- Queue Admin (`supported`, `stats`, `failed/retry/delete`)
+- Ops Dashboard (`summary`, 부분 장애 `degraded` 응답)
+
 ---
 
 ## 4. 장애 분류와 1차 대응
@@ -158,6 +166,14 @@ npm run test:perf:mock-server
 # 별도 터미널에서
 BASE_URL=http://127.0.0.1:3310 npm run test:perf:smoke
 ```
+
+CI 아티팩트 확인 경로:
+
+- `e2e-critical-report` 아티팩트
+  - `TypeScript/nestshop/test-results/e2e-critical-report.json`
+- `perf-smoke-artifacts` 아티팩트
+  - `TypeScript/nestshop/test-results/perf-smoke-summary.json`
+  - `TypeScript/nestshop/perf-server.log`
 
 ---
 

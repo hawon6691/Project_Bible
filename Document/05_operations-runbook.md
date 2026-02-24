@@ -25,6 +25,15 @@
 - `GET /resilience/circuit-breakers`
 - `GET /admin/ops-dashboard/summary`
 
+Ops Dashboard 경보 임계치 환경변수:
+
+- `OPS_ALERT_SEARCH_FAILED_THRESHOLD`
+검색 동기화 failed 건수 경보 임계치
+- `OPS_ALERT_CRAWLER_FAILED_RUNS_THRESHOLD`
+크롤러 failedRuns 경보 임계치
+- `OPS_ALERT_QUEUE_FAILED_THRESHOLD`
+큐 failed 건수 경보 임계치
+
 ---
 
 ## 2. 서비스 기동 순서

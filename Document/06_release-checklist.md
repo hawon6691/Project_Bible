@@ -51,6 +51,7 @@ CI 아티팩트 확인:
 
 - [ ] `e2e-critical-report` (`test-results/e2e-critical-report.json`)
 - [ ] `perf-smoke-artifacts` (`test-results/perf-smoke-summary.json`, `perf-server.log`)
+- [ ] `release-gate-report` (`test-results/release-gate-e2e-critical.json`, `test-results/release-gate-e2e-ops.json`)
 
 ---
 

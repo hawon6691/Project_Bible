@@ -166,4 +166,14 @@ jobs:
         run: npm ci
 
       - name: Run Release Gate
-        run: npm run test:release:gate
+        run: npm run test:release:gate:report
+
+      - name: Upload Release Gate Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-gate-report
+          path: |
+            TypeScript/nestshop/test-results/release-gate-e2e-critical.json
+            TypeScript/nestshop/test-results/release-gate-e2e-ops.json
+          if-no-files-found: warn

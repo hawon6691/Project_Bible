@@ -1,4 +1,6 @@
 import { INestApplication } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
+import { BusinessException } from '../../src/common/exceptions/business.exception';
 import { QueueAdminController } from '../../src/queue-admin/queue-admin.controller';
 import { QueueAdminService } from '../../src/queue-admin/queue-admin.service';
 import { createE2eApp } from './test-app.factory';
@@ -32,10 +34,20 @@ describe('Queue Admin E2E', () => {
       requeuedCount: 2,
       jobIds: ['1001', '1002'],
     }),
-    retryJob: jest.fn().mockResolvedValue({
-      queueName: 'video-transcode',
-      jobId: '1001',
-      retried: true,
+    retryJob: jest.fn().mockImplementation(async (_queueName: string, jobId: string) => {
+      if (jobId === 'completed-job') {
+        throw new BusinessException(
+          'VALIDATION_FAILED',
+          HttpStatus.BAD_REQUEST,
+          '실패 상태 Job만 재시도할 수 있습니다. (current: completed)',
+        );
+      }
+
+      return {
+        queueName: 'video-transcode',
+        jobId,
+        retried: true,
+      };
     }),
     removeJob: jest.fn().mockResolvedValue({
       queueName: 'video-transcode',
@@ -102,6 +114,13 @@ describe('Queue Admin E2E', () => {
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.data.retried).toBe(true);
+  });
+
+  it('POST /admin/queues/:queueName/jobs/:jobId/retry should reject non-failed job', async () => {
+    const res = await client.post('/admin/queues/video-transcode/jobs/completed-job/retry', {});
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error.code).toBe('COMMON_001');
   });
 
   it('DELETE /admin/queues/:queueName/jobs/:jobId should remove job', async () => {

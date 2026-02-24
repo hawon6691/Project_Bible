@@ -94,6 +94,16 @@ export class QueueAdminService {
       throw new BusinessException('RESOURCE_NOT_FOUND', HttpStatus.NOT_FOUND, '해당 Job을 찾을 수 없습니다.');
     }
 
+    // retry는 실패 상태의 Job에만 허용한다.
+    const state = await job.getState();
+    if (state !== 'failed') {
+      throw new BusinessException(
+        'VALIDATION_FAILED',
+        HttpStatus.BAD_REQUEST,
+        `실패 상태 Job만 재시도할 수 있습니다. (current: ${state})`,
+      );
+    }
+
     await job.retry();
     return {
       queueName,

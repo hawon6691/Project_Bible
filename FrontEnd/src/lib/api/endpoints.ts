@@ -1,8 +1,86 @@
 import apiClient from './client';
+import type { AxiosResponse } from 'axios';
 import type { ApiResponse, MessageResponse, PaginationParams } from '@/types/common.types';
 import type { LoginRequest, LoginResponse, SignupRequest, SignupResponse, User } from '@/types/user.types';
-import type { ProductSummary, ProductDetail, ProductQueryParams, Category, SpecDefinition, CompareResult, ScoredCompareResult } from '@/types/product.types';
+import type {
+  ProductSummary,
+  ProductDetail,
+  ProductQueryParams,
+  Category,
+  SpecDefinition,
+  CompareResult,
+  ScoredCompareResult,
+} from '@/types/product.types';
 import type { CartItem, Order, CreateOrderRequest, Address, Review, Coupon } from '@/types/order.types';
+
+const unsupported = <T = never>(feature: string): Promise<T> =>
+  Promise.reject(new Error(`${feature} is not supported by current backend API`));
+
+const mapAddressFromBackend = (address: any): Address => ({
+  id: address.id,
+  name: address.recipientName ?? address.name ?? '',
+  phone: address.phone ?? address.recipientPhone ?? '',
+  zipCode: address.zipCode ?? '',
+  address: address.address ?? '',
+  addressDetail: address.addressDetail ?? '',
+  isDefault: Boolean(address.isDefault),
+});
+
+const mapAddressToBackend = (address: Partial<Address>) => ({
+  recipientName: address.name,
+  phone: address.phone,
+  zipCode: address.zipCode,
+  address: address.address,
+  addressDetail: address.addressDetail,
+  isDefault: address.isDefault,
+});
+
+const mapCartItemFromBackend = (item: any): CartItem => ({
+  id: item.id,
+  productId: item.product?.id ?? item.productId,
+  productName: item.product?.name ?? item.productName ?? '',
+  thumbnailUrl: item.product?.thumbnailUrl ?? item.thumbnailUrl ?? '',
+  price: item.product?.lowestPrice ?? item.product?.price ?? item.price ?? 0,
+  quantity: item.quantity ?? 1,
+  selectedOptions: item.selectedOptions ?? undefined,
+  sellerId: item.seller?.id ?? item.sellerId,
+  sellerName: item.seller?.name ?? item.sellerName ?? '',
+});
+
+const mapOrderItem = (item: any) => ({
+  id: item.id,
+  productId: item.productId,
+  productName: item.productName ?? '',
+  thumbnailUrl: item.thumbnailUrl ?? '',
+  quantity: item.quantity ?? 0,
+  unitPrice: item.unitPrice ?? 0,
+  totalPrice: item.totalPrice ?? 0,
+  selectedOptions: item.selectedOptions ?? undefined,
+  sellerId: item.sellerId ?? 0,
+  sellerName: item.sellerName ?? '',
+});
+
+const mapOrderSummary = (order: any): Order => ({
+  id: order.id,
+  orderNumber: order.orderNumber,
+  status: order.status,
+  totalAmount: order.totalAmount ?? 0,
+  discountAmount: order.discountAmount ?? 0,
+  shippingFee: order.shippingFee ?? 0,
+  finalAmount: order.finalAmount ?? 0,
+  items: (order.items ?? []).map((item: any) => mapOrderItem(item)),
+  shippingAddress: mapAddressFromBackend(order.shippingAddress ?? {}),
+  createdAt: order.createdAt,
+  paidAt: order.paidAt,
+});
+
+const mapOrderDetail = (order: any): Order => ({
+  ...mapOrderSummary(order),
+  items: (order.items ?? []).map((item: any) => mapOrderItem(item)),
+  shippingAddress: mapAddressFromBackend(order.shippingAddress ?? {}),
+  shippingFee: order.shippingFee ?? 0,
+  discountAmount: (order.pointUsed ?? 0) + (order.discountAmount ?? 0),
+});
 
 export const authApi = {
   signup: (data: SignupRequest) => apiClient.post<ApiResponse<SignupResponse>>('/auth/signup', data),
@@ -18,7 +96,7 @@ export const authApi = {
 
 export const userApi = {
   getMe: () => apiClient.get<ApiResponse<User>>('/users/me'),
-  updateMe: (data: Partial<{ name: string; phone: string; password: string }>) => apiClient.patch<ApiResponse<User>>('/users/me', data),
+  updateMe: (data: Partial<{ name: string; phone: string; password: string }>) => apiClient.patch<ApiResponse<User>>('/users/me/profile', data),
   deleteMe: () => apiClient.delete<ApiResponse<MessageResponse>>('/users/me'),
   getUsers: (params?: PaginationParams & { search?: string; status?: string; role?: string }) => apiClient.get<ApiResponse<User[]>>('/users', { params }),
   updateUserStatus: (id: number, status: string) => apiClient.patch<ApiResponse<User>>(`/users/${id}/status`, { status }),
@@ -41,7 +119,7 @@ export const productApi = {
   addOption: (productId: number, data: { name: string; values: string[] }) => apiClient.post(`/products/${productId}/options`, data),
   updateOption: (productId: number, optionId: number, data: { name: string; values: string[] }) => apiClient.patch(`/products/${productId}/options/${optionId}`, data),
   deleteOption: (productId: number, optionId: number) => apiClient.delete(`/products/${productId}/options/${optionId}`),
-  addImage: (productId: number, data: FormData) => apiClient.post(`/products/${productId}/images`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  addImage: (productId: number, data: { url: string; isMain?: boolean; sortOrder?: number }) => apiClient.post(`/products/${productId}/images`, data),
   deleteImage: (productId: number, imageId: number) => apiClient.delete(`/products/${productId}/images/${imageId}`),
 };
 
@@ -57,7 +135,16 @@ export const specApi = {
 };
 
 export const cartApi = {
-  getItems: () => apiClient.get<ApiResponse<CartItem[]>>('/cart'),
+  getItems: async () => {
+    const res = await apiClient.get<ApiResponse<any[]>>('/cart');
+    return {
+      ...res,
+      data: {
+        ...res.data,
+        data: (res.data.data || []).map((item: any) => mapCartItemFromBackend(item)),
+      },
+    };
+  },
   addItem: (data: { productId: number; quantity: number; sellerId: number; selectedOptions?: string }) => apiClient.post<ApiResponse<CartItem>>('/cart', data),
   updateItem: (id: number, data: { quantity: number }) => apiClient.patch<ApiResponse<CartItem>>(`/cart/${id}`, data),
   removeItem: (id: number) => apiClient.delete<ApiResponse<MessageResponse>>(`/cart/${id}`),
@@ -65,62 +152,135 @@ export const cartApi = {
 };
 
 export const orderApi = {
-  create: (data: CreateOrderRequest) => apiClient.post<ApiResponse<Order>>('/orders', data),
-  getAll: (params?: PaginationParams & { status?: string }) => apiClient.get<ApiResponse<Order[]>>('/orders', { params }),
-  getOne: (id: number) => apiClient.get<ApiResponse<Order>>(`/orders/${id}`),
-  cancel: (id: number) => apiClient.post<ApiResponse<MessageResponse>>(`/orders/${id}/cancel`),
-  requestRefund: (id: number, data: { reason: string }) => apiClient.post<ApiResponse<MessageResponse>>(`/orders/${id}/refund`, data),
+  create: async (data: CreateOrderRequest) => {
+    const payload = {
+      addressId: data.addressId,
+      items: (data.items as any[]).map((item: any) => ({
+        productId: item.productId,
+        sellerId: item.sellerId,
+        quantity: item.quantity,
+        selectedOptions: item.selectedOptions,
+      })),
+      usePoint: (data as any).usePoints ?? 0,
+      fromCart: true,
+      cartItemIds: (data.items as any[]).map((item: any) => item.id).filter((id) => typeof id === 'number'),
+    };
+    const res = await apiClient.post<ApiResponse<any>>('/orders', payload);
+    return { ...res, data: { ...res.data, data: mapOrderDetail(res.data.data) } };
+  },
+  getAll: async (params?: PaginationParams & { status?: string }) => {
+    const res = await apiClient.get<ApiResponse<any[]>>('/orders', { params });
+    const mapped = (res.data.data || []).map((order: any) => ({
+      ...mapOrderSummary(order),
+      items: order.items ? order.items.map((item: any) => mapOrderItem(item)) : [],
+    }));
+    return { ...res, data: { ...res.data, data: mapped } };
+  },
+  getOne: async (id: number) => {
+    const res = await apiClient.get<ApiResponse<any>>(`/orders/${id}`);
+    return { ...res, data: { ...res.data, data: mapOrderDetail(res.data.data) } };
+  },
+  cancel: async (id: number) => {
+    const res = await apiClient.post<ApiResponse<any>>(`/orders/${id}/cancel`);
+    return { ...res, data: { ...res.data, data: mapOrderDetail(res.data.data) } };
+  },
+  requestRefund: (id: number, data: { reason: string }) => apiClient.post<ApiResponse<MessageResponse>>(`/payments/${id}/refund`, data),
 };
 
 export const addressApi = {
-  getAll: () => apiClient.get<ApiResponse<Address[]>>('/addresses'),
-  create: (data: Omit<Address, 'id'>) => apiClient.post<ApiResponse<Address>>('/addresses', data),
-  update: (id: number, data: Partial<Address>) => apiClient.patch<ApiResponse<Address>>(`/addresses/${id}`, data),
+  getAll: async () => {
+    const res = await apiClient.get<ApiResponse<any[]>>('/addresses');
+    return {
+      ...res,
+      data: {
+        ...res.data,
+        data: (res.data.data || []).map((address: any) => mapAddressFromBackend(address)),
+      },
+    };
+  },
+  create: async (data: Omit<Address, 'id'>) => {
+    const res = await apiClient.post<ApiResponse<any>>('/addresses', mapAddressToBackend(data));
+    return { ...res, data: { ...res.data, data: mapAddressFromBackend(res.data.data) } };
+  },
+  update: async (id: number, data: Partial<Address>) => {
+    const res = await apiClient.patch<ApiResponse<any>>(`/addresses/${id}`, mapAddressToBackend(data));
+    return { ...res, data: { ...res.data, data: mapAddressFromBackend(res.data.data) } };
+  },
   delete: (id: number) => apiClient.delete<ApiResponse<MessageResponse>>(`/addresses/${id}`),
-  setDefault: (id: number) => apiClient.patch<ApiResponse<Address>>(`/addresses/${id}/default`),
+  setDefault: async (id: number) => {
+    const res = await apiClient.patch<ApiResponse<any>>(`/addresses/${id}`, { isDefault: true });
+    return { ...res, data: { ...res.data, data: mapAddressFromBackend(res.data.data) } };
+  },
 };
 
 export const reviewApi = {
   getByProduct: (productId: number, params?: PaginationParams & { sort?: string }) => apiClient.get<ApiResponse<Review[]>>(`/products/${productId}/reviews`, { params }),
-  create: (productId: number, data: FormData) => apiClient.post<ApiResponse<Review>>(`/products/${productId}/reviews`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  create: (productId: number, data: FormData | Record<string, unknown>) => {
+    if (data instanceof FormData) {
+      const body = Object.fromEntries(data.entries());
+      return apiClient.post<ApiResponse<Review>>(`/products/${productId}/reviews`, body);
+    }
+    return apiClient.post<ApiResponse<Review>>(`/products/${productId}/reviews`, data);
+  },
   update: (reviewId: number, data: Record<string, unknown>) => apiClient.patch<ApiResponse<Review>>(`/reviews/${reviewId}`, data),
   delete: (reviewId: number) => apiClient.delete<ApiResponse<MessageResponse>>(`/reviews/${reviewId}`),
-  helpful: (reviewId: number) => apiClient.post<ApiResponse<MessageResponse>>(`/reviews/${reviewId}/helpful`),
-  getMyReviews: (params?: PaginationParams) => apiClient.get<ApiResponse<Review[]>>('/reviews/me', { params }),
+  helpful: (reviewId: number) => unsupported<AxiosResponse<ApiResponse<MessageResponse>>>(`review helpful (${reviewId})`),
+  getMyReviews: (_params?: PaginationParams) => unsupported<AxiosResponse<ApiResponse<Review[]>>>('my review list'),
 };
 
 export const couponApi = {
-  getMyCoupons: () => apiClient.get<ApiResponse<Coupon[]>>('/coupons/me'),
-  claim: (code: string) => apiClient.post<ApiResponse<Coupon>>('/coupons/claim', { code }),
+  getMyCoupons: () => unsupported<AxiosResponse<ApiResponse<Coupon[]>>>('coupon module'),
+  claim: (_code: string) => unsupported<AxiosResponse<ApiResponse<Coupon>>>('coupon module'),
 };
 
 export const priceApi = {
-  getHistory: (productId: number, params?: { days?: number }) => apiClient.get(`/products/${productId}/price-history`, { params }),
-  setAlert: (productId: number, targetPrice: number) => apiClient.post(`/products/${productId}/price-alerts`, { targetPrice }),
-  getMyAlerts: () => apiClient.get('/price-alerts/me'),
+  getHistory: (productId: number, params?: { period?: string; days?: number }) =>
+    apiClient.get(`/products/${productId}/price-history`, {
+      params: { period: params?.period ?? (params?.days ? `${params.days}d` : undefined) },
+    }),
+  setAlert: (productId: number, targetPrice: number) => apiClient.post('/price-alerts', { productId, targetPrice }),
+  getMyAlerts: () => apiClient.get('/price-alerts'),
   deleteAlert: (id: number) => apiClient.delete(`/price-alerts/${id}`),
 };
 
 export const sellerApi = {
-  register: (data: Record<string, unknown>) => apiClient.post('/sellers/register', data),
-  getMyInfo: () => apiClient.get('/sellers/me'),
-  updateMyInfo: (data: Record<string, unknown>) => apiClient.patch('/sellers/me', data),
-  getMyPrices: (params?: PaginationParams) => apiClient.get('/sellers/me/prices', { params }),
-  setPrice: (data: { productId: number; price: number; url: string; shipping?: string }) => apiClient.post('/sellers/me/prices', data),
-  updatePrice: (priceId: number, data: { price: number; url?: string; shipping?: string }) => apiClient.patch(`/sellers/me/prices/${priceId}`, data),
-  deletePrice: (priceId: number) => apiClient.delete(`/sellers/me/prices/${priceId}`),
+  register: (_data: Record<string, unknown>) => unsupported<AxiosResponse<ApiResponse<MessageResponse>>>('seller self registration'),
+  getMyInfo: () => unsupported<AxiosResponse<ApiResponse<any>>>('seller me profile'),
+  updateMyInfo: (_data: Record<string, unknown>) => unsupported<AxiosResponse<ApiResponse<any>>>('seller me profile'),
+  getMyPrices: (_params?: PaginationParams) => unsupported<AxiosResponse<ApiResponse<any[]>>>('seller my prices'),
+  setPrice: (data: { productId: number; price: number; url: string; shipping?: string }) => apiClient.post(`/products/${data.productId}/prices`, data),
+  updatePrice: (priceId: number, data: { price: number; url?: string; shipping?: string }) => apiClient.patch(`/prices/${priceId}`, data),
+  deletePrice: (priceId: number) => apiClient.delete(`/prices/${priceId}`),
 };
 
 export const adminApi = {
-  getStats: () => apiClient.get('/admin/stats'),
-  getSellers: (params?: PaginationParams & { status?: string }) => apiClient.get('/admin/sellers', { params }),
-  approveSeller: (id: number) => apiClient.patch(`/admin/sellers/${id}/approve`),
-  rejectSeller: (id: number, reason: string) => apiClient.patch(`/admin/sellers/${id}/reject`, { reason }),
+  // 기존 admin 대시보드 화면 호환을 위해 ops dashboard 요약 응답을 변환한다.
+  getStats: async () => {
+    const res = await apiClient.get<ApiResponse<any>>('/admin/ops-dashboard/summary');
+    const src = res.data.data || {};
+    const transformed = {
+      totalUsers: 0,
+      totalProducts: 0,
+      totalOrders: 0,
+      totalSellers: 0,
+      totalRevenue: 0,
+      totalReviews: 0,
+      todayOrders: 0,
+      todayRevenue: 0,
+      overallStatus: src.overallStatus,
+      alertCount: src.alertCount ?? 0,
+      alerts: src.alerts ?? [],
+    };
+    return { ...res, data: { ...res.data, data: transformed } };
+  },
+  getSellers: (params?: PaginationParams & { status?: string }) => apiClient.get('/sellers', { params }),
+  approveSeller: (id: number) => unsupported<AxiosResponse<ApiResponse<MessageResponse>>>(`seller approve API (${id})`),
+  rejectSeller: (id: number, _reason: string) => unsupported<AxiosResponse<ApiResponse<MessageResponse>>>(`seller reject API (${id})`),
   getOrders: (params?: PaginationParams & { status?: string }) => apiClient.get('/admin/orders', { params }),
   updateOrderStatus: (id: number, status: string) => apiClient.patch(`/admin/orders/${id}/status`, { status }),
-  getReviews: (params?: PaginationParams & { reported?: boolean }) => apiClient.get('/admin/reviews', { params }),
-  deleteReview: (id: number) => apiClient.delete(`/admin/reviews/${id}`),
-  getCoupons: (params?: PaginationParams) => apiClient.get('/admin/coupons', { params }),
-  createCoupon: (data: Record<string, unknown>) => apiClient.post('/admin/coupons', data),
-  deleteCoupon: (id: number) => apiClient.delete(`/admin/coupons/${id}`),
+  getReviews: (_params?: PaginationParams & { reported?: boolean }) => unsupported<AxiosResponse<ApiResponse<Review[]>>>('admin review list'),
+  deleteReview: (id: number) => apiClient.delete(`/reviews/${id}`),
+  getCoupons: (_params?: PaginationParams) => unsupported<AxiosResponse<ApiResponse<Coupon[]>>>('coupon module'),
+  createCoupon: (_data: Record<string, unknown>) => unsupported<AxiosResponse<ApiResponse<Coupon>>>('coupon module'),
+  deleteCoupon: (_id: number) => unsupported<AxiosResponse<ApiResponse<MessageResponse>>>('coupon module'),
 };

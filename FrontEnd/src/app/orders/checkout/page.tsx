@@ -37,7 +37,18 @@ export default function CheckoutPage() {
   const onFinish = async (values: any) => {
     setSubmitting(true);
     try {
-      await orderApi.create({ items: items.map((i) => ({ cartItemId: i.id, quantity: i.quantity })), addressId: values.addressId, couponId: selectedCoupon?.id, usePoints: usePoints > 0 ? usePoints : undefined, paymentMethod: values.paymentMethod });
+      await orderApi.create({
+        items: items.map((i) => ({
+          id: i.id,
+          productId: i.productId,
+          sellerId: i.sellerId,
+          quantity: i.quantity,
+          selectedOptions: i.selectedOptions,
+        })),
+        addressId: values.addressId,
+        usePoints: usePoints > 0 ? usePoints : undefined,
+        paymentMethod: values.paymentMethod,
+      });
       message.success('주문이 완료되었습니다!'); await clearCart(); router.push(ROUTES.ORDERS);
     } catch (e: any) { message.error(e?.response?.data?.error?.message || '주문에 실패했습니다.'); } finally { setSubmitting(false); }
   };

@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, OnModuleInit } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -33,6 +33,7 @@ interface SearchDocument {
 
 @Injectable()
 export class SearchService implements OnModuleInit {
+  private readonly logger = new Logger(SearchService.name);
   private readonly indexName = 'products_v1';
   private readonly defaultWeights: Record<string, number> = {
     name: 10,
@@ -58,7 +59,13 @@ export class SearchService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    await this.ensureIndex();
+    try {
+      await this.ensureIndex();
+    } catch (error) {
+      // ES 버전/연결 문제로 인덱스 준비에 실패해도 서비스 전체 부팅은 유지한다.
+      const message = error instanceof Error ? error.message : 'unknown error';
+      this.logger.warn(`Elasticsearch index bootstrap skipped: ${message}`);
+    }
   }
 
   async search(query: SearchQueryDto) {

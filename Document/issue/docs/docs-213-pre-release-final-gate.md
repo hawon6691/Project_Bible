@@ -40,3 +40,25 @@ assignees: ""
 - [x] 수동 CI 실행 위치/입력값 조합 정리
 - [x] 합격 기준/중단 기준 명시
 - [x] 배포 승인 체크리스트 포함
+
+---
+
+## 🚀 Render 적용 가이드
+
+> `live_smoke_base_url` 입력을 위해 Render에서 API URL을 확보하는 절차입니다.
+
+1. Render 가입 후 `New +` → `Web Service` 선택
+2. GitHub 저장소 연결 후 `03_Project_Bible/Project_Bible/TypeScript/nestshop` 기준으로 배포 설정
+3. Build Command: `npm ci && npm run build`
+4. Start Command: `npm run start:prod`
+5. Environment Variables에 `.env.example` 기준 필수 값 입력
+6. 배포 완료 후 Render 도메인 확인 (`https://<service-name>.onrender.com`)
+7. 해당 주소를 CI 수동 실행 값에 입력
+: `live_smoke_base_url=https://<service-name>.onrender.com`
+
+## ✅ 수동 CI 입력 예시
+
+- `run_release_gate=true`
+- `run_live_smoke=true`
+- `live_smoke_base_url=https://<service-name>.onrender.com`
+- `target_ref=main` (또는 배포할 태그/브랜치)

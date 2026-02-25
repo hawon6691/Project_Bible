@@ -34,6 +34,12 @@ describe('Queue Admin E2E', () => {
       requeuedCount: 2,
       jobIds: ['1001', '1002'],
     }),
+    autoRetryFailed: jest.fn().mockResolvedValue({
+      perQueueLimit: 20,
+      maxTotal: 100,
+      retriedTotal: 3,
+      items: [{ queueName: 'video-transcode', candidateCount: 3, retriedCount: 3, jobIds: ['1001', '1002', '1003'] }],
+    }),
     retryJob: jest.fn().mockImplementation(async (_queueName: string, jobId: string) => {
       if (jobId === 'completed-job') {
         throw new BusinessException(
@@ -107,6 +113,14 @@ describe('Queue Admin E2E', () => {
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.data.requeuedCount).toBe(2);
+  });
+
+  it('POST /admin/queues/auto-retry should run auto retry policy', async () => {
+    const res = await client.post('/admin/queues/auto-retry?perQueueLimit=20&maxTotal=100', {});
+    expect(res.status).toBe(201);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.retriedTotal).toBe(3);
+    expect(queueAdminServiceMock.autoRetryFailed).toHaveBeenCalled();
   });
 
   it('POST /admin/queues/:queueName/jobs/:jobId/retry should retry single job', async () => {

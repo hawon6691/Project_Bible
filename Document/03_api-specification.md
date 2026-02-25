@@ -1872,6 +1872,7 @@ Response: 200 OK
 | Method | Endpoint | 설명 | 권한 | Request | Response |
 |--------|----------|------|------|---------|----------|
 | GET | `/resilience/circuit-breakers` | Circuit Breaker 상태 목록 | Admin | - | `{ items[] }` |
+| GET | `/resilience/circuit-breakers/policies` | Circuit Breaker 자동 튜닝 정책/통계 조회 | Admin | - | `{ items: [{ name, options, stats }] }` |
 | GET | `/resilience/circuit-breakers/:name` | Circuit Breaker 단건 상태 | Admin | - | `CircuitBreakerSnapshot` |
 | POST | `/resilience/circuit-breakers/:name/reset` | Circuit Breaker 수동 초기화 | Admin | - | `{ message, name }` |
 
@@ -1892,6 +1893,7 @@ Response: 200 OK
 |--------|----------|------|------|---------|----------|
 | GET | `/admin/queues/supported` | 운영 대상 큐 목록 조회 | Admin | - | `{ items[] }` |
 | GET | `/admin/queues/stats` | 큐별 상태 통계 조회 | Admin | - | `{ total, items: [{ queueName, paused, counts }] }` |
+| POST | `/admin/queues/auto-retry` | 전체 큐 실패 Job 자동 재시도 | Admin | `?perQueueLimit&maxTotal` | `{ retriedTotal, items[] }` |
 | GET | `/admin/queues/:queueName/failed` | 실패 Job 목록 조회 | Admin | `?page&limit&newestFirst` | `FailedJob[]` |
 | POST | `/admin/queues/:queueName/failed/retry` | 실패 Job 일괄 재시도 | Admin | `?limit` | `{ requested, requeuedCount, jobIds[] }` |
 | POST | `/admin/queues/:queueName/jobs/:jobId/retry` | 실패 Job 개별 재시도 | Admin | - | `{ retried: true }` |
@@ -1918,6 +1920,21 @@ Response: 200 OK
   - `OPS_ALERT_CRAWLER_FAILED_RUNS_THRESHOLD`
   - `OPS_ALERT_QUEUE_FAILED_THRESHOLD`
 - 임계치 판정은 `현재값 >= 임계치` 기준이며, 임계치가 `0` 이하인 경우 해당 경보는 비활성화됩니다.
+
+---
+
+## 51. 관측성 대시보드 (Observability) — Admin
+
+| Method | Endpoint | 설명 | 권한 | Request | Response |
+|--------|----------|------|------|---------|----------|
+| GET | `/admin/observability/metrics` | 최근 요청 메트릭 요약 조회 | Admin | - | `{ totalRequests, errorRate, avgLatencyMs, p95LatencyMs, p99LatencyMs, statusBuckets }` |
+| GET | `/admin/observability/traces` | 최근 HTTP 트레이스 조회 | Admin | `?limit&pathContains` | `{ items: [{ requestId, method, path, statusCode, durationMs, ... }] }` |
+| GET | `/admin/observability/dashboard` | 관측성 통합 대시보드 조회 | Admin | - | `{ process, metrics, queue, resilience, searchSync, crawler, opsSummary }` |
+
+운영 규칙:
+- 트레이스는 인메모리 순환 버퍼(`OBS_TRACE_BUFFER_LIMIT`)에 보관됩니다.
+- 메트릭은 최근 15분 요청 기준으로 계산됩니다.
+- 대시보드는 큐/서킷브레이커/검색동기화/크롤러/Ops Dashboard를 통합 조회합니다.
 
 ---
 

@@ -52,6 +52,7 @@ import { RedlockModule } from './redlock/redlock.module';
 import { QueryModule } from './query/query.module';
 import { QueueAdminModule } from './queue-admin/queue-admin.module';
 import { OpsDashboardModule } from './ops-dashboard/ops-dashboard.module';
+import { ObservabilityModule } from './observability/observability.module';
 
 @Module({
   imports: [
@@ -150,6 +151,7 @@ import { OpsDashboardModule } from './ops-dashboard/ops-dashboard.module';
     QueryModule,
     QueueAdminModule,
     OpsDashboardModule,
+    ObservabilityModule,
   ],
 })
 export class AppModule {}

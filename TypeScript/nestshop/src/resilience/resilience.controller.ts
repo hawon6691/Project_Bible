@@ -17,6 +17,12 @@ export class ResilienceController {
     return { items: this.resilienceService.getSnapshots() };
   }
 
+  @Get(API_ROUTES.RESILIENCE.POLICIES)
+  @ApiOperation({ summary: 'Circuit Breaker 자동 튜닝 정책 조회 (Admin)' })
+  getPolicies() {
+    return { items: this.resilienceService.getAdaptivePolicies() };
+  }
+
   @Get(API_ROUTES.RESILIENCE.DETAIL)
   @ApiOperation({ summary: 'Circuit Breaker 상태 조회 (Admin)' })
   getSnapshot(@Param('name') name: string) {

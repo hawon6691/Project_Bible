@@ -6,6 +6,7 @@ import { MANAGED_QUEUE_NAMES, ManagedQueueName, QUEUE_NAMES } from '../common/co
 import { BusinessException } from '../common/exceptions/business.exception';
 import { FailedJobsQueryDto } from './dto/failed-jobs-query.dto';
 import { RetryFailedJobsDto } from './dto/retry-failed-jobs.dto';
+import { AutoRetryQueryDto } from './dto/auto-retry-query.dto';
 
 @Injectable()
 export class QueueAdminService {
@@ -84,6 +85,58 @@ export class QueueAdminService {
       requested: target.length,
       requeuedCount,
       jobIds: failedIds,
+    };
+  }
+
+  // 장애 상황에서 운영자가 한 번에 큐 실패 잡을 복구할 수 있도록 자동 재시도 엔드포인트를 제공한다.
+  async autoRetryFailed(dto: AutoRetryQueryDto) {
+    const perQueueLimit = dto.perQueueLimit ?? 20;
+    const maxTotal = dto.maxTotal ?? 100;
+
+    let retriedTotal = 0;
+    const items: Array<{
+      queueName: string;
+      candidateCount: number;
+      retriedCount: number;
+      jobIds: string[];
+    }> = [];
+
+    for (const queueName of MANAGED_QUEUE_NAMES) {
+      if (retriedTotal >= maxTotal) {
+        break;
+      }
+
+      const queue = this.resolveQueue(queueName);
+      const failed = await queue.getFailed(0, perQueueLimit - 1);
+      const remained = maxTotal - retriedTotal;
+      const targets = failed.slice(0, remained);
+      const jobIds: string[] = [];
+      let retriedCount = 0;
+
+      for (const job of targets) {
+        try {
+          await job.retry();
+          retriedCount += 1;
+          retriedTotal += 1;
+          jobIds.push(String(job.id));
+        } catch {
+          // 재시도 불가 상태 잡은 건너뛴다.
+        }
+      }
+
+      items.push({
+        queueName,
+        candidateCount: failed.length,
+        retriedCount,
+        jobIds,
+      });
+    }
+
+    return {
+      perQueueLimit,
+      maxTotal,
+      retriedTotal,
+      items,
     };
   }
 

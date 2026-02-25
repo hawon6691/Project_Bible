@@ -34,6 +34,7 @@
 
 - 운영 런북: 작성 완료 (`Document/05_operations-runbook.md`)
 - 릴리스 체크리스트: 작성 완료 (`Document/06_release-checklist.md`)
+- 배포 직전 최종 게이트: 작성 완료 (`Document/08_pre-release-final-gate.md`)
 - 관측성 대시보드 API: 완료 (`/admin/observability/*`)
 - 자동복구 API: 완료 (`/admin/queues/auto-retry`, `/resilience/circuit-breakers/policies`)
 - Ops Dashboard 경보 임계치:

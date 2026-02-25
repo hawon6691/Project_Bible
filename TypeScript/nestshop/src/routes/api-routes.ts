@@ -307,6 +307,7 @@ export const API_ROUTES = {
   },
   RESILIENCE: {
     BASE: 'resilience/circuit-breakers',
+    POLICIES: 'policies',
     DETAIL: ':name',
     RESET: ':name/reset',
   },
@@ -321,10 +322,17 @@ export const API_ROUTES = {
   QUEUE_ADMIN: {
     BASE: 'admin/queues',
     STATS: 'stats',
+    AUTO_RETRY: 'auto-retry',
     FAILED: ':queueName/failed',
     JOB_RETRY: ':queueName/jobs/:jobId/retry',
     JOB_DETAIL: ':queueName/jobs/:jobId',
     FAILED_RETRY: ':queueName/failed/retry',
+  },
+  OBSERVABILITY: {
+    BASE: 'admin/observability',
+    METRICS: 'metrics',
+    TRACES: 'traces',
+    DASHBOARD: 'dashboard',
   },
   OPS_DASHBOARD: {
     BASE: 'admin/ops-dashboard',

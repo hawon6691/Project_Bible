@@ -5,6 +5,7 @@ import { API_ROUTES } from '../routes/api-routes';
 import { FailedJobsQueryDto } from './dto/failed-jobs-query.dto';
 import { RetryFailedJobsDto } from './dto/retry-failed-jobs.dto';
 import { QueueAdminService } from './queue-admin.service';
+import { AutoRetryQueryDto } from './dto/auto-retry-query.dto';
 
 @ApiTags('QueueAdmin')
 @ApiBearerAuth()
@@ -35,6 +36,12 @@ export class QueueAdminController {
   @ApiOperation({ summary: '큐 실패 Job 일괄 재시도 (Admin)' })
   retryFailedJobs(@Param('queueName') queueName: string, @Query() dto: RetryFailedJobsDto) {
     return this.queueAdminService.retryFailedJobs(queueName, dto);
+  }
+
+  @Post(API_ROUTES.QUEUE_ADMIN.AUTO_RETRY)
+  @ApiOperation({ summary: '전체 큐 실패 Job 자동 재시도 (Admin)' })
+  autoRetryFailed(@Query() dto: AutoRetryQueryDto) {
+    return this.queueAdminService.autoRetryFailed(dto);
   }
 
   @Post(API_ROUTES.QUEUE_ADMIN.JOB_RETRY)

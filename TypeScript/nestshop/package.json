@@ -21,6 +21,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:e2e:rate-limit": "jest --config ./test/jest-e2e.json test/e2e/rate-limit-regression.e2e-spec.ts --runInBand",
     "test:e2e:admin-boundary": "jest --config ./test/jest-e2e.json test/e2e/admin-authorization-boundary.e2e-spec.ts --runInBand",
+    "test:e2e:observability": "jest --config ./test/jest-e2e.json test/e2e/observability.e2e-spec.ts --runInBand",
+    "test:e2e:resilience-auto-tune": "jest --config ./test/jest-e2e.json test/e2e/resilience-auto-tune.e2e-spec.ts --runInBand",
     "test:e2e:contract": "jest --config ./test/jest-e2e.json test/e2e/contract-public-api.e2e-spec.ts --runInBand",
     "test:e2e:critical": "jest --config ./test/jest-e2e.json test/e2e/auth-search.e2e-spec.ts test/e2e/public-api.e2e-spec.ts test/e2e/admin-platform.e2e-spec.ts test/e2e/queue-admin.e2e-spec.ts test/e2e/ops-dashboard.e2e-spec.ts test/e2e/ops-dashboard-resilience.e2e-spec.ts test/e2e/ops-dashboard-thresholds.e2e-spec.ts --runInBand",
     "test:e2e:dependency-failure": "jest --config ./test/jest-e2e.json test/e2e/ops-dashboard-dependency-failures.e2e-spec.ts --runInBand",

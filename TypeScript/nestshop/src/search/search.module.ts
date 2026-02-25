@@ -14,6 +14,11 @@ import { SearchWeightSetting } from './entities/search-weight-setting.entity';
   imports: [
     TypeOrmModule.forFeature([Product, PriceEntry, User, SearchLog, SearchRecentKeyword, SearchWeightSetting]),
     ElasticsearchModule.register({
+      // ES 8 서버와 elasticsearch-js 9 클라이언트를 함께 쓸 때 호환 헤더를 명시한다.
+      headers: {
+        accept: 'application/vnd.elasticsearch+json; compatible-with=8',
+        'content-type': 'application/vnd.elasticsearch+json; compatible-with=8',
+      },
       node: process.env.ELASTICSEARCH_NODE ?? 'http://localhost:9200',
       auth:
         process.env.ELASTICSEARCH_USERNAME && process.env.ELASTICSEARCH_PASSWORD

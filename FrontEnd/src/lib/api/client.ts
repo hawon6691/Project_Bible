@@ -1,9 +1,12 @@
 import axios from 'axios';
 import { storage } from '../utils/storage';
 import { TOKEN_KEY, REFRESH_TOKEN_KEY } from '../utils/constants';
+import { resolveApiBaseUrl } from './backend';
+
+const baseURL = resolveApiBaseUrl();
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api/v1',
+  baseURL,
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });
@@ -63,7 +66,7 @@ apiClient.interceptors.response.use(
 
       try {
         const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || '/api/v1'}/auth/refresh`,
+          `${baseURL}/auth/refresh`,
           { refreshToken },
         );
         const newToken = data.data.accessToken;

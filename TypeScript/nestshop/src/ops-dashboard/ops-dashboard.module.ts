@@ -10,5 +10,6 @@ import { OpsDashboardService } from './ops-dashboard.service';
   imports: [HealthModule, SearchSyncModule, CrawlerModule, QueueAdminModule],
   controllers: [OpsDashboardController],
   providers: [OpsDashboardService],
+  exports: [OpsDashboardService],
 })
 export class OpsDashboardModule {}

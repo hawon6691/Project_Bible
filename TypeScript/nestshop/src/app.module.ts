@@ -54,6 +54,16 @@ import { QueueAdminModule } from './queue-admin/queue-admin.module';
 import { OpsDashboardModule } from './ops-dashboard/ops-dashboard.module';
 import { ObservabilityModule } from './observability/observability.module';
 
+const toEnvBool = (value: unknown, fallback: boolean) => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'y', 'on'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'n', 'off', ''].includes(normalized)) return false;
+  }
+  return fallback;
+};
+
 @Module({
   imports: [
     // 환경변수 설정
@@ -74,8 +84,8 @@ import { ObservabilityModule } from './observability/observability.module';
         password: configService.get<string>('DB_PASSWORD', 'postgres'),
         database: configService.get<string>('DB_DATABASE', 'nestshop'),
         autoLoadEntities: true,
-        synchronize: configService.get<boolean>('DB_SYNCHRONIZE', false),
-        logging: configService.get<boolean>('DB_LOGGING', false),
+        synchronize: toEnvBool(configService.get('DB_SYNCHRONIZE'), false),
+        logging: toEnvBool(configService.get('DB_LOGGING'), false),
       }),
     }),
 

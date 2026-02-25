@@ -59,7 +59,13 @@ export interface CartItem {
 }
 
 export interface CreateOrderRequest {
-  items: { cartItemId: number; quantity: number }[];
+  items: {
+    id?: number;
+    productId: number;
+    sellerId: number;
+    quantity: number;
+    selectedOptions?: string;
+  }[];
   addressId: number;
   couponId?: number;
   usePoints?: number;

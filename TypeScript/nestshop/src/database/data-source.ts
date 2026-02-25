@@ -4,7 +4,7 @@ import { join } from 'path';
 const isTsRuntime = __filename.endsWith('.ts');
 const rootDir = isTsRuntime ? 'src' : 'dist';
 
-export const AppDataSource = new DataSource({
+export default new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST ?? 'localhost',
   port: Number(process.env.DB_PORT ?? 5432),
@@ -16,5 +16,3 @@ export const AppDataSource = new DataSource({
   entities: [join(process.cwd(), rootDir, '**', '*.entity.{ts,js}')],
   migrations: [join(process.cwd(), rootDir, 'database', 'migrations', '*.{ts,js}')],
 });
-
-export default AppDataSource;

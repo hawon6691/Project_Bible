@@ -4,12 +4,12 @@ on:
   pull_request:
     branches: [main, develop]
     paths:
-      - 'TypeScript/nestshop/**'
+      - 'BackEnd/TypeScript/nestshop/**'
       - '.github/workflows/nestshop-ci.yml'
   push:
     branches: [main, develop]
     paths:
-      - 'TypeScript/nestshop/**'
+      - 'BackEnd/TypeScript/nestshop/**'
       - '.github/workflows/nestshop-ci.yml'
   workflow_dispatch:
     inputs:
@@ -136,7 +136,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -146,7 +146,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -169,7 +169,7 @@ jobs:
     needs: quality
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -179,7 +179,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -194,7 +194,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: e2e-critical-report
-          path: TypeScript/nestshop/test-results/e2e-critical-report.json
+          path: BackEnd/TypeScript/nestshop/test-results/e2e-critical-report.json
           if-no-files-found: warn
 
   perf-smoke:
@@ -203,7 +203,7 @@ jobs:
     needs: quality
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -213,7 +213,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -236,7 +236,7 @@ jobs:
           mkdir -p test-results
           docker run --rm --network host \
             -e BASE_URL=http://127.0.0.1:3310 \
-            -v "${{ github.workspace }}/TypeScript/nestshop:/work" \
+            -v "${{ github.workspace }}/BackEnd/TypeScript/nestshop:/work" \
             -w /work \
             grafana/k6:0.49.0 run \
             --summary-export /work/test-results/perf-smoke-summary.json \
@@ -248,8 +248,8 @@ jobs:
         with:
           name: perf-smoke-artifacts
           path: |
-            TypeScript/nestshop/test-results/perf-smoke-summary.json
-            TypeScript/nestshop/perf-server.log
+            BackEnd/TypeScript/nestshop/test-results/perf-smoke-summary.json
+            BackEnd/TypeScript/nestshop/perf-server.log
           if-no-files-found: warn
 
   release-gate:
@@ -258,7 +258,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -270,7 +270,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -285,10 +285,10 @@ jobs:
         with:
           name: release-gate-report
           path: |
-            TypeScript/nestshop/test-results/migration-validation.json
-            TypeScript/nestshop/test-results/release-gate-contract.json
-            TypeScript/nestshop/test-results/release-gate-e2e-critical.json
-            TypeScript/nestshop/test-results/release-gate-e2e-ops.json
+            BackEnd/TypeScript/nestshop/test-results/migration-validation.json
+            BackEnd/TypeScript/nestshop/test-results/release-gate-contract.json
+            BackEnd/TypeScript/nestshop/test-results/release-gate-e2e-critical.json
+            BackEnd/TypeScript/nestshop/test-results/release-gate-e2e-ops.json
           if-no-files-found: warn
 
       - name: Write Release Gate Summary
@@ -309,7 +309,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -321,7 +321,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -344,7 +344,7 @@ jobs:
           mkdir -p test-results
           docker run --rm --network host \
             -e BASE_URL=http://127.0.0.1:3310 \
-            -v "${{ github.workspace }}/TypeScript/nestshop:/work" \
+            -v "${{ github.workspace }}/BackEnd/TypeScript/nestshop:/work" \
             -w /work \
             grafana/k6:0.49.0 run \
             --summary-export /work/test-results/perf-smoke-summary.json \
@@ -356,8 +356,8 @@ jobs:
         with:
           name: perf-smoke-manual-artifacts
           path: |
-            TypeScript/nestshop/test-results/perf-smoke-summary.json
-            TypeScript/nestshop/perf-server.log
+            BackEnd/TypeScript/nestshop/test-results/perf-smoke-summary.json
+            BackEnd/TypeScript/nestshop/perf-server.log
           if-no-files-found: warn
 
       - name: Write Perf Smoke Summary
@@ -377,7 +377,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -389,7 +389,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -404,7 +404,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: contract-e2e-report
-          path: TypeScript/nestshop/test-results/contract-e2e-report.json
+          path: BackEnd/TypeScript/nestshop/test-results/contract-e2e-report.json
           if-no-files-found: warn
 
   stability-check-manual:
@@ -413,7 +413,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -425,7 +425,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -439,9 +439,9 @@ jobs:
         with:
           name: critical-stability-reports
           path: |
-            TypeScript/nestshop/test-results/critical-run-1.json
-            TypeScript/nestshop/test-results/critical-run-2.json
-            TypeScript/nestshop/test-results/critical-stability-report.json
+            BackEnd/TypeScript/nestshop/test-results/critical-run-1.json
+            BackEnd/TypeScript/nestshop/test-results/critical-run-2.json
+            BackEnd/TypeScript/nestshop/test-results/critical-stability-report.json
           if-no-files-found: warn
 
   perf-extended-manual:
@@ -450,7 +450,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -462,7 +462,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -486,7 +486,7 @@ jobs:
           docker run --rm --network host \
             -e BASE_URL=http://127.0.0.1:3310 \
             -e SOAK_DURATION=2m \
-            -v "${{ github.workspace }}/TypeScript/nestshop:/work" \
+            -v "${{ github.workspace }}/BackEnd/TypeScript/nestshop:/work" \
             -w /work \
             grafana/k6:0.49.0 run \
             --summary-export /work/test-results/perf-soak-summary.json \
@@ -495,7 +495,7 @@ jobs:
 
           docker run --rm --network host \
             -e BASE_URL=http://127.0.0.1:3310 \
-            -v "${{ github.workspace }}/TypeScript/nestshop:/work" \
+            -v "${{ github.workspace }}/BackEnd/TypeScript/nestshop:/work" \
             -w /work \
             grafana/k6:0.49.0 run \
             --summary-export /work/test-results/perf-spike-summary.json \
@@ -508,9 +508,9 @@ jobs:
         with:
           name: perf-extended-artifacts
           path: |
-            TypeScript/nestshop/test-results/perf-soak-summary.json
-            TypeScript/nestshop/test-results/perf-spike-summary.json
-            TypeScript/nestshop/perf-server.log
+            BackEnd/TypeScript/nestshop/test-results/perf-soak-summary.json
+            BackEnd/TypeScript/nestshop/test-results/perf-spike-summary.json
+            BackEnd/TypeScript/nestshop/perf-server.log
           if-no-files-found: warn
 
   security-regression-manual:
@@ -519,7 +519,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -531,7 +531,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -546,7 +546,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: security-regression-report
-          path: TypeScript/nestshop/test-results/security-regression-report.json
+          path: BackEnd/TypeScript/nestshop/test-results/security-regression-report.json
           if-no-files-found: warn
 
   migration-validation-manual:
@@ -555,7 +555,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -567,7 +567,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -580,7 +580,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: migration-validation-report
-          path: TypeScript/nestshop/test-results/migration-validation.json
+          path: BackEnd/TypeScript/nestshop/test-results/migration-validation.json
           if-no-files-found: warn
 
   dependency-failure-manual:
@@ -589,7 +589,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -601,7 +601,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -616,7 +616,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dependency-failure-e2e-report
-          path: TypeScript/nestshop/test-results/dependency-failure-e2e-report.json
+          path: BackEnd/TypeScript/nestshop/test-results/dependency-failure-e2e-report.json
           if-no-files-found: warn
 
   admin-boundary-manual:
@@ -625,7 +625,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -637,7 +637,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -652,7 +652,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: admin-boundary-e2e-report
-          path: TypeScript/nestshop/test-results/admin-boundary-e2e-report.json
+          path: BackEnd/TypeScript/nestshop/test-results/admin-boundary-e2e-report.json
           if-no-files-found: warn
 
   migration-roundtrip-manual:
@@ -675,7 +675,7 @@ jobs:
           - 5432:5432
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -687,7 +687,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -707,7 +707,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: migration-roundtrip-report
-          path: TypeScript/nestshop/test-results/migration-roundtrip-report.json
+          path: BackEnd/TypeScript/nestshop/test-results/migration-roundtrip-report.json
           if-no-files-found: warn
 
   rate-limit-regression-manual:
@@ -716,7 +716,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -728,7 +728,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -743,7 +743,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rate-limit-regression-e2e-report
-          path: TypeScript/nestshop/test-results/rate-limit-regression-e2e-report.json
+          path: BackEnd/TypeScript/nestshop/test-results/rate-limit-regression-e2e-report.json
           if-no-files-found: warn
 
   live-smoke-manual:
@@ -752,7 +752,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TypeScript/nestshop
+        working-directory: BackEnd/TypeScript/nestshop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -764,7 +764,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: TypeScript/nestshop/package-lock.json
+          cache-dependency-path: BackEnd/TypeScript/nestshop/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -781,5 +781,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: live-smoke-report
-          path: TypeScript/nestshop/test-results/live-smoke-report.json
+          path: BackEnd/TypeScript/nestshop/test-results/live-smoke-report.json
           if-no-files-found: warn
+

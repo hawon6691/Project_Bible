@@ -5,7 +5,7 @@
 ## 1. 경로
 
 - 백엔드 앱: `BackEnd/TypeScript/nestshop`
-- 공용 인프라: `Database/docker/nestshop-docker-compose.yml`
+- 공용 인프라: `Database/docker/docker-compose.yml`
 - TypeScript 문서: `Document/TypeScript/`
 
 ## 2. 사전 준비
@@ -18,7 +18,7 @@
 ### 3.1 인프라 기동
 
 ```bash
-docker compose -f Database/docker/nestshop-docker-compose.yml up -d
+docker compose -f Database/docker/docker-compose.yml up -d
 ```
 
 ### 3.2 백엔드 실행

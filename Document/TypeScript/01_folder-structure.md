@@ -13,7 +13,7 @@ nestshop/
 ├── package.json
 ├── tsconfig.json
 ├── tsconfig.build.json
-├── Database/docker/nestshop-docker-compose.yml  # PostgreSQL, Redis, Elasticsearch 로컬 환경
+├── Database/docker/docker-compose.yml  # PostgreSQL, MySQL, Redis, Elasticsearch 로컬 환경
 │
 ├── src/
 │   ├── main.ts                   # 앱 진입점 (포트, CORS, Swagger, ValidationPipe)

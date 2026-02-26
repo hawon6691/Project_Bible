@@ -27,7 +27,7 @@ Project_Bible/
 │  ├─ Kotlin/ktorshop
 │  └─ PHP/laravelshop
 ├─ Database/
-│  ├─ docker/nestshop-docker-compose.yml
+│  ├─ docker/docker-compose.yml
 │  ├─ postgresql/
 │  │  ├─ setting.sql
 │  │  ├─ postgres_table.sql

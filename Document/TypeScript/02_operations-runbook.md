@@ -1,0 +1,205 @@
+# 쇼핑몰 프로젝트 운영 런북
+
+> 대상: `BackEnd/TypeScript/nestshop` 백엔드 운영 및 장애 대응
+> 기준일: 2026-02-23
+
+---
+
+## 1. 운영 환경 기본 체크
+
+배포/장애 대응 전에 아래 항목을 먼저 확인한다.
+
+- API 서버: `GET /health` 응답 상태
+- DB 연결: PostgreSQL 연결/쿼리 가능 여부
+- Redis 연결: Bull Queue 및 캐시 연결 여부
+- Elasticsearch 연결: 검색 API 및 인덱스 상태
+- 스토리지/트랜스코딩: 업로드 디렉토리 접근 권한, FFmpeg 실행 가능 여부
+
+핵심 확인 API:
+
+- `GET /health`
+- `GET /errors/codes`
+- `GET /search/admin/index/status`
+- `GET /search/admin/index/outbox/summary`
+- `GET /crawler/admin/monitoring`
+- `GET /resilience/circuit-breakers`
+- `GET /admin/ops-dashboard/summary`
+
+Ops Dashboard 경보 임계치 환경변수:
+
+- `OPS_ALERT_SEARCH_FAILED_THRESHOLD`
+검색 동기화 failed 건수 경보 임계치
+- `OPS_ALERT_CRAWLER_FAILED_RUNS_THRESHOLD`
+크롤러 failedRuns 경보 임계치
+- `OPS_ALERT_QUEUE_FAILED_THRESHOLD`
+큐 failed 건수 경보 임계치
+
+임계치 운영 규칙:
+
+- 판정 기준은 `현재값 >= 임계치`입니다.
+- 임계치를 `0` 이하로 설정하면 해당 경보를 사실상 비활성화할 수 있습니다.
+- 운영 권장값은 `1`이며, 장애 민감도를 낮추고 싶으면 값을 높입니다.
+
+---
+
+## 2. 서비스 기동 순서
+
+권장 기동 순서:
+
+1. PostgreSQL
+2. Redis
+3. Elasticsearch
+4. Nestshop API
+5. Bull Worker(동일 프로세스 또는 분리 프로세스)
+
+개발/검증 기준 명령:
+
+```bash
+cd BackEnd/TypeScript/nestshop
+npm ci
+npm run build
+npm run start:prod
+```
+
+---
+
+## 3. 배포 전 체크리스트
+
+- DB 마이그레이션 상태 확인 (`migration:run` 필요 여부)
+- `.env`와 `.env.example` 키 정합성 확인
+- `npx tsc -p tsconfig.json --noEmit --incremental false` 통과
+- CI 통과 여부 확인
+  - quality
+  - e2e-critical
+  - perf-smoke
+
+핵심 E2E(`test:e2e:critical`) 포함 시나리오:
+
+- Auth/Search 기본 플로우
+- Public API (`health`, `errors/codes`)
+- Admin 운영 API (`search admin`, `crawler`, `resilience`)
+- Queue Admin (`supported`, `stats`, `failed/retry/delete`)
+- Ops Dashboard (`summary`, 부분 장애 `degraded` 응답)
+
+---
+
+## 4. 장애 분류와 1차 대응
+
+### 4.1 API 장애 (5xx 급증)
+
+1. `GET /health`로 인프라 체크
+2. `GET /admin/ops-dashboard/summary`의 `alerts`/`errors` 확인
+3. 최근 배포/설정 변경 확인
+4. 로그에서 공통 에러코드/스택트레이스 확인
+5. 필요 시 직전 안정 버전 롤백
+
+### 4.2 검색 장애 (Elasticsearch)
+
+1. `GET /search/admin/index/status` 확인
+2. Outbox 누적 확인: `GET /search/admin/index/outbox/summary`
+3. 실패 Outbox 재큐잉: `POST /search/admin/index/outbox/requeue-failed`
+4. 필요 시 전체 재색인: `POST /search/admin/index/reindex`
+
+### 4.3 큐 지연/실패 증가 (Bull)
+
+1. 큐별 실패 Job 조회: `GET /admin/queues/:queueName/failed`
+2. 개별 재시도: `POST /admin/queues/:queueName/jobs/:jobId/retry`
+3. 일괄 재시도: `POST /admin/queues/:queueName/failed/retry?limit=50`
+4. 불필요/유해 Job 삭제: `DELETE /admin/queues/:queueName/jobs/:jobId`
+5. 큐별 적체 현황 확인: `GET /admin/queues/stats`
+
+지원 큐:
+
+- `activity-log`
+- `video-transcode`
+- `crawler-collect`
+- `search-index-sync`
+
+주의:
+- 개별 재시도 API는 `failed` 상태 Job에만 허용된다.
+- `failed`가 아닌 Job 재시도 요청은 `400 VALIDATION_FAILED`로 차단된다.
+
+### 4.4 Circuit Breaker OPEN 상태 지속
+
+1. `GET /resilience/circuit-breakers`로 OPEN 대상 확인
+2. 외부 의존성(결제/크롤링/검색) 상태 확인
+3. 원인 복구 후 수동 초기화: `POST /resilience/circuit-breakers/:name/reset`
+
+---
+
+## 5. 주요 운영 시나리오
+
+### 5.1 검색 동기화 누락 대응
+
+1. `GET /search/admin/index/outbox/summary`
+2. failed 수치 증가 시 `POST /search/admin/index/outbox/requeue-failed`
+3. 특정 상품 누락 시 `POST /search/admin/index/products/:id/reindex`
+4. 전체 불일치 시 `POST /search/admin/index/reindex`
+
+### 5.2 크롤러 적재 실패 대응
+
+1. `GET /crawler/admin/runs?status=FAILED&page=1&limit=20`
+2. 실패 원인별 분류(네트워크/파싱/DB)
+3. `POST /crawler/admin/jobs/:id/run` 또는 `POST /crawler/admin/triggers` 재실행
+4. 반복 실패 판매처는 작업 비활성화 후 원인 수정
+
+### 5.3 비디오 트랜스코딩 실패 대응
+
+1. `GET /shortforms/:id/transcode-status` 확인
+2. 사용자 재시도: `POST /shortforms/:id/transcode/retry`
+3. 운영자 큐 재시도: `POST /admin/queues/video-transcode/failed/retry`
+4. FFmpeg 바이너리/옵션(`FFMPEG_BIN`, `FFMPEG_PRESET`, `FFMPEG_CRF`) 확인
+
+---
+
+## 6. 롤백 기준
+
+아래 중 하나라도 만족하면 롤백을 우선 고려한다.
+
+- 결제/주문 흐름 장애가 10분 이상 지속
+- 검색/가격비교 핵심 API 오류율이 기준치 초과
+- 큐 실패가 급증하고 재시도로도 복구되지 않음
+- 데이터 무결성 손상 가능성이 확인됨
+
+롤백 후 필수 조치:
+
+1. 에러율/지연 복구 확인
+2. 누적된 실패 Job/Outbox 정리
+3. 장애 원인과 재발 방지 액션 문서화
+
+---
+
+## 7. 운영자 실행 명령 모음
+
+```bash
+# 타입 체크
+npx tsc -p tsconfig.json --noEmit --incremental false
+
+# 핵심 E2E
+npm run test:e2e:critical
+
+# 성능 스모크 (로컬 mock 서버 기반)
+npm run test:perf:mock-server
+# 별도 터미널에서
+BASE_URL=http://127.0.0.1:3310 npm run test:perf:smoke
+```
+
+CI 아티팩트 확인 경로:
+
+- `e2e-critical-report` 아티팩트
+  - `BackEnd/TypeScript/nestshop/test-results/e2e-critical-report.json`
+- `perf-smoke-artifacts` 아티팩트
+  - `BackEnd/TypeScript/nestshop/test-results/perf-smoke-summary.json`
+  - `BackEnd/TypeScript/nestshop/perf-server.log`
+
+Ops Dashboard 임계치 회귀 테스트:
+
+- `npm run test:e2e -- ops-dashboard-thresholds.e2e-spec.ts --runInBand`
+- 임계치 초과/미초과에 따라 `alerts`, `alertCount` 동작을 검증합니다.
+
+---
+
+## 8. 변경 이력
+
+- 2026-02-23: 초안 작성 (운영/장애 대응 절차, 큐 복구 API 포함)
+

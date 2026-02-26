@@ -1,3 +1,18 @@
-# FrontEnd build artifacts
-FrontEnd/node_modules/
-FrontEnd/.next/
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Env files at repo root
+.env
+.env.local
+.env.*.local

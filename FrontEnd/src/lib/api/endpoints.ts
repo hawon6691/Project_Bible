@@ -253,6 +253,43 @@ export const sellerApi = {
   deletePrice: (priceId: number) => apiClient.delete(`/prices/${priceId}`),
 };
 
+export const faqAdminApi = {
+  getFaqs: (params?: PaginationParams & { category?: string; keyword?: string }) =>
+    apiClient.get('/faq', { params }),
+  createFaq: (data: { category: string; question: string; answer: string; isActive?: boolean }) =>
+    apiClient.post('/admin/faq', data),
+  updateFaq: (id: number, data: { category?: string; question?: string; answer?: string; isActive?: boolean }) =>
+    apiClient.patch(`/admin/faq/${id}`, data),
+  deleteFaq: (id: number) => apiClient.delete(`/admin/faq/${id}`),
+};
+
+export const noticeAdminApi = {
+  getNotices: (params?: PaginationParams) => apiClient.get('/notices', { params }),
+  createNotice: (data: { title: string; content: string; isPublished?: boolean }) =>
+    apiClient.post('/admin/notices', data),
+  updateNotice: (id: number, data: { title?: string; content?: string; isPublished?: boolean }) =>
+    apiClient.patch(`/admin/notices/${id}`, data),
+  deleteNotice: (id: number) => apiClient.delete(`/admin/notices/${id}`),
+};
+
+export const settingsApi = {
+  getAllowedExtensions: () => apiClient.get('/admin/settings/extensions'),
+  setAllowedExtensions: (extensions: string[]) => apiClient.post('/admin/settings/extensions', { extensions }),
+  getUploadLimits: () => apiClient.get('/admin/settings/upload-limits'),
+  updateUploadLimits: (data: { image?: number; video?: number; audio?: number }) =>
+    apiClient.patch('/admin/settings/upload-limits', data),
+  getReviewPolicy: () => apiClient.get('/admin/settings/review-policy'),
+  updateReviewPolicy: (data: { maxImageCount: number; pointAmount: number }) =>
+    apiClient.patch('/admin/settings/review-policy', data),
+};
+
+export const observabilityApi = {
+  getMetrics: () => apiClient.get('/admin/observability/metrics'),
+  getTraces: (params?: { limit?: number; pathContains?: string }) =>
+    apiClient.get('/admin/observability/traces', { params }),
+  getDashboard: () => apiClient.get('/admin/observability/dashboard'),
+};
+
 export const adminApi = {
   // 기존 admin 대시보드 화면 호환을 위해 ops dashboard 요약 응답을 변환한다.
   getStats: async () => {

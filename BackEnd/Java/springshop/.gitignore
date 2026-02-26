@@ -1,0 +1,16 @@
+.gradle/
+build/
+out/
+bin/
+
+*.class
+*.jar
+*.war
+
+.idea/
+.vscode/
+
+*.log
+
+.env
+.env.local

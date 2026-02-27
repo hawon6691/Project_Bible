@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Row, Col, Card, Typography, Image, Rate, Tag, Table, Button, Spin, Descriptions, Space, message } from 'antd';
+import { Row, Col, Card, Typography, Rate, Tag, Table, Button, Spin, Descriptions, Space, message } from 'antd';
 import { ShoppingCartOutlined, HeartOutlined, BellOutlined, SwapOutlined } from '@ant-design/icons';
 import { useParams, useRouter } from 'next/navigation';
 import { productApi } from '@/lib/api/endpoints';
@@ -50,7 +50,28 @@ export default function ProductDetailPage() {
       <Row gutter={[24, 24]}>
         <Col xs={24} md={10}>
           <Card>
-            <Image src={product.images[selectedImage]?.url || '/placeholder.png'} alt={product.name} style={{ width: '100%', maxHeight: 400, objectFit: 'contain' }} fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88P/BfwAJhAPk3p6z4QAAAABJRU5ErkJggg==" />
+            {product.images[selectedImage]?.url ? (
+              <img
+                src={product.images[selectedImage].url}
+                alt={product.name}
+                style={{ width: '100%', maxHeight: 400, objectFit: 'contain', display: 'block' }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: '100%',
+                  height: 400,
+                  background: '#000',
+                  color: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 600,
+                }}
+              >
+                NO IMAGE
+              </div>
+            )}
             {product.images.length > 1 && (<Row gutter={8} style={{ marginTop: 12 }}>{product.images.map((img, idx) => (<Col key={img.id} span={4}><img src={img.url} alt="" style={{ width: '100%', height: 60, objectFit: 'cover', cursor: 'pointer', border: idx === selectedImage ? '2px solid #1677ff' : '1px solid #d9d9d9', borderRadius: 4 }} onClick={() => setSelectedImage(idx)} /></Col>))}</Row>)}
           </Card>
         </Col>

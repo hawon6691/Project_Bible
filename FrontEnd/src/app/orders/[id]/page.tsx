@@ -49,7 +49,7 @@ export default function OrderDetailPage() {
       </Card>
       <Card title="주문 상품" style={{ marginBottom: 24 }}>
         <Table dataSource={order.items} rowKey="id" pagination={false} columns={[
-          { title: '상품', key: 'product', render: (_: any, r: any) => (<Space><div style={{ width: 50, height: 50, background: '#f5f5f5', borderRadius: 4 }}>{r.thumbnailUrl && <img src={r.thumbnailUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}</div><div><Text strong style={{ cursor: 'pointer' }} onClick={() => router.push(ROUTES.PRODUCT_DETAIL(r.productId))}>{r.productName}</Text><div><Text type="secondary" style={{ fontSize: 12 }}>판매자: {r.sellerName}</Text></div></div></Space>) },
+          { title: '상품', key: 'product', render: (_: any, r: any) => (<Space><div style={{ width: 50, height: 50, background: '#000', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{r.thumbnailUrl ? <img src={r.thumbnailUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#fff', fontSize: 9, fontWeight: 600 }}>NO IMAGE</span>}</div><div><Text strong style={{ cursor: 'pointer' }} onClick={() => router.push(ROUTES.PRODUCT_DETAIL(r.productId))}>{r.productName}</Text><div><Text type="secondary" style={{ fontSize: 12 }}>판매자: {r.sellerName}</Text></div></div></Space>) },
           { title: '단가', dataIndex: 'unitPrice', key: 'unitPrice', render: (v: number) => formatPrice(v) },
           { title: '수량', dataIndex: 'quantity', key: 'quantity' },
           { title: '합계', dataIndex: 'totalPrice', key: 'totalPrice', render: (v: number) => formatPrice(v) },

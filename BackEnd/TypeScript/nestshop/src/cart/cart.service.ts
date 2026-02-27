@@ -19,10 +19,34 @@ interface GuestCartItem {
   createdAt: string;
 }
 
+interface UserCartCacheEntry {
+  expiresAt: number;
+  data: Array<{
+    id: number;
+    product: {
+      id: number | null;
+      name: string;
+      thumbnailUrl: string | null;
+      price: number;
+      lowestPrice: number | null;
+    } | null;
+    seller: {
+      id: number | null;
+      name: string;
+      logoUrl: string | null;
+    } | null;
+    selectedOptions: string | null;
+    quantity: number;
+    createdAt: string | Date;
+  }>;
+}
+
 @Injectable()
 export class CartService implements OnModuleDestroy {
   private readonly redis: Redis;
   private readonly guestCartTtlSeconds = 60 * 60 * 24;
+  private readonly userCartCache = new Map<number, UserCartCacheEntry>();
+  private readonly userCartCacheTtlMs = 1500;
 
   constructor(
     @InjectRepository(CartItem)
@@ -34,11 +58,14 @@ export class CartService implements OnModuleDestroy {
     private readonly configService: ConfigService,
   ) {
     this.redis = new Redis({
-      host: this.configService.get<string>('REDIS_HOST', 'localhost'),
+      host: this.configService.get<string>('REDIS_HOST', '127.0.0.1'),
       port: this.configService.get<number>('REDIS_PORT', 6379),
       password: this.configService.get<string>('REDIS_PASSWORD') || undefined,
       lazyConnect: true,
       maxRetriesPerRequest: 1,
+      connectTimeout: 1000,
+      commandTimeout: 1500,
+      enableOfflineQueue: false,
     });
   }
 
@@ -50,13 +77,81 @@ export class CartService implements OnModuleDestroy {
 
   // ─── CART-01: 회원 장바구니 조회 ───
   async getCart(userId: number) {
-    const items = await this.cartRepository.find({
-      where: { userId },
-      relations: ['product', 'seller'],
-      order: { createdAt: 'DESC' },
-    });
+    const now = Date.now();
+    const cached = this.userCartCache.get(userId);
+    if (cached && cached.expiresAt > now) {
+      return cached.data;
+    }
 
-    return items.map((item) => this.toUserCartResponse(item));
+    // relations 기반 로딩 대신 필요한 컬럼만 단일 조인 조회해 응답 지연을 줄인다.
+    const rows = await this.cartRepository
+      .createQueryBuilder('cart')
+      .leftJoin(Product, 'product', 'product.id = cart.productId')
+      .leftJoin(Seller, 'seller', 'seller.id = cart.sellerId')
+      .where('cart.userId = :userId', { userId })
+      .orderBy('cart.createdAt', 'DESC')
+      .select([
+        'cart.id AS cart_id',
+        'cart.selectedOptions AS cart_selected_options',
+        'cart.quantity AS cart_quantity',
+        'cart.createdAt AS cart_created_at',
+        'product.id AS product_id',
+        'product.name AS product_name',
+        'product.thumbnailUrl AS product_thumbnail_url',
+        'product.price AS product_price',
+        'product.lowestPrice AS product_lowest_price',
+        'seller.id AS seller_id',
+        'seller.name AS seller_name',
+        'seller.logoUrl AS seller_logo_url',
+      ])
+      .getRawMany<{
+        cart_id: number;
+        cart_selected_options: string | null;
+        cart_quantity: number;
+        cart_created_at: string | Date;
+        product_id: number | null;
+        product_name: string | null;
+        product_thumbnail_url: string | null;
+        product_price: number | null;
+        product_lowest_price: number | null;
+        seller_id: number | null;
+        seller_name: string | null;
+        seller_logo_url: string | null;
+      }>();
+
+    const data = rows.map((row) => ({
+      id: Number(row.cart_id),
+      product:
+        row.product_id === null
+          ? null
+          : {
+              id: Number(row.product_id),
+              name: row.product_name ?? '',
+              thumbnailUrl: row.product_thumbnail_url ?? null,
+              price: Number(row.product_price ?? 0),
+              lowestPrice:
+                row.product_lowest_price === null
+                  ? null
+                  : Number(row.product_lowest_price),
+            },
+      seller:
+        row.seller_id === null
+          ? null
+          : {
+              id: Number(row.seller_id),
+              name: row.seller_name ?? '',
+              logoUrl: row.seller_logo_url ?? null,
+            },
+      selectedOptions: row.cart_selected_options ?? null,
+      quantity: Number(row.cart_quantity),
+      createdAt: row.cart_created_at,
+    }));
+
+    this.userCartCache.set(userId, {
+      expiresAt: now + this.userCartCacheTtlMs,
+      data,
+    });
+    return data;
   }
 
   // ─── CART-02: 회원 장바구니 추가 ───
@@ -73,6 +168,7 @@ export class CartService implements OnModuleDestroy {
     if (existing) {
       existing.quantity += dto.quantity;
       const saved = await this.cartRepository.save(existing);
+      this.invalidateUserCartCache(userId);
       return { id: saved.id, quantity: saved.quantity };
     }
 
@@ -85,35 +181,37 @@ export class CartService implements OnModuleDestroy {
     });
 
     const saved = await this.cartRepository.save(item);
+    this.invalidateUserCartCache(userId);
     return { id: saved.id, quantity: saved.quantity };
   }
 
   // ─── CART-03: 회원 장바구니 수량 변경 ───
   async updateQuantity(userId: number, itemId: number, dto: UpdateCartQuantityDto) {
-    const item = await this.cartRepository.findOne({ where: { id: itemId, userId } });
-    if (!item) {
+    const result = await this.cartRepository.update(
+      { id: itemId, userId },
+      { quantity: dto.quantity },
+    );
+    if (!result.affected) {
       throw new BusinessException('RESOURCE_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
-
-    item.quantity = dto.quantity;
-    const saved = await this.cartRepository.save(item);
-    return { id: saved.id, quantity: saved.quantity };
+    this.invalidateUserCartCache(userId);
+    return { id: itemId, quantity: dto.quantity };
   }
 
   // ─── CART-04: 회원 장바구니 항목 삭제 ───
   async removeItem(userId: number, itemId: number) {
-    const item = await this.cartRepository.findOne({ where: { id: itemId, userId } });
-    if (!item) {
+    const result = await this.cartRepository.delete({ id: itemId, userId });
+    if (!result.affected) {
       throw new BusinessException('RESOURCE_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
-
-    await this.cartRepository.remove(item);
+    this.invalidateUserCartCache(userId);
     return { message: '장바구니에서 삭제되었습니다.' };
   }
 
   // ─── CART-05: 회원 장바구니 비우기 ───
   async clearCart(userId: number) {
     await this.cartRepository.delete({ userId });
+    this.invalidateUserCartCache(userId);
     return { message: '장바구니가 비워졌습니다.' };
   }
 
@@ -206,6 +304,7 @@ export class CartService implements OnModuleDestroy {
     }
 
     await this.redis.del(key);
+    this.invalidateUserCartCache(userId);
     return { mergedCount: guestItems.length, message: '비회원 장바구니가 병합되었습니다.' };
   }
 
@@ -268,6 +367,10 @@ export class CartService implements OnModuleDestroy {
       quantity: item.quantity,
       createdAt: item.createdAt,
     };
+  }
+
+  private invalidateUserCartCache(userId: number) {
+    this.userCartCache.delete(userId);
   }
 
   private toGuestRedisKey(guestCartKey: string) {

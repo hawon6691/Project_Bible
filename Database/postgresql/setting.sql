@@ -10,3 +10,16 @@ WHERE table_type = 'BASE TABLE'
 ORDER BY table_schema, table_name;
 
 select * from users;
+
+UPDATE users
+SET
+  name = '서하원',
+  phone = '01084276691',
+  nickname = 'hawonoj7468',
+  bio = '소개글 수정',
+  profile_image_url = 'https://example.com/profile.png',
+  preferred_locale = 'ko',
+  preferred_currency = 'KRW',
+  updated_at = NOW(),
+  email_verified = true
+WHERE id = 7;  -- 또는 WHERE email = '...'

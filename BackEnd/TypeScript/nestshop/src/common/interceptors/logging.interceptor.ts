@@ -18,6 +18,7 @@ type AuthenticatedRequest = Request & {
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger('HTTP');
+  private readonly logSuccess = process.env.HTTP_LOG_SUCCESS === 'true';
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const http = context.switchToHttp();
@@ -45,8 +46,9 @@ export class LoggingInterceptor implements NestInterceptor {
           return;
         }
 
-        // 정상 요청은 debug 레벨로 남겨 dev 환경에서만 상세 추적한다.
-        this.logger.debug(message);
+        if (this.logSuccess) {
+          this.logger.debug(message);
+        }
       }),
     );
   }

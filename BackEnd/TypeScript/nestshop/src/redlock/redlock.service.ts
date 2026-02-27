@@ -21,11 +21,14 @@ export class RedlockService implements OnModuleDestroy {
 
   constructor(private readonly configService: ConfigService) {
     this.redis = new Redis({
-      host: this.configService.get<string>('REDIS_HOST', 'localhost'),
+      host: this.configService.get<string>('REDIS_HOST', '127.0.0.1'),
       port: this.configService.get<number>('REDIS_PORT', 6379),
       password: this.configService.get<string>('REDIS_PASSWORD') || undefined,
       lazyConnect: true,
       maxRetriesPerRequest: 1,
+      connectTimeout: 1000,
+      commandTimeout: 1500,
+      enableOfflineQueue: false,
     });
   }
 

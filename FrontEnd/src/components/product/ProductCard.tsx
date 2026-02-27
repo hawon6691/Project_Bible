@@ -14,8 +14,12 @@ export default function ProductCard({ product }: Props) {
   return (
     <Link href={ROUTES.PRODUCT_DETAIL(product.id)}>
       <Card hoverable
-        cover={<div style={{ height: 200, overflow: 'hidden', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {product.thumbnailUrl ? <img src={product.thumbnailUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Text type="secondary">No Image</Text>}
+        cover={<div style={{ height: 200, overflow: 'hidden', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {product.thumbnailUrl ? (
+            <img src={product.thumbnailUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <span style={{ color: '#fff', fontWeight: 600, textAlign: 'center' }}>NO IMAGE</span>
+          )}
         </div>}
         bodyStyle={{ padding: 12 }}>
         <Paragraph ellipsis={{ rows: 2 }} style={{ marginBottom: 4, fontSize: 14, minHeight: 42 }}>{product.name}</Paragraph>

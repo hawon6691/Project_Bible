@@ -3,7 +3,7 @@ export type BackendTarget = 'nest' | 'spring' | 'express' | 'django' | 'ktor';
 const BACKEND_TARGETS: BackendTarget[] = ['nest', 'spring', 'express', 'django', 'ktor'];
 
 const DEFAULT_TARGET: BackendTarget = 'nest';
-const DEFAULT_BASE_PATH = '/api/v1';
+const DEFAULT_BASE_PATH = 'http://127.0.0.1:3000/api/v1';
 
 function normalizeTarget(raw?: string): BackendTarget {
   if (!raw) return DEFAULT_TARGET;

@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
+const strictMode = process.env.NEXT_PUBLIC_STRICT_MODE === 'true';
+
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: strictMode,
   experimental: {
     missingSuspenseWithCSRBailout: false,
   },
@@ -12,7 +14,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000'}/api/:path*`,
       },
     ];
   },

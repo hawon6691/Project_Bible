@@ -3,16 +3,15 @@
 import { useEffect, useState } from 'react';
 import { Spin } from 'antd';
 import Link from 'next/link';
-import { productApi, categoryApi } from '@/lib/api/endpoints';
+import { productApi } from '@/lib/api/endpoints';
 import { ROUTES } from '@/lib/utils/constants';
-import type { ProductSummary, Category } from '@/types/product.types';
+import type { ProductSummary } from '@/types/product.types';
 import { formatPrice } from '@/lib/utils/format';
 import './page-home.css';
 
 export default function HomePage() {
   const [popularProducts, setPopularProducts] = useState<ProductSummary[]>([]);
   const [newProducts, setNewProducts] = useState<ProductSummary[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,11 +19,9 @@ export default function HomePage() {
     Promise.all([
       productApi.getAll({ sort: 'popularity', limit: 12 }),
       productApi.getAll({ sort: 'newest', limit: 12 }),
-      categoryApi.getAll(),
-    ]).then(([popRes, newRes, catRes]) => {
+    ]).then(([popRes, newRes]) => {
       setPopularProducts(popRes.data.data);
       setNewProducts(newRes.data.data);
-      setCategories(catRes.data.data);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
@@ -43,18 +40,14 @@ export default function HomePage() {
     { name: '패션/잡화/화장품', icon: 'bi-bag' },
     { name: '사무/취미/반려동물', icon: 'bi-pencil-square' },
   ];
-  const topTabs = [
+  const topTabs: Array<{ label: string; submenu?: string[] }> = [
     { label: '자동차' },
     { label: '조립PC' },
     { label: 'PC견적' },
-    { label: '다나와' },
+    { label: '중고' },
     { label: '쇼핑기획전' },
     { label: '커뮤니티' },
     { label: '이벤트/체험단' },
-    {
-      label: '더보기',
-      submenu: ['뉴스룸', '쇼핑가이드', '브랜드관', '고객센터'],
-    },
   ];
 
   const categoryDirectory: Record<
@@ -139,25 +132,6 @@ export default function HomePage() {
     },
   };
 
-  const normalizeCategoryName = (value: string) =>
-    value.toLowerCase().replace(/[\s/·,-]/g, '');
-
-  const resolveCategoryHref = (displayName: string) => {
-    const target = normalizeCategoryName(displayName);
-    const matched = categories.find((cat) =>
-      target.includes(normalizeCategoryName(cat.name)) ||
-      normalizeCategoryName(cat.name).includes(target),
-    );
-
-    if (matched) {
-      return ROUTES.CATEGORY(matched.id);
-    }
-
-    // 실제 카테고리 매칭이 안 되는 경우에도 탐색이 가능하도록 검색 링크로 폴백
-    const keyword = displayName.split('/')[0];
-    return `${ROUTES.PRODUCTS}?search=${encodeURIComponent(keyword)}`;
-  };
-
   return (
     <div className="ns-home container py-4">
       <section className="mb-3">
@@ -204,12 +178,13 @@ export default function HomePage() {
                   className={`ns-side-item ${hoveredCategory === cat.name ? 'active' : ''}`}
                   onMouseEnter={() => setHoveredCategory(cat.name)}
                 >
-                  <Link href={resolveCategoryHref(cat.name)} className="text-decoration-none">
+                  <button type="button" className="ns-side-trigger">
                     <span className="ns-side-icon">
                       <i className={`bi ${cat.icon}`} />
                     </span>
                     <span>{cat.name}</span>
-                  </Link>
+                    <i className="bi bi-chevron-right ms-auto" />
+                  </button>
                 </li>
               ))}
             </ul>

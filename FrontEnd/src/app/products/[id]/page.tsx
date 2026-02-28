@@ -97,7 +97,7 @@ export default function ProductDetailPage() {
           </Card>
         </Col>
       </Row>
-      <Card style={{ marginTop: 24 }}><Title level={4}>가격 비교</Title><Table dataSource={product.priceEntries.map((e, i) => ({ ...e, key: i }))} columns={priceColumns} pagination={false} size="middle" /></Card>
+      <Card style={{ marginTop: 24 }}><Title level={4}>가격 비교</Title><Table dataSource={(product.priceEntries ?? []).map((e, i) => ({ ...e, key: i }))} columns={priceColumns} pagination={false} size="middle" /></Card>
       <div style={{ marginTop: 24 }}><PriceChart productId={productId} /></div>
       <Card style={{ marginTop: 24 }}><Title level={4}>상품 설명</Title><Paragraph>{product.description}</Paragraph></Card>
       <Card style={{ marginTop: 24 }}><SpecTable specs={product.specs} /></Card>

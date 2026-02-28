@@ -82,6 +82,64 @@ const mapOrderDetail = (order: any): Order => ({
   discountAmount: (order.pointUsed ?? 0) + (order.discountAmount ?? 0),
 });
 
+const mapProductDetailFromBackend = (product: any): ProductDetail => {
+  const rawPriceEntries = Array.isArray(product?.priceEntries)
+    ? product.priceEntries
+    : Array.isArray(product?.prices)
+      ? product.prices
+      : [];
+
+  const priceEntries = rawPriceEntries.map((entry: any) => ({
+    seller: {
+      id: entry?.seller?.id ?? entry?.sellerId ?? 0,
+      name: entry?.seller?.name ?? entry?.sellerName ?? '',
+      logoUrl: entry?.seller?.logoUrl ?? '',
+      trustScore: entry?.seller?.trustScore ?? 0,
+    },
+    price: Number(entry?.price ?? 0),
+    url: entry?.url ?? '',
+    shipping: entry?.shipping ?? '',
+  }));
+
+  const lowestPrice = Number(product?.lowestPrice ?? product?.price ?? 0);
+  const highestPrice = Number(
+    product?.highestPrice ??
+      (priceEntries.length > 0
+        ? Math.max(...priceEntries.map((entry: any) => entry.price))
+        : lowestPrice),
+  );
+  const averagePrice = Number(
+    product?.averagePrice ??
+      (priceEntries.length > 0
+        ? Math.round(
+            priceEntries.reduce((sum: number, entry: any) => sum + entry.price, 0) /
+              priceEntries.length,
+          )
+        : lowestPrice),
+  );
+
+  return {
+    id: product?.id ?? 0,
+    name: product?.name ?? '',
+    description: product?.description ?? '',
+    lowestPrice,
+    highestPrice,
+    averagePrice,
+    stock: Number(product?.stock ?? 0),
+    status: product?.status ?? 'ON_SALE',
+    category: product?.category
+      ? { id: product.category.id, name: product.category.name }
+      : null,
+    options: Array.isArray(product?.options) ? product.options : [],
+    images: Array.isArray(product?.images) ? product.images : [],
+    specs: Array.isArray(product?.specs) ? product.specs : [],
+    priceEntries,
+    reviewCount: Number(product?.reviewCount ?? 0),
+    averageRating: Number(product?.averageRating ?? 0),
+    createdAt: product?.createdAt ?? new Date(0).toISOString(),
+  };
+};
+
 export const authApi = {
   signup: (data: SignupRequest) => apiClient.post<ApiResponse<SignupResponse>>('/auth/signup', data),
   login: (data: LoginRequest) => apiClient.post<ApiResponse<LoginResponse>>('/auth/login', data),
@@ -112,7 +170,10 @@ export const categoryApi = {
 
 export const productApi = {
   getAll: (params?: ProductQueryParams) => apiClient.get<ApiResponse<ProductSummary[]>>('/products', { params }),
-  getOne: (id: number) => apiClient.get<ApiResponse<ProductDetail>>(`/products/${id}`),
+  getOne: async (id: number) => {
+    const res = await apiClient.get<ApiResponse<any>>(`/products/${id}`);
+    return { ...res, data: { ...res.data, data: mapProductDetailFromBackend(res.data.data) } };
+  },
   create: (data: Record<string, unknown>) => apiClient.post<ApiResponse<ProductDetail>>('/products', data),
   update: (id: number, data: Record<string, unknown>) => apiClient.patch<ApiResponse<ProductDetail>>(`/products/${id}`, data),
   delete: (id: number) => apiClient.delete<ApiResponse<MessageResponse>>(`/products/${id}`),

@@ -3,15 +3,17 @@
 import { useEffect, useState } from 'react';
 import { Spin } from 'antd';
 import Link from 'next/link';
-import { productApi } from '@/lib/api/endpoints';
+import { productApi, categoryApi } from '@/lib/api/endpoints';
 import { ROUTES } from '@/lib/utils/constants';
-import type { ProductSummary } from '@/types/product.types';
+import type { ProductSummary, Category } from '@/types/product.types';
 import { formatPrice } from '@/lib/utils/format';
+import HomeStyleHeader from '@/components/layout/HomeStyleHeader';
 import './page-home.css';
 
 export default function HomePage() {
   const [popularProducts, setPopularProducts] = useState<ProductSummary[]>([]);
   const [newProducts, setNewProducts] = useState<ProductSummary[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -19,9 +21,11 @@ export default function HomePage() {
     Promise.all([
       productApi.getAll({ sort: 'popularity', limit: 12 }),
       productApi.getAll({ sort: 'newest', limit: 12 }),
-    ]).then(([popRes, newRes]) => {
+      categoryApi.getAll(),
+    ]).then(([popRes, newRes, categoryRes]) => {
       setPopularProducts(popRes.data.data);
       setNewProducts(newRes.data.data);
+      setCategories(categoryRes.data.data);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
@@ -132,33 +136,27 @@ export default function HomePage() {
     },
   };
 
+  const normalizeName = (value: string) =>
+    value.toLowerCase().replace(/[\s/·,-]/g, '');
+
+  const flattenCategories = (items: Category[]): Category[] =>
+    items.flatMap((item) => [item, ...flattenCategories(item.children || [])]);
+
+  const allCategories = flattenCategories(categories);
+
+  const resolveCategoryLink = (keyword: string) => {
+    const target = normalizeName(keyword);
+    const matched = allCategories.find((cat) => {
+      const catName = normalizeName(cat.name);
+      return target.includes(catName) || catName.includes(target);
+    });
+
+    return matched ? ROUTES.CATEGORY(matched.id) : ROUTES.PRODUCTS;
+  };
+
   return (
     <div className="ns-home container py-4">
-      <section className="mb-3">
-        <div className="d-flex align-items-center gap-3 mb-2">
-          <h1 className="ns-logo m-0">NestShop</h1>
-          <div className="input-group">
-            <input className="form-control" placeholder="출근길에 자주 본 인기 남성 백팩 컬렉션" />
-            <button className="btn btn-primary">검색</button>
-          </div>
-          <div className="ns-quick-icons d-none d-lg-flex">
-            <div className="ns-quick-icon"><span><i className="bi bi-clock-history" /></span><small>최근</small></div>
-            <div className="ns-quick-icon"><span><i className="bi bi-heart" /></span><small>관심</small></div>
-            <div className="ns-quick-icon ns-login-menu">
-              <span><i className="bi bi-person" /></span>
-              <small>로그인</small>
-              <div className="ns-login-dropdown">
-                <ul>
-                  <li>로그인</li>
-                  <li>회원가입</li>
-                  <li>ID 찾기</li>
-                  <li>비밀번호 찾기</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HomeStyleHeader />
 
       <section className="row g-3 mb-4">
         <div className="col-lg-3">
@@ -196,7 +194,7 @@ export default function HomePage() {
                   <ul>
                     {categoryDirectory[hoveredCategory].leftItems.map((item) => (
                       <li key={item}>
-                        <Link href={`${ROUTES.PRODUCTS}?search=${encodeURIComponent(item)}`}>{item}</Link>
+                        <Link href={resolveCategoryLink(item)}>{item}</Link>
                       </li>
                     ))}
                   </ul>
@@ -206,7 +204,7 @@ export default function HomePage() {
                   <ul>
                     {categoryDirectory[hoveredCategory].rightItems.map((item) => (
                       <li key={item}>
-                        <Link href={`${ROUTES.PRODUCTS}?search=${encodeURIComponent(item)}`}>{item}</Link>
+                        <Link href={resolveCategoryLink(item)}>{item}</Link>
                       </li>
                     ))}
                   </ul>

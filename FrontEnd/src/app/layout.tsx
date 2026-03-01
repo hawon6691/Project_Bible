@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const initialize = useAuthStore((s) => s.initialize);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const fetchCart = useCartStore((s) => s.fetchCart);
-  const showHeader = pathname !== '/';
+  const showHeader = pathname !== '/' && !pathname.startsWith('/categories/');
 
   useEffect(() => { initialize(); }, [initialize]);
   useEffect(() => { if (isAuthenticated) fetchCart(); }, [isAuthenticated, fetchCart]);

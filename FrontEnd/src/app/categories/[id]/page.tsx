@@ -1,22 +1,32 @@
 'use client';
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { Select, Pagination, Spin, Empty, Typography, Checkbox, Rate } from 'antd';
+import { Pagination, Spin, Empty, Typography, Checkbox } from 'antd';
 import { categoryApi, productApi } from '@/lib/api/endpoints';
-import { PAGE_SIZE, ROUTES, SORT_OPTIONS } from '@/lib/utils/constants';
+import { PAGE_SIZE, ROUTES } from '@/lib/utils/constants';
 import { formatPrice } from '@/lib/utils/format';
 import type { Category, ProductSummary, ProductQueryParams } from '@/types/product.types';
 import type { PaginationMeta } from '@/types/common.types';
 import HomeStyleHeader from '@/components/layout/HomeStyleHeader';
 import '../../products/products-list.css';
+import './category-page.css';
 
-const { Title } = Typography;
+const { Text } = Typography;
 
 interface CategoryNodeWithParent extends Category {
   parentId?: number;
 }
+
+const detailFilters = [
+  { label: '제조사별', options: ['MSI', 'LG전자', '레노버', '삼성전자', 'HP', 'ASUS', 'APPLE', 'DELL', 'Microsoft'] },
+  { label: '브랜드별', options: ['갤럭시북6 프로', '2026 그램 프로16', '아이디어패드', '오멘', 'TUF Gaming'] },
+  { label: '화면 크기대', options: ['14인치대', '15인치대', '16인치대', '17인치대', '18인치 이상'] },
+  { label: 'CPU 종류', options: ['코어i5', '코어 울트라5', '코어 울트라7', '라이젠AI 5', '라이젠5(ZEN3)'] },
+  { label: '램', options: ['8GB', '16GB', '32GB', '64GB', '128GB'] },
+  { label: '저장 용량대', options: ['256~129GB', '512~257GB', '1TB~513GB', '3TB~1.1TB', '3TB 초과'] },
+];
 
 export default function CategoryPage() {
   const params = useParams();
@@ -26,9 +36,11 @@ export default function CategoryPage() {
   const [selectedCategoryId, setSelectedCategoryId] = useState(routeCategoryId);
   const [products, setProducts] = useState<ProductSummary[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
-  const [sort, setSort] = useState('newest');
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [isCategoryPanelOpen, setIsCategoryPanelOpen] = useState(false);
+  const [overlayTopCategoryId, setOverlayTopCategoryId] = useState<number | null>(null);
+  const panelWrapRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setSelectedCategoryId(routeCategoryId);
@@ -45,18 +57,59 @@ export default function CategoryPage() {
     return walk(categoryTree);
   }, [categoryTree]);
 
+  const categoryById = useMemo(
+    () => new Map(flatCategories.map((item) => [item.id, item])),
+    [flatCategories],
+  );
+
   const selectedCategory = useMemo(
     () => flatCategories.find((cat) => cat.id === selectedCategoryId),
     [flatCategories, selectedCategoryId],
   );
 
-  const topCategories = categoryTree;
+  const getTopAncestor = useCallback((id?: number) => {
+    if (!id) return null;
+    let current = categoryById.get(id);
+    while (current?.parentId) {
+      current = categoryById.get(current.parentId);
+    }
+    return current || null;
+  }, [categoryById]);
 
-  const childCategories = useMemo(() => {
+  const topCategories = categoryTree;
+  const selectedTopCategory = getTopAncestor(selectedCategoryId);
+  const overlayTopCategory = useMemo(
+    () => topCategories.find((cat) => cat.id === overlayTopCategoryId) || null,
+    [topCategories, overlayTopCategoryId],
+  );
+
+  useEffect(() => {
+    if (selectedTopCategory && !overlayTopCategoryId) {
+      setOverlayTopCategoryId(selectedTopCategory.id);
+    }
+  }, [selectedTopCategory, overlayTopCategoryId]);
+
+  useEffect(() => {
+    if (!isCategoryPanelOpen) return;
+    const onClickOutside = (event: MouseEvent) => {
+      if (!panelWrapRef.current) return;
+      if (!panelWrapRef.current.contains(event.target as Node)) {
+        setIsCategoryPanelOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, [isCategoryPanelOpen]);
+
+  const leftMenuCategories = useMemo(() => {
+    if (!selectedTopCategory) return topCategories;
+    return [selectedTopCategory, ...(selectedTopCategory.children || [])];
+  }, [selectedTopCategory, topCategories]);
+
+  const quickCategories = useMemo(() => {
     if (!selectedCategory) return [];
-    return (selectedCategory.children || []).length > 0
-      ? (selectedCategory.children || [])
-      : flatCategories.filter((cat) => cat.parentId === selectedCategory.parentId && cat.id !== selectedCategory.id);
+    if ((selectedCategory.children || []).length > 0) return selectedCategory.children || [];
+    return flatCategories.filter((item) => item.parentId === selectedCategory.parentId && item.id !== selectedCategory.id);
   }, [selectedCategory, flatCategories]);
 
   const fetchProducts = useCallback(async () => {
@@ -65,7 +118,6 @@ export default function CategoryPage() {
     try {
       const params: ProductQueryParams = {
         categoryId: selectedCategoryId,
-        sort: sort as any,
         page,
         limit: PAGE_SIZE,
       };
@@ -78,39 +130,92 @@ export default function CategoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedCategoryId, sort, page]);
+  }, [selectedCategoryId, page]);
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
   const moveCategory = (id: number) => {
+    setIsCategoryPanelOpen(false);
     router.push(ROUTES.CATEGORY(id));
   };
 
   return (
     <div className="ns-list-page page-container">
       <HomeStyleHeader />
-      <div className="ns-list-breadcrumb">
-        <span>홈</span>
-        <i className="bi bi-chevron-right" />
-        <span>전체 카테고리</span>
-        <i className="bi bi-chevron-right" />
-        <span>{selectedCategory?.name || '카테고리'}</span>
+
+      <div className="ns-cat-topbar">
+        <div className="ns-cat-dropdown-wrap" ref={panelWrapRef}>
+          <button
+            type="button"
+            className="ns-cat-all-btn"
+            onClick={() => setIsCategoryPanelOpen((prev) => !prev)}
+          >
+            <i className="bi bi-list" />
+            <span>전체 카테고리</span>
+          </button>
+
+          {isCategoryPanelOpen ? (
+            <div className="ns-cat-dropdown-panel">
+              <div className="ns-cat-dropdown-body">
+                <aside className="ns-cat-dropdown-left">
+                  {topCategories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      className={overlayTopCategoryId === cat.id ? 'active' : ''}
+                      onMouseEnter={() => setOverlayTopCategoryId(cat.id)}
+                      onClick={() => setOverlayTopCategoryId(cat.id)}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </aside>
+
+                <div className="ns-cat-dropdown-content">
+                  {(overlayTopCategory?.children || []).map((group) => (
+                    <div className="ns-cat-dropdown-col" key={group.id}>
+                      <button type="button" className="ns-cat-dropdown-title" onClick={() => moveCategory(group.id)}>
+                        {group.name}
+                      </button>
+                      <ul>
+                        {(group.children || []).slice(0, 8).map((sub) => (
+                          <li key={sub.id}>
+                            <button type="button" onClick={() => moveCategory(sub.id)}>
+                              {sub.name}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+        <div className="ns-cat-crumbs">
+          <span>홈</span>
+          <i className="bi bi-chevron-right" />
+          <span>{selectedTopCategory?.name || '카테고리'}</span>
+          <i className="bi bi-chevron-right" />
+          <span className="active">{selectedCategory?.name || '카테고리'}</span>
+        </div>
       </div>
 
       <div className="ns-list-layout">
-        <aside className="ns-left-category">
-          <div className="ns-left-title">전체 카테고리</div>
+        <aside className="ns-left-category ns-left-category-danawa">
           <ul>
-            {topCategories.map((cat) => (
+            {leftMenuCategories.map((cat, idx) => (
               <li key={cat.id}>
                 <button
                   type="button"
-                  className={selectedCategoryId === cat.id ? 'active' : ''}
+                  className={idx === 0 || selectedCategoryId === cat.id ? 'active' : ''}
                   onClick={() => moveCategory(cat.id)}
                 >
-                  {cat.name}
+                  <span>{cat.name}</span>
+                  {idx !== 0 ? <i className="bi bi-chevron-right" /> : null}
                 </button>
               </li>
             ))}
@@ -118,35 +223,33 @@ export default function CategoryPage() {
         </aside>
 
         <section className="ns-right-panel">
-          <div className="ns-filter-panel">
-            <div className="ns-filter-head">
-              <Title level={4} style={{ margin: 0 }}>{selectedCategory?.name || '카테고리'}</Title>
-              <Select
-                value={sort}
-                style={{ width: 180 }}
-                onChange={(v) => {
-                  setSort(v);
-                  setPage(1);
-                }}
-                options={SORT_OPTIONS.map((item) => ({ label: item.label, value: item.value }))}
-              />
+          <div className="ns-cat-quick-grid">
+            {(quickCategories.length > 0 ? quickCategories : [selectedCategory]).filter(Boolean).slice(0, 12).map((cat) => (
+              <button
+                key={cat!.id}
+                type="button"
+                className={selectedCategoryId === cat!.id ? 'active' : ''}
+                onClick={() => moveCategory(cat!.id)}
+              >
+                {cat!.name}
+              </button>
+            ))}
+          </div>
+
+          <div className="ns-cat-detail-box">
+            <div className="ns-cat-detail-title">
+              <h5>상세검색</h5>
+              <Text type="secondary">CM 추천 옵션은 하이라이트로 강조했어요.</Text>
             </div>
 
-            {childCategories.length > 0 ? (
-              <div className="ns-filter-grid">
-                <div className="ns-filter-label">세부 카테고리</div>
-                <div className="ns-filter-control">
-                  <Checkbox.Group
-                    value={[selectedCategoryId]}
-                    options={childCategories.map((cat) => ({ label: cat.name, value: cat.id }))}
-                    onChange={(vals) => {
-                      const nextId = Number(vals[vals.length - 1]);
-                      if (nextId) moveCategory(nextId);
-                    }}
-                  />
+            {detailFilters.map((row) => (
+              <div className="ns-cat-detail-row" key={row.label}>
+                <div className="ns-cat-detail-label">{row.label}</div>
+                <div className="ns-cat-detail-options">
+                  <Checkbox.Group options={row.options} />
                 </div>
               </div>
-            ) : null}
+            ))}
           </div>
 
           <div className="ns-result-tab">
@@ -170,7 +273,6 @@ export default function CategoryPage() {
                     <div className="ns-list-body">
                       <p className="ns-item-title">{p.name}</p>
                       <div className="ns-item-meta">
-                        <Rate disabled value={p.averageRating} style={{ fontSize: 14 }} />
                         <span>리뷰 {p.reviewCount}건</span>
                         <span>판매처 {p.sellerCount}곳</span>
                       </div>
@@ -197,6 +299,7 @@ export default function CategoryPage() {
           )}
         </section>
       </div>
+
     </div>
   );
 }

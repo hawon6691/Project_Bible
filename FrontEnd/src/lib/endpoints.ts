@@ -399,3 +399,87 @@ export async function removeCategoryAdmin(id: number) {
     token: requireToken(),
   });
 }
+
+export async function createProductAdmin(payload: {
+  name: string;
+  description: string;
+  price: number;
+  discountPrice?: number;
+  stock: number;
+  categoryId: number;
+  status?: 'ON_SALE' | 'SOLD_OUT' | 'HIDDEN';
+  thumbnailUrl?: string;
+  options?: Array<{ name: string; values: string[] }>;
+  images?: Array<{ url: string; isMain?: boolean; sortOrder?: number }>;
+}) {
+  return request<ProductDetail>('/products', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function updateProductAdmin(
+  id: number,
+  payload: {
+    name?: string;
+    description?: string;
+    price?: number;
+    discountPrice?: number;
+    stock?: number;
+    categoryId?: number;
+    status?: 'ON_SALE' | 'SOLD_OUT' | 'HIDDEN';
+    thumbnailUrl?: string;
+  },
+) {
+  return request<ProductDetail>(`/products/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeProductAdmin(id: number) {
+  return request<{ message: string }>(`/products/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function addProductOptionAdmin(productId: number, payload: { name: string; values: string[] }) {
+  return request<{ id: number; name: string; values: string[] }>(`/products/${productId}/options`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function updateProductOptionAdmin(productId: number, optionId: number, payload: { name: string; values: string[] }) {
+  return request<{ id: number; name: string; values: string[] }>(`/products/${productId}/options/${optionId}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeProductOptionAdmin(productId: number, optionId: number) {
+  return request<{ message: string }>(`/products/${productId}/options/${optionId}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function addProductImageAdmin(productId: number, payload: { url: string; isMain?: boolean; sortOrder?: number }) {
+  return request<{ id: number; url: string; isMain: boolean; sortOrder: number }>(`/products/${productId}/images`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeProductImageAdmin(productId: number, imageId: number) {
+  return request<{ message: string }>(`/products/${productId}/images/${imageId}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}

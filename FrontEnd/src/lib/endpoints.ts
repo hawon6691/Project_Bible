@@ -415,6 +415,13 @@ export async function toggleWishlist(productId: number) {
   });
 }
 
+export async function removeWishlist(productId: number) {
+  return request<{ message: string }>(`/wishlist/${productId}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
 export async function fetchReviews(productId: number, page = 1, limit = 10) {
   return request<ReviewItem[]>(`/products/${productId}/reviews`, {
     query: { page, limit },

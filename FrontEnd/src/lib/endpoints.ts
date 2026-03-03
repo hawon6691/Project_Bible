@@ -483,3 +483,146 @@ export async function removeProductImageAdmin(productId: number, imageId: number
     token: requireToken(),
   });
 }
+
+export async function fetchSpecDefinitions(categoryId?: number) {
+  return request<Array<{
+    id: number;
+    categoryId: number;
+    name: string;
+    type: string;
+    options: string[] | null;
+    unit: string | null;
+    groupName: string | null;
+    parentDefinitionId: number | null;
+    higherIsBetter: boolean;
+    isComparable: boolean;
+    dataType: string;
+    sortOrder: number;
+  }>>('/specs/definitions', {
+    query: categoryId ? { categoryId } : undefined,
+  });
+}
+
+export async function fetchResolvedSpecDefinitions(categoryId: number) {
+  return request<Array<{
+    id: number;
+    categoryId: number;
+    name: string;
+    type: string;
+    options: string[] | null;
+    unit: string | null;
+    groupName: string | null;
+    parentDefinitionId: number | null;
+    higherIsBetter: boolean;
+    isComparable: boolean;
+    dataType: string;
+    sortOrder: number;
+  }>>(`/specs/definitions/resolved/${categoryId}`);
+}
+
+export async function createSpecDefinitionAdmin(payload: {
+  categoryId: number;
+  name: string;
+  type: string;
+  options?: string[];
+  unit?: string;
+  groupName?: string;
+  parentDefinitionId?: number;
+  higherIsBetter?: boolean;
+  isComparable?: boolean;
+  dataType?: string;
+  sortOrder?: number;
+}) {
+  return request('/specs/definitions', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function updateSpecDefinitionAdmin(
+  id: number,
+  payload: {
+    name?: string;
+    type?: string;
+    options?: string[];
+    unit?: string;
+    groupName?: string;
+    parentDefinitionId?: number;
+    higherIsBetter?: boolean;
+    isComparable?: boolean;
+    dataType?: string;
+    sortOrder?: number;
+  },
+) {
+  return request(`/specs/definitions/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeSpecDefinitionAdmin(id: number) {
+  return request<{ message: string }>(`/specs/definitions/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function fetchProductSpecs(productId: number) {
+  return request<Array<{ specDefinitionId: number; name: string; value: string; numericValue?: number }>>(`/products/${productId}/specs`);
+}
+
+export async function fetchProductGroupedSpecs(productId: number) {
+  return request<Array<{ groupName: string; specs: Array<{ specDefinitionId: number; name: string; value: string; numericValue?: number }> }>>(`/products/${productId}/specs/grouped`);
+}
+
+export async function setProductSpecsAdmin(productId: number, payload: { specs: Array<{ specDefinitionId: number; value: string; numericValue?: number }> }) {
+  return request(`/products/${productId}/specs`, {
+    method: 'PUT',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function compareSpecs(payload: { productIds: number[] }) {
+  return request('/specs/compare', {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function compareSpecsNumeric(payload: { productIds: number[] }) {
+  return request('/specs/compare/numeric', {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function compareSpecsScored(payload: { productIds: number[]; weights?: Record<string, number> }) {
+  return request('/specs/compare/scored', {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function scoreByCategory(payload: { categoryId: number; productIds: number[] }) {
+  return request('/specs/score', {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function setSpecScoresAdmin(specDefId: number, payload: { scores: Array<{ value: string; score: number; benchmarkSource?: string }> }) {
+  return request(`/specs/scores/${specDefId}`, {
+    method: 'PUT',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function fetchSimilarProductsBySpec(productId: number, limit = 5) {
+  return request<Array<{ id: number; name: string; similarityScore: number }>>(`/products/${productId}/similar-spec-products`, {
+    query: { limit },
+  });
+}

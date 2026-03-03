@@ -11,6 +11,7 @@ import MyPage from '@/pages/MyPage';
 import UserApiPage from '@/pages/UserApiPage';
 import CategoryApiPage from '@/pages/CategoryApiPage';
 import ProductApiPage from '@/pages/ProductApiPage';
+import SpecApiPage from '@/pages/SpecApiPage';
 import { clearAuth, getAccessToken } from '@/lib/auth';
 import { logout } from '@/lib/endpoints';
 
@@ -28,6 +29,7 @@ function Header() {
           <Link to="/user-api">UserAPI</Link>
           <Link to="/category-api">CategoryAPI</Link>
           <Link to="/product-api">ProductAPI</Link>
+          <Link to="/spec-api">SpecAPI</Link>
           {isLoggedIn ? <Link to="/mypage">My</Link> : <Link to="/signup">Signup</Link>}
           {isLoggedIn ? (
             <button
@@ -68,6 +70,7 @@ export default function App() {
           <Route path="/user-api" element={<UserApiPage />} />
           <Route path="/category-api" element={<CategoryApiPage />} />
           <Route path="/product-api" element={<ProductApiPage />} />
+          <Route path="/spec-api" element={<SpecApiPage />} />
         </Routes>
       </main>
     </div>

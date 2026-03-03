@@ -294,3 +294,13 @@ button:disabled {
 .menu a {
   color: #1f2937;
 }
+
+.code-view {
+  background: #0b1020;
+  color: #dbeafe;
+  border-radius: 8px;
+  padding: 12px;
+  overflow: auto;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}

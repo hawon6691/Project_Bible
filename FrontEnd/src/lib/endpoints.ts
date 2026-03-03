@@ -325,3 +325,50 @@ export async function createReview(productId: number, payload: CreateReviewPaylo
     body: payload,
   });
 }
+
+export async function fetchPublicProfile(userId: number) {
+  return request<{ id: number; nickname: string; bio: string | null; profileImageUrl: string | null; createdAt: string }>(`/users/profile/${userId}`);
+}
+
+export async function updateMyProfile(payload: { nickname?: string; bio?: string }) {
+  return request<{ id: number; nickname: string; bio: string | null; profileImageUrl: string | null }>('/users/me/profile', {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function deleteMyProfileImage() {
+  return request<{ id: number; profileImageUrl: string | null }>('/users/me/profile-image', {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function deleteMe() {
+  return request<{ message: string }>('/users/me', {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function fetchUsersAdmin(query: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
+  role?: 'USER' | 'SELLER' | 'ADMIN';
+} = {}) {
+  return request<UserProfile[]>('/users', {
+    token: requireToken(),
+    query: query as Record<string, unknown>,
+  });
+}
+
+export async function updateUserStatusAdmin(userId: number, status: 'ACTIVE' | 'INACTIVE' | 'BLOCKED') {
+  return request<UserProfile>(`/users/${userId}/status`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: { status },
+  });
+}

@@ -290,3 +290,7 @@ button:disabled {
   font-size: 0.86rem;
   color: #334155;
 }
+
+.menu a {
+  color: #1f2937;
+}

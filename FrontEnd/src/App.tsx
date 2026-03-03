@@ -8,6 +8,7 @@ import VerifyEmailPage from '@/pages/VerifyEmailPage';
 import PasswordResetPage from '@/pages/PasswordResetPage';
 import CartPage from '@/pages/CartPage';
 import MyPage from '@/pages/MyPage';
+import UserApiPage from '@/pages/UserApiPage';
 import { clearAuth, getAccessToken } from '@/lib/auth';
 import { logout } from '@/lib/endpoints';
 
@@ -22,6 +23,7 @@ function Header() {
         <nav className="menu">
           <Link to="/products">Products</Link>
           <Link to="/cart">Cart</Link>
+          <Link to="/user-api">UserAPI</Link>
           {isLoggedIn ? <Link to="/mypage">My</Link> : <Link to="/signup">Signup</Link>}
           {isLoggedIn ? (
             <button
@@ -59,6 +61,7 @@ export default function App() {
           <Route path="/auth/password-reset" element={<PasswordResetPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/mypage" element={<MyPage />} />
+          <Route path="/user-api" element={<UserApiPage />} />
         </Routes>
       </main>
     </div>

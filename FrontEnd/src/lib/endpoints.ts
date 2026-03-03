@@ -299,10 +299,31 @@ export async function fetchMyOrders(page = 1, limit = 10) {
   });
 }
 
+export async function fetchOrderById(id: number) {
+  return request<OrderDetail>(`/orders/${id}`, {
+    token: requireToken(),
+  });
+}
+
 export async function cancelOrder(id: number) {
-  return request(`/orders/${id}/cancel`, {
+  return request<OrderDetail>(`/orders/${id}/cancel`, {
     method: 'POST',
     token: requireToken(),
+  });
+}
+
+export async function fetchAdminOrders(page = 1, limit = 20) {
+  return request<OrderSummary[]>('/admin/orders', {
+    token: requireToken(),
+    query: { page, limit },
+  });
+}
+
+export async function updateAdminOrderStatus(id: number, status: string) {
+  return request<OrderDetail>(`/admin/orders/${id}/status`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: { status },
   });
 }
 

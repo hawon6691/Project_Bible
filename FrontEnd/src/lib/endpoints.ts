@@ -626,3 +626,62 @@ export async function fetchSimilarProductsBySpec(productId: number, limit = 5) {
     query: { limit },
   });
 }
+
+export async function fetchSellers(page = 1, limit = 20) {
+  return request<Array<{
+    id: number;
+    name: string;
+    url: string;
+    logoUrl: string | null;
+    description: string | null;
+    trustScore?: number;
+    createdAt?: string;
+  }>>('/sellers', {
+    query: { page, limit },
+  });
+}
+
+export async function fetchSellerById(id: number) {
+  return request<{
+    id: number;
+    name: string;
+    url: string;
+    logoUrl: string | null;
+    description: string | null;
+    trustScore?: number;
+    createdAt?: string;
+  }>(`/sellers/${id}`);
+}
+
+export async function createSellerAdmin(payload: {
+  name: string;
+  url: string;
+  logoUrl?: string;
+  description?: string;
+}) {
+  return request('/sellers', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function updateSellerAdmin(id: number, payload: {
+  name?: string;
+  url?: string;
+  logoUrl?: string;
+  description?: string;
+}) {
+  return request(`/sellers/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeSellerAdmin(id: number) {
+  return request<{ message: string }>(`/sellers/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}

@@ -422,6 +422,52 @@ export async function removeWishlist(productId: number) {
   });
 }
 
+export async function fetchPointBalance() {
+  return request<{
+    balance: number;
+    expiringSoon?: number;
+    expiringDate?: string;
+  }>('/points/balance', {
+    token: requireToken(),
+  });
+}
+
+export async function fetchPointTransactions(query?: {
+  page?: number;
+  limit?: number;
+  type?: string;
+}) {
+  return request<Array<{
+    id: number;
+    type: string;
+    amount: number;
+    balanceAfter?: number;
+    balance?: number;
+    description: string | null;
+    createdAt: string;
+  }>>('/points/transactions', {
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function adminGrantPoint(payload: {
+  userId: number;
+  amount: number;
+  description?: string;
+}) {
+  return request<{
+    userId: number;
+    grantedAmount: number;
+    balance: number;
+    transactionId: number;
+  }>('/admin/points/grant', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
 export async function fetchReviews(productId: number, page = 1, limit = 10) {
   return request<ReviewItem[]>(`/products/${productId}/reviews`, {
     query: { page, limit },

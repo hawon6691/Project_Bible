@@ -327,6 +327,80 @@ export async function updateAdminOrderStatus(id: number, status: string) {
   });
 }
 
+export async function requestPayment(payload: { orderId: number; method: string; amount: number }) {
+  return request<{
+    id: number;
+    orderId: number;
+    orderStatus: string;
+    method: string;
+    amount: number;
+    status: string;
+    paidAt: string | null;
+    refundedAt: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+  }>('/payments', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function fetchPayment(id: number) {
+  return request<{
+    id: number;
+    orderId: number;
+    orderStatus: string;
+    method: string;
+    amount: number;
+    status: string;
+    paidAt: string | null;
+    refundedAt: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+  }>(`/payments/${id}`, {
+    token: requireToken(),
+  });
+}
+
+export async function refundPayment(id: number, payload?: { reason?: string }) {
+  return request<{
+    id: number;
+    orderId: number;
+    orderStatus: string;
+    method: string;
+    amount: number;
+    status: string;
+    paidAt: string | null;
+    refundedAt: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+  }>(`/payments/${id}/refund`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload || {},
+  });
+}
+
+export async function adminRefundPayment(id: number, payload?: { reason?: string }) {
+  return request<{
+    id: number;
+    orderId: number;
+    orderStatus: string;
+    method: string;
+    amount: number;
+    status: string;
+    paidAt: string | null;
+    refundedAt: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+  }>(`/admin/payments/${id}/refund`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload || {},
+  });
+}
+
 export async function fetchWishlist(page = 1, limit = 20) {
   return request<WishlistItem[]>('/wishlist', {
     token: requireToken(),

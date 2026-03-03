@@ -685,3 +685,105 @@ export async function removeSellerAdmin(id: number) {
     token: requireToken(),
   });
 }
+
+export async function fetchProductPrices(productId: number) {
+  return request<{
+    lowestPrice: number;
+    averagePrice: number;
+    highestPrice: number;
+    entries: Array<{
+      id: number;
+      seller: { id: number; name: string; logoUrl: string | null; trustScore?: number };
+      price: number;
+      shippingCost: number;
+      shippingInfo: string | null;
+      productUrl: string;
+      updatedAt: string;
+    }>;
+  }>(`/products/${productId}/prices`);
+}
+
+export async function createProductPrice(payload: {
+  productId: number;
+  sellerId: number;
+  price: number;
+  shippingCost?: number;
+  shippingInfo?: string;
+  productUrl: string;
+}) {
+  return request(`/products/${payload.productId}/prices`, {
+    method: 'POST',
+    token: requireToken(),
+    body: {
+      sellerId: payload.sellerId,
+      price: payload.price,
+      ...(payload.shippingCost !== undefined ? { shippingCost: payload.shippingCost } : {}),
+      ...(payload.shippingInfo ? { shippingInfo: payload.shippingInfo } : {}),
+      productUrl: payload.productUrl,
+    },
+  });
+}
+
+export async function updatePriceEntry(priceId: number, payload: {
+  price?: number;
+  shippingCost?: number;
+  shippingInfo?: string;
+  productUrl?: string;
+}) {
+  return request(`/prices/${priceId}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removePriceEntry(priceId: number) {
+  return request<{ message: string }>(`/prices/${priceId}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function fetchPriceHistory(productId: number, query?: {
+  period?: '1w' | '1m' | '3m' | '6m' | '1y';
+  type?: 'daily' | 'weekly' | 'monthly';
+}) {
+  return request<{
+    productId: number;
+    productName: string;
+    allTimeLowest: number;
+    allTimeHighest: number;
+    history: Array<{ date: string; lowestPrice: number; averagePrice: number }>;
+  }>(`/products/${productId}/price-history`, {
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function fetchPriceAlerts() {
+  return request<Array<{
+    id: number;
+    productId: number;
+    productName: string;
+    targetPrice: number;
+    currentLowestPrice: number;
+    isTriggered: boolean;
+    createdAt: string;
+  }>>('/price-alerts', {
+    token: requireToken(),
+  });
+}
+
+export async function createPriceAlert(payload: { productId: number; targetPrice: number }) {
+  return request('/price-alerts', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removePriceAlert(id: number) {
+  return request<{ message: string }>(`/price-alerts/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}

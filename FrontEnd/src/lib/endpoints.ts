@@ -429,6 +429,21 @@ export async function createReview(productId: number, payload: CreateReviewPaylo
   });
 }
 
+export async function updateReview(id: number, payload: { rating?: number; content?: string }) {
+  return request<ReviewItem>(`/reviews/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeReview(id: number) {
+  return request<{ message: string }>(`/reviews/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
 export async function fetchPublicProfile(userId: number) {
   return request<{ id: number; nickname: string; bio: string | null; profileImageUrl: string | null; createdAt: string }>(`/users/profile/${userId}`);
 }

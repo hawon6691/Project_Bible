@@ -372,3 +372,30 @@ export async function updateUserStatusAdmin(userId: number, status: 'ACTIVE' | '
     body: { status },
   });
 }
+
+export async function fetchCategoryById(id: number) {
+  return request<{ id: number; name: string; parentId: number | null; sortOrder: number; children: Array<{ id: number; name: string; sortOrder: number }>; createdAt: string }>(`/categories/${id}`);
+}
+
+export async function createCategoryAdmin(payload: { name: string; parentId?: number }) {
+  return request<{ id: number; name: string; parentId: number | null; sortOrder: number; createdAt: string }>('/categories', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function updateCategoryAdmin(id: number, payload: { name?: string; sortOrder?: number }) {
+  return request<{ id: number; name: string; parentId: number | null; sortOrder: number; createdAt: string }>(`/categories/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeCategoryAdmin(id: number) {
+  return request<{ message: string }>(`/categories/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}

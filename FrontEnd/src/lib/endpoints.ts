@@ -184,6 +184,14 @@ export async function createAddress(payload: CreateAddressPayload) {
   });
 }
 
+export async function updateAddress(id: number, payload: Partial<CreateAddressPayload>) {
+  return request<Address>(`/addresses/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
 export async function removeAddress(id: number) {
   return request<{ deleted: boolean }>(`/addresses/${id}`, {
     method: 'DELETE',

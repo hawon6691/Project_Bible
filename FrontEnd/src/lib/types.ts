@@ -386,3 +386,19 @@ export interface InquiryItem {
     responderRole?: string;
   } | null;
 }
+
+export interface SupportTicketItem {
+  id: number;
+  category: string;
+  title: string;
+  content: string;
+  attachmentUrl: string | null;
+  status: 'OPEN' | 'ANSWERED';
+  answer?: {
+    content: string;
+    answeredBy: number;
+    answeredAt: string;
+  } | null;
+  createdAt: string;
+  updatedAt?: string;
+}

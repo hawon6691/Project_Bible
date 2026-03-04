@@ -29,6 +29,7 @@ import type {
   ReviewItem,
   SearchResultItem,
   SignupPayload,
+  SupportTicketItem,
   TokenResponse,
   UpdateCartQuantityPayload,
   UserProfile,
@@ -604,6 +605,55 @@ export async function removeInquiry(inquiryId: number) {
   return request<{ message: string }>(`/inquiries/${inquiryId}`, {
     method: 'DELETE',
     token: requireToken(),
+  });
+}
+
+export async function createSupportTicket(payload: {
+  category: string;
+  title: string;
+  content: string;
+  attachmentUrl?: string;
+}) {
+  return request<SupportTicketItem>('/support/tickets', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function fetchMySupportTickets(query?: {
+  page?: number;
+  limit?: number;
+  status?: 'OPEN' | 'ANSWERED';
+}) {
+  return request<SupportTicketItem[]>('/support/tickets/me', {
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function fetchMySupportTicket(id: number) {
+  return request<SupportTicketItem>(`/support/tickets/me/${id}`, {
+    token: requireToken(),
+  });
+}
+
+export async function answerSupportTicketAdmin(ticketId: number, payload: { content: string }) {
+  return request<SupportTicketItem>(`/admin/support/tickets/${ticketId}/answer`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function fetchAdminSupportTickets(query?: {
+  page?: number;
+  limit?: number;
+  status?: 'OPEN' | 'ANSWERED';
+}) {
+  return request<SupportTicketItem[]>('/admin/support/tickets', {
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
   });
 }
 

@@ -9,6 +9,7 @@ import type {
   Category,
   CreateAddressPayload,
   CreateOrderPayload,
+  InquiryItem,
   PostCommentItem,
   PostDetailItem,
   PostSummaryItem,
@@ -550,6 +551,57 @@ export async function createPostComment(postId: number, payload: { content: stri
 
 export async function removeComment(id: number) {
   return request<{ message: string }>(`/comments/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function fetchProductInquiries(
+  productId: number,
+  query?: { page?: number; limit?: number },
+) {
+  return request<InquiryItem[]>(`/products/${productId}/inquiries`, {
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function createProductInquiry(
+  productId: number,
+  payload: {
+    title: string;
+    content: string;
+    isSecret?: boolean;
+  },
+) {
+  return request<InquiryItem>(`/products/${productId}/inquiries`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function answerInquiry(
+  inquiryId: number,
+  payload: {
+    content: string;
+  },
+) {
+  return request<InquiryItem>(`/inquiries/${inquiryId}/answer`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function fetchMyInquiries(query?: { page?: number; limit?: number }) {
+  return request<InquiryItem[]>('/inquiries/me', {
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function removeInquiry(inquiryId: number) {
+  return request<{ message: string }>(`/inquiries/${inquiryId}`, {
     method: 'DELETE',
     token: requireToken(),
   });

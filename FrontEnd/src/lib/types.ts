@@ -362,3 +362,27 @@ export interface PostCommentItem {
     nickname?: string;
   } | null;
 }
+
+export interface InquiryItem {
+  id: number;
+  productId: number;
+  userId?: number;
+  title: string;
+  content: string;
+  isSecret: boolean;
+  status?: 'PENDING' | 'ANSWERED';
+  createdAt: string;
+  updatedAt?: string;
+  user?: {
+    id: number;
+    name?: string;
+    nickname?: string;
+  } | null;
+  answer?: {
+    id?: number;
+    content: string;
+    createdAt?: string;
+    responderId?: number;
+    responderRole?: string;
+  } | null;
+}

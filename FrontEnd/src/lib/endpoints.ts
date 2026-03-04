@@ -9,7 +9,9 @@ import type {
   Category,
   CreateAddressPayload,
   CreateOrderPayload,
+  FaqItem,
   InquiryItem,
+  NoticeItem,
   PostCommentItem,
   PostDetailItem,
   PostSummaryItem,
@@ -654,6 +656,87 @@ export async function fetchAdminSupportTickets(query?: {
   return request<SupportTicketItem[]>('/admin/support/tickets', {
     token: requireToken(),
     query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function fetchFaqs(query?: {
+  page?: number;
+  limit?: number;
+  category?: string;
+  keyword?: string;
+}) {
+  return request<FaqItem[]>('/faq', {
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function createFaqAdmin(payload: {
+  category: string;
+  question: string;
+  answer: string;
+  isActive?: boolean;
+}) {
+  return request<FaqItem>('/admin/faq', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function updateFaqAdmin(id: number, payload: {
+  category?: string;
+  question?: string;
+  answer?: string;
+  isActive?: boolean;
+}) {
+  return request<FaqItem>(`/admin/faq/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeFaqAdmin(id: number) {
+  return request<{ message: string }>(`/admin/faq/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function fetchNotices(query?: { page?: number; limit?: number }) {
+  return request<NoticeItem[]>('/notices', {
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function createNoticeAdmin(payload: {
+  title: string;
+  content: string;
+  isPublished?: boolean;
+}) {
+  return request<NoticeItem>('/admin/notices', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function updateNoticeAdmin(id: number, payload: {
+  title?: string;
+  content?: string;
+  isPublished?: boolean;
+}) {
+  return request<NoticeItem>(`/admin/notices/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeNoticeAdmin(id: number) {
+  return request<{ message: string }>(`/admin/notices/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
   });
 }
 

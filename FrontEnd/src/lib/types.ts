@@ -402,3 +402,22 @@ export interface SupportTicketItem {
   createdAt: string;
   updatedAt?: string;
 }
+
+export interface FaqItem {
+  id: number;
+  category: string;
+  question: string;
+  answer: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface NoticeItem {
+  id: number;
+  title: string;
+  content: string;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}

@@ -312,3 +312,53 @@ export interface DealItem {
   endsAt: string;
   isActive: boolean;
 }
+
+export interface BoardItem {
+  id: number;
+  slug?: string;
+  name: string;
+  description?: string | null;
+}
+
+export interface PostSummaryItem {
+  id: number;
+  title: string;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  createdAt: string;
+  author?: {
+    id: number;
+    name?: string;
+    nickname?: string;
+  } | null;
+}
+
+export interface PostDetailItem {
+  id: number;
+  boardId?: number;
+  title: string;
+  content: string;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  createdAt: string;
+  updatedAt?: string;
+  author?: {
+    id: number;
+    name?: string;
+    nickname?: string;
+  } | null;
+}
+
+export interface PostCommentItem {
+  id: number;
+  postId?: number;
+  content: string;
+  createdAt: string;
+  author?: {
+    id: number;
+    name?: string;
+    nickname?: string;
+  } | null;
+}

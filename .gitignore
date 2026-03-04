@@ -16,3 +16,8 @@ logs/
 .env
 .env.local
 .env.*.local
+
+# Frontend build/cache artifacts
+FrontEnd/.next/
+FrontEnd/node_modules/
+FrontEnd/dist/

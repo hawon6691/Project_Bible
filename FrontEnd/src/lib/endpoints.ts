@@ -4,10 +4,14 @@ import { getOrCreateGuestCartKey } from '@/lib/cartKey';
 import type {
   AddCartItemPayload,
   Address,
+  BoardItem,
   CartItem,
   Category,
   CreateAddressPayload,
   CreateOrderPayload,
+  PostCommentItem,
+  PostDetailItem,
+  PostSummaryItem,
   CreateReviewPayload,
   DealItem,
   LoginPayload,
@@ -465,6 +469,89 @@ export async function adminGrantPoint(payload: {
     method: 'POST',
     token: requireToken(),
     body: payload,
+  });
+}
+
+export async function fetchBoards() {
+  return request<BoardItem[]>('/boards');
+}
+
+export async function fetchBoardPosts(
+  boardId: number,
+  query?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    sort?: 'newest' | 'popular' | 'most_commented';
+  },
+) {
+  return request<PostSummaryItem[]>(`/boards/${boardId}/posts`, {
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function fetchPost(id: number) {
+  return request<PostDetailItem>(`/posts/${id}`);
+}
+
+export async function createBoardPost(
+  boardId: number,
+  payload: {
+    title: string;
+    content: string;
+  },
+) {
+  return request<PostDetailItem>(`/boards/${boardId}/posts`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function updatePost(
+  id: number,
+  payload: {
+    title?: string;
+    content?: string;
+  },
+) {
+  return request<PostDetailItem>(`/posts/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removePost(id: number) {
+  return request<{ message: string }>(`/posts/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function togglePostLike(id: number) {
+  return request<{ liked: boolean; likeCount: number }>(`/posts/${id}/like`, {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
+export async function fetchPostComments(postId: number) {
+  return request<PostCommentItem[]>(`/posts/${postId}/comments`);
+}
+
+export async function createPostComment(postId: number, payload: { content: string }) {
+  return request<PostCommentItem>(`/posts/${postId}/comments`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeComment(id: number) {
+  return request<{ message: string }>(`/comments/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
   });
 }
 

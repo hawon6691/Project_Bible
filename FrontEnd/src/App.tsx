@@ -21,6 +21,7 @@ import PaymentApiPage from '@/pages/PaymentApiPage';
 import ReviewApiPage from '@/pages/ReviewApiPage';
 import WishlistApiPage from '@/pages/WishlistApiPage';
 import PointApiPage from '@/pages/PointApiPage';
+import CommunityApiPage from '@/pages/CommunityApiPage';
 import { clearAuth, getAccessToken } from '@/lib/auth';
 import { logout } from '@/lib/endpoints';
 
@@ -48,6 +49,7 @@ function Header() {
           <Link to="/review-api">ReviewAPI</Link>
           <Link to="/wishlist-api">WishlistAPI</Link>
           <Link to="/point-api">PointAPI</Link>
+          <Link to="/community-api">CommunityAPI</Link>
           {isLoggedIn ? <Link to="/mypage">My</Link> : <Link to="/signup">Signup</Link>}
           {isLoggedIn ? (
             <button
@@ -98,6 +100,7 @@ export default function App() {
           <Route path="/review-api" element={<ReviewApiPage />} />
           <Route path="/wishlist-api" element={<WishlistApiPage />} />
           <Route path="/point-api" element={<PointApiPage />} />
+          <Route path="/community-api" element={<CommunityApiPage />} />
         </Routes>
       </main>
     </div>

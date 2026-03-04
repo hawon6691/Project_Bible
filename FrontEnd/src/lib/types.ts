@@ -421,3 +421,31 @@ export interface NoticeItem {
   createdAt: string;
   updatedAt?: string;
 }
+
+export interface ActivityRecentProductItem {
+  id: number;
+  product: {
+    id: number;
+    name?: string;
+    thumbnailUrl?: string | null;
+    lowestPrice?: number | null;
+  };
+  viewedAt: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ActivitySearchItem {
+  id: number;
+  keyword: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ActivitySummary {
+  recentProducts: ActivityRecentProductItem[];
+  recentSearches: ActivitySearchItem[];
+  orderSummary: {
+    totalOrderCount: number;
+  };
+}

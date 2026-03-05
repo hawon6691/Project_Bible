@@ -47,8 +47,6 @@ import UsedMarketApiPage from '@/pages/UsedMarketApiPage';
 import AutoApiPage from '@/pages/AutoApiPage';
 import AuctionApiPage from '@/pages/AuctionApiPage';
 import CompareApiPage from '@/pages/CompareApiPage';
-import AdminSettingsApiPage from '@/pages/AdminSettingsApiPage';
-import HealthApiPage from '@/pages/HealthApiPage';
 import { clearAuth, getAccessToken } from '@/lib/auth';
 import { logout } from '@/lib/endpoints';
 
@@ -102,8 +100,6 @@ function Header() {
           <Link to="/auto-api">AutoAPI</Link>
           <Link to="/auction-api">AuctionAPI</Link>
           <Link to="/compare-api">CompareAPI</Link>
-          <Link to="/admin-settings-api">AdminSettingsAPI</Link>
-          <Link to="/health-api">HealthAPI</Link>
           {isLoggedIn ? <Link to="/mypage">My</Link> : <Link to="/signup">Signup</Link>}
           {isLoggedIn ? (
             <button
@@ -180,8 +176,6 @@ export default function App() {
           <Route path="/auto-api" element={<AutoApiPage />} />
           <Route path="/auction-api" element={<AuctionApiPage />} />
           <Route path="/compare-api" element={<CompareApiPage />} />
-          <Route path="/admin-settings-api" element={<AdminSettingsApiPage />} />
-          <Route path="/health-api" element={<HealthApiPage />} />
         </Routes>
       </main>
     </div>

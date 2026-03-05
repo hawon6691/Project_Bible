@@ -71,10 +71,6 @@ import type {
   AuctionBidItem,
   CompareListItem,
   CompareDetailResult,
-  AdminAllowedExtensionsResult,
-  AdminUploadLimitsResult,
-  AdminReviewPolicyResult,
-  HealthCheckResult,
   UserBadgeItem,
   ExchangeRateItem,
   ConvertedAmountResult,
@@ -1194,52 +1190,6 @@ export async function fetchCompareDetail(compareKey?: string) {
   return request<CompareDetailResult>('/compare/detail', {
     headers: compareKey ? { 'x-compare-key': compareKey } : undefined,
   });
-}
-
-export async function fetchAllowedExtensionsAdmin() {
-  return request<AdminAllowedExtensionsResult>('/admin/settings/extensions', {
-    token: requireToken(),
-  });
-}
-
-export async function setAllowedExtensionsAdmin(payload: { extensions: string[] }) {
-  return request<AdminAllowedExtensionsResult>('/admin/settings/extensions', {
-    method: 'POST',
-    token: requireToken(),
-    body: payload,
-  });
-}
-
-export async function fetchUploadLimitsAdmin() {
-  return request<AdminUploadLimitsResult>('/admin/settings/upload-limits', {
-    token: requireToken(),
-  });
-}
-
-export async function updateUploadLimitsAdmin(payload: { image?: number; video?: number; audio?: number }) {
-  return request<AdminUploadLimitsResult>('/admin/settings/upload-limits', {
-    method: 'PATCH',
-    token: requireToken(),
-    body: payload,
-  });
-}
-
-export async function fetchReviewPolicyAdmin() {
-  return request<AdminReviewPolicyResult>('/admin/settings/review-policy', {
-    token: requireToken(),
-  });
-}
-
-export async function updateReviewPolicyAdmin(payload: { maxImageCount: number; pointAmount: number }) {
-  return request<AdminReviewPolicyResult>('/admin/settings/review-policy', {
-    method: 'PATCH',
-    token: requireToken(),
-    body: payload,
-  });
-}
-
-export async function fetchHealthCheck() {
-  return request<HealthCheckResult>('/health');
 }
 
 export async function signup(payload: SignupPayload) {

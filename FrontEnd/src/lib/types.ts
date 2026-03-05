@@ -764,31 +764,6 @@ export interface CompareDetailResult {
   };
 }
 
-export interface AdminAllowedExtensionsResult {
-  extensions: string[];
-}
-
-export interface AdminUploadLimitsResult {
-  image: number;
-  video: number;
-  audio: number;
-}
-
-export interface AdminReviewPolicyResult {
-  maxImageCount: number;
-  pointAmount: number;
-}
-
-export interface HealthCheckResult {
-  status: 'up' | 'degraded' | 'down';
-  checks: {
-    database: { status: 'up' | 'down' | 'unknown'; message?: string; latencyMs?: number };
-    redis: { status: 'up' | 'down' | 'unknown'; message?: string; latencyMs?: number };
-    elasticsearch: { status: 'up' | 'down' | 'unknown'; message?: string; latencyMs?: number };
-  };
-  checkedAt: string;
-}
-
 export interface NewsItem {
   id: number;
   title: string;

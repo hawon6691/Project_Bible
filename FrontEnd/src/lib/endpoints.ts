@@ -41,6 +41,8 @@ import type {
   SignupPayload,
   SupportTicketItem,
   TokenResponse,
+  TrustCurrentScore,
+  TrustHistoryItem,
   UpdateCartQuantityPayload,
   UserProfile,
   VerifyEmailPayload,
@@ -283,6 +285,39 @@ export async function scanFraudAnomaliesAdmin(productId: number, query?: {
 export async function fetchFraudFlagsAdmin(productId: number) {
   return request<FraudAlertItem[]>(`/fraud/admin/products/${productId}/flags`, {
     token: requireToken(),
+  });
+}
+
+export async function fetchTrustCurrentScore(sellerId: number) {
+  return request<TrustCurrentScore>(`/trust/sellers/${sellerId}`);
+}
+
+export async function fetchTrustHistory(sellerId: number, limit = 20) {
+  return request<TrustHistoryItem[]>(`/trust/sellers/${sellerId}/history`, {
+    query: { limit },
+  });
+}
+
+export async function recalculateTrustScoreAdmin(
+  sellerId: number,
+  payload: {
+    deliveryAccuracy: number;
+    priceAccuracy: number;
+    customerRating: number;
+    responseSpeed: number;
+    returnRate: number;
+  },
+) {
+  return request<{
+    sellerId: number;
+    sellerName: string;
+    trustScore: number;
+    trustGrade: string;
+    history: TrustHistoryItem;
+  }>(`/trust/admin/sellers/${sellerId}/recalculate`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
   });
 }
 

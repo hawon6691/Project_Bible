@@ -352,6 +352,29 @@ export interface FraudRealPriceResult {
   totalPrice: number;
 }
 
+export interface TrustCurrentScore {
+  sellerId: number;
+  sellerName: string;
+  trustScore: number;
+  trustGrade: string;
+  updatedAt: string;
+}
+
+export interface TrustHistoryItem {
+  id: number;
+  sellerId: number;
+  metrics: {
+    deliveryAccuracy: number;
+    priceAccuracy: number;
+    customerRating: number;
+    responseSpeed: number;
+    returnRate: number;
+  };
+  trustScore: number;
+  trustGrade: string;
+  createdAt: string;
+}
+
 export interface NewsItem {
   id: number;
   title: string;

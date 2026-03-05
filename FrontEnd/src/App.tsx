@@ -32,6 +32,7 @@ import RecommendationApiPage from '@/pages/RecommendationApiPage';
 import DealApiPage from '@/pages/DealApiPage';
 import PredictionApiPage from '@/pages/PredictionApiPage';
 import FraudApiPage from '@/pages/FraudApiPage';
+import TrustApiPage from '@/pages/TrustApiPage';
 import { clearAuth, getAccessToken } from '@/lib/auth';
 import { logout } from '@/lib/endpoints';
 
@@ -70,6 +71,7 @@ function Header() {
           <Link to="/deal-api">DealAPI</Link>
           <Link to="/prediction-api">PredictionAPI</Link>
           <Link to="/fraud-api">FraudAPI</Link>
+          <Link to="/trust-api">TrustAPI</Link>
           {isLoggedIn ? <Link to="/mypage">My</Link> : <Link to="/signup">Signup</Link>}
           {isLoggedIn ? (
             <button
@@ -131,6 +133,7 @@ export default function App() {
           <Route path="/deal-api" element={<DealApiPage />} />
           <Route path="/prediction-api" element={<PredictionApiPage />} />
           <Route path="/fraud-api" element={<FraudApiPage />} />
+          <Route path="/trust-api" element={<TrustApiPage />} />
         </Routes>
       </main>
     </div>

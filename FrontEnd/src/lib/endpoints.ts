@@ -41,6 +41,9 @@ import type {
   SignupPayload,
   SupportTicketItem,
   TokenResponse,
+  TranslationItem,
+  ExchangeRateItem,
+  ConvertedAmountResult,
   TrustCurrentScore,
   TrustHistoryItem,
   UpdateCartQuantityPayload,
@@ -318,6 +321,62 @@ export async function recalculateTrustScoreAdmin(
     method: 'POST',
     token: requireToken(),
     body: payload,
+  });
+}
+
+export async function fetchTranslations(query?: {
+  locale?: string;
+  namespace?: string;
+  key?: string;
+}) {
+  return request<TranslationItem[]>('/i18n/translations', {
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function upsertTranslationAdmin(payload: {
+  locale: string;
+  namespace: string;
+  key: string;
+  value: string;
+}) {
+  return request<TranslationItem>('/i18n/admin/translations', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeTranslationAdmin(id: number) {
+  return request<{ success: boolean; message: string }>(`/i18n/admin/translations/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function fetchExchangeRates() {
+  return request<ExchangeRateItem[]>('/i18n/exchange-rates');
+}
+
+export async function upsertExchangeRateAdmin(payload: {
+  baseCurrency: string;
+  targetCurrency: string;
+  rate: number;
+}) {
+  return request<ExchangeRateItem>('/i18n/admin/exchange-rates', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function convertAmount(query: {
+  amount: number;
+  from: string;
+  to: string;
+}) {
+  return request<ConvertedAmountResult>('/i18n/convert', {
+    query: query as Record<string, unknown>,
   });
 }
 

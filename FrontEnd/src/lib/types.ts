@@ -531,6 +531,51 @@ export interface FriendFeedItem {
   createdAt: string;
 }
 
+export interface ShortformItem {
+  id: number;
+  userId: number;
+  nickname: string | null;
+  profileImageUrl: string | null;
+  title: string;
+  videoUrl: string;
+  thumbnailUrl: string | null;
+  durationSec: number;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  transcodeStatus: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  transcodedVideoUrl: string | null;
+  transcodeError: string | null;
+  transcodedAt: string | null;
+  productIds: number[];
+  liked: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShortformCommentItem {
+  id: number;
+  userId: number;
+  nickname: string | null;
+  profileImageUrl: string | null;
+  content: string;
+  createdAt: string;
+}
+
+export interface MediaAssetItem {
+  id: number;
+  ownerType: 'PRODUCT' | 'COMMUNITY' | 'SUPPORT' | 'SELLER' | 'SHORTFORM' | 'USER';
+  ownerId: number;
+  fileKey: string;
+  fileUrl: string;
+  type: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
+  mime: string;
+  size: number;
+  duration: number | null;
+  resolution: string | null;
+  createdAt: string;
+}
+
 export interface NewsItem {
   id: number;
   title: string;

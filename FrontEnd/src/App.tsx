@@ -38,6 +38,8 @@ import ImageApiPage from '@/pages/ImageApiPage';
 import BadgeApiPage from '@/pages/BadgeApiPage';
 import PcBuilderApiPage from '@/pages/PcBuilderApiPage';
 import FriendApiPage from '@/pages/FriendApiPage';
+import ShortformApiPage from '@/pages/ShortformApiPage';
+import MediaApiPage from '@/pages/MediaApiPage';
 import { clearAuth, getAccessToken } from '@/lib/auth';
 import { logout } from '@/lib/endpoints';
 
@@ -82,6 +84,8 @@ function Header() {
           <Link to="/badge-api">BadgeAPI</Link>
           <Link to="/pc-builder-api">PcBuilderAPI</Link>
           <Link to="/friend-api">FriendAPI</Link>
+          <Link to="/shortform-api">ShortformAPI</Link>
+          <Link to="/media-api">MediaAPI</Link>
           {isLoggedIn ? <Link to="/mypage">My</Link> : <Link to="/signup">Signup</Link>}
           {isLoggedIn ? (
             <button
@@ -149,6 +153,8 @@ export default function App() {
           <Route path="/badge-api" element={<BadgeApiPage />} />
           <Route path="/pc-builder-api" element={<PcBuilderApiPage />} />
           <Route path="/friend-api" element={<FriendApiPage />} />
+          <Route path="/shortform-api" element={<ShortformApiPage />} />
+          <Route path="/media-api" element={<MediaApiPage />} />
         </Routes>
       </main>
     </div>

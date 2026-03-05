@@ -45,6 +45,8 @@ import MatchingApiPage from '@/pages/MatchingApiPage';
 import PriceAnalyticsApiPage from '@/pages/PriceAnalyticsApiPage';
 import UsedMarketApiPage from '@/pages/UsedMarketApiPage';
 import AutoApiPage from '@/pages/AutoApiPage';
+import AuctionApiPage from '@/pages/AuctionApiPage';
+import CompareApiPage from '@/pages/CompareApiPage';
 import { clearAuth, getAccessToken } from '@/lib/auth';
 import { logout } from '@/lib/endpoints';
 
@@ -96,6 +98,8 @@ function Header() {
           <Link to="/price-analytics-api">PriceAnalyticsAPI</Link>
           <Link to="/used-market-api">UsedMarketAPI</Link>
           <Link to="/auto-api">AutoAPI</Link>
+          <Link to="/auction-api">AuctionAPI</Link>
+          <Link to="/compare-api">CompareAPI</Link>
           {isLoggedIn ? <Link to="/mypage">My</Link> : <Link to="/signup">Signup</Link>}
           {isLoggedIn ? (
             <button
@@ -170,6 +174,8 @@ export default function App() {
           <Route path="/price-analytics-api" element={<PriceAnalyticsApiPage />} />
           <Route path="/used-market-api" element={<UsedMarketApiPage />} />
           <Route path="/auto-api" element={<AutoApiPage />} />
+          <Route path="/auction-api" element={<AuctionApiPage />} />
+          <Route path="/compare-api" element={<CompareApiPage />} />
         </Routes>
       </main>
     </div>

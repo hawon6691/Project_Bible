@@ -51,6 +51,8 @@ import AdminSettingsApiPage from '@/pages/AdminSettingsApiPage';
 import HealthApiPage from '@/pages/HealthApiPage';
 import ResilienceApiPage from '@/pages/ResilienceApiPage';
 import ErrorCodeApiPage from '@/pages/ErrorCodeApiPage';
+import QueueAdminApiPage from '@/pages/QueueAdminApiPage';
+import OpsDashboardApiPage from '@/pages/OpsDashboardApiPage';
 import { clearAuth, getAccessToken } from '@/lib/auth';
 import { logout } from '@/lib/endpoints';
 
@@ -108,6 +110,8 @@ function Header() {
           <Link to="/health-api">HealthAPI</Link>
           <Link to="/resilience-api">ResilienceAPI</Link>
           <Link to="/error-code-api">ErrorCodeAPI</Link>
+          <Link to="/queue-admin-api">QueueAdminAPI</Link>
+          <Link to="/ops-dashboard-api">OpsDashboardAPI</Link>
           {isLoggedIn ? <Link to="/mypage">My</Link> : <Link to="/signup">Signup</Link>}
           {isLoggedIn ? (
             <button
@@ -188,6 +192,8 @@ export default function App() {
           <Route path="/health-api" element={<HealthApiPage />} />
           <Route path="/resilience-api" element={<ResilienceApiPage />} />
           <Route path="/error-code-api" element={<ErrorCodeApiPage />} />
+          <Route path="/queue-admin-api" element={<QueueAdminApiPage />} />
+          <Route path="/ops-dashboard-api" element={<OpsDashboardApiPage />} />
         </Routes>
       </main>
     </div>

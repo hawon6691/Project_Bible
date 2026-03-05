@@ -823,6 +823,97 @@ export interface ErrorCodeItem {
   message: string;
 }
 
+export interface QueueJobCounts {
+  waiting: number;
+  active: number;
+  delayed: number;
+  completed: number;
+  failed: number;
+}
+
+export interface QueueStatsItem {
+  queueName: string;
+  paused: boolean;
+  counts: QueueJobCounts;
+}
+
+export interface QueueStatsResult {
+  items: QueueStatsItem[];
+  total: number;
+}
+
+export interface QueueFailedJobItem {
+  id: string;
+  name: string;
+  data: Record<string, unknown>;
+  timestamp: number;
+  processedOn: number | null;
+  finishedOn: number | null;
+  attemptsMade: number;
+  failedReason: string | null;
+  stacktrace: string[];
+}
+
+export interface QueueFailedJobsResult {
+  items: QueueFailedJobItem[];
+  meta: {
+    totalItems: number;
+    itemCount: number;
+    itemsPerPage: number;
+    totalPages: number;
+    currentPage: number;
+  };
+}
+
+export interface QueueRetryFailedResult {
+  queueName: string;
+  requested: number;
+  requeuedCount: number;
+  jobIds: string[];
+}
+
+export interface QueueAutoRetryResult {
+  perQueueLimit: number;
+  maxTotal: number;
+  retriedTotal: number;
+  items: Array<{
+    queueName: string;
+    candidateCount: number;
+    retriedCount: number;
+    jobIds: string[];
+  }>;
+}
+
+export interface OpsDashboardSummary {
+  checkedAt: string;
+  overallStatus: 'up' | 'degraded' | 'down';
+  health: HealthCheckResult | null;
+  searchSync: {
+    pending: number;
+    processing: number;
+    completed: number;
+    failed: number;
+  } | null;
+  crawler: {
+    totalRuns: number;
+    queuedRuns: number;
+    processingRuns: number;
+    successRuns: number;
+    failedRuns: number;
+    successRate: number;
+    latestRunAt: string | null;
+    latestSuccessAt: string | null;
+  } | null;
+  queue: QueueStatsResult | null;
+  errors: Record<string, string>;
+  alerts: Array<{
+    key: string;
+    severity: 'warning' | 'critical';
+    message: string;
+  }>;
+  alertCount: number;
+}
+
 export interface NewsItem {
   id: number;
   title: string;

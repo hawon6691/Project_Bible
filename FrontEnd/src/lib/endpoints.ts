@@ -78,6 +78,11 @@ import type {
   ResilienceCircuitSnapshot,
   ResiliencePolicyItem,
   ErrorCodeItem,
+  OpsDashboardSummary,
+  QueueAutoRetryResult,
+  QueueFailedJobsResult,
+  QueueRetryFailedResult,
+  QueueStatsResult,
   UserBadgeItem,
   ExchangeRateItem,
   ConvertedAmountResult,
@@ -1276,6 +1281,71 @@ export async function fetchErrorCodes() {
 
 export async function fetchErrorCode(key: string) {
   return request<ErrorCodeItem | null>(`/errors/codes/${key}`);
+}
+
+export async function fetchSupportedQueuesAdmin() {
+  return request<{ items: string[] }>('/admin/queues/supported', {
+    token: requireToken(),
+  });
+}
+
+export async function fetchQueueStatsAdmin() {
+  return request<QueueStatsResult>('/admin/queues/stats', {
+    token: requireToken(),
+  });
+}
+
+export async function fetchQueueFailedJobsAdmin(
+  queueName: string,
+  query?: { page?: number; limit?: number; newestFirst?: boolean },
+) {
+  return request<QueueFailedJobsResult>(`/admin/queues/${queueName}/failed`, {
+    token: requireToken(),
+    query: {
+      page: query?.page,
+      limit: query?.limit,
+      newestFirst: query?.newestFirst === undefined ? undefined : String(query.newestFirst),
+    },
+  });
+}
+
+export async function retryQueueFailedJobsAdmin(queueName: string, limit?: number) {
+  return request<QueueRetryFailedResult>(`/admin/queues/${queueName}/failed/retry`, {
+    method: 'POST',
+    token: requireToken(),
+    query: limit ? { limit } : undefined,
+  });
+}
+
+export async function autoRetryQueuesAdmin(query?: { perQueueLimit?: number; maxTotal?: number }) {
+  return request<QueueAutoRetryResult>('/admin/queues/auto-retry', {
+    method: 'POST',
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function retryQueueJobAdmin(queueName: string, jobId: string) {
+  return request<{ queueName: string; jobId: string; retried: true }>(
+    `/admin/queues/${queueName}/jobs/${jobId}/retry`,
+    {
+      method: 'POST',
+      token: requireToken(),
+    },
+  );
+}
+
+export async function removeQueueJobAdmin(queueName: string, jobId: string) {
+  return request<{ queueName: string; jobId: string; removed: true }>(`/admin/queues/${queueName}/jobs/${jobId}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function fetchOpsDashboardSummaryAdmin() {
+  return request<OpsDashboardSummary>('/admin/ops-dashboard/summary', {
+    token: requireToken(),
+  });
 }
 
 export async function signup(payload: SignupPayload) {

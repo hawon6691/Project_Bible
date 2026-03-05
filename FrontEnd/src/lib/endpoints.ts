@@ -1,6 +1,7 @@
 import { request } from '@/lib/apiClient';
 import { clearAuth, getAccessToken, getRefreshToken } from '@/lib/auth';
 import { getOrCreateGuestCartKey } from '@/lib/cartKey';
+import { API_BASE_URL } from '@/lib/config';
 import type {
   AddCartItemPayload,
   Address,
@@ -15,6 +16,8 @@ import type {
   CreateOrderPayload,
   FaqItem,
   InquiryItem,
+  ImageUploadResult,
+  ImageVariantItem,
   NoticeItem,
   PostCommentItem,
   PostDetailItem,
@@ -42,6 +45,8 @@ import type {
   SupportTicketItem,
   TokenResponse,
   TranslationItem,
+  BadgeItem,
+  UserBadgeItem,
   ExchangeRateItem,
   ConvertedAmountResult,
   TrustCurrentScore,
@@ -377,6 +382,134 @@ export async function convertAmount(query: {
 }) {
   return request<ConvertedAmountResult>('/i18n/convert', {
     query: query as Record<string, unknown>,
+  });
+}
+
+export async function uploadImage(
+  file: File,
+  category: 'product' | 'community' | 'support' | 'seller',
+) {
+  const token = requireToken();
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('category', category);
+
+  const res = await fetch(`${API_BASE_URL}/images/upload`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+    credentials: 'include',
+  });
+
+  const raw = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const message =
+      typeof raw?.message === 'string'
+        ? raw.message
+        : Array.isArray(raw?.message)
+          ? raw.message.join(', ')
+          : `HTTP ${res.status}`;
+    throw new Error(message);
+  }
+
+  if (raw && typeof raw === 'object' && 'success' in raw && 'data' in raw) {
+    return { data: raw.data as ImageUploadResult };
+  }
+
+  return { data: raw as ImageUploadResult };
+}
+
+export async function fetchImageVariants(imageId: number) {
+  return request<ImageVariantItem[]>(`/images/${imageId}/variants`);
+}
+
+export async function removeImageAdmin(imageId: number) {
+  return request<{ success: boolean; message: string }>(`/images/${imageId}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function fetchBadges() {
+  return request<BadgeItem[]>('/badges');
+}
+
+export async function fetchMyBadges() {
+  return request<UserBadgeItem[]>('/badges/me', {
+    token: requireToken(),
+  });
+}
+
+export async function fetchUserBadges(userId: number) {
+  return request<UserBadgeItem[]>(`/users/${userId}/badges`);
+}
+
+export async function createBadgeAdmin(payload: {
+  name: string;
+  description: string;
+  iconUrl: string;
+  type: 'AUTO' | 'MANUAL';
+  condition?: {
+    metric: 'review_count' | 'post_count' | 'order_count' | 'point_total' | 'login_streak';
+    threshold: number;
+  };
+  rarity: 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
+}) {
+  return request<BadgeItem>('/admin/badges', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function updateBadgeAdmin(
+  id: number,
+  payload: {
+    name?: string;
+    description?: string;
+    iconUrl?: string;
+    type?: 'AUTO' | 'MANUAL';
+    condition?: {
+      metric: 'review_count' | 'post_count' | 'order_count' | 'point_total' | 'login_streak';
+      threshold: number;
+    };
+    rarity?: 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
+  },
+) {
+  return request<BadgeItem>(`/admin/badges/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeBadgeAdmin(id: number) {
+  return request<{ success: boolean; message: string }>(`/admin/badges/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function grantBadgeAdmin(
+  badgeId: number,
+  payload: {
+    userId: number;
+    reason?: string;
+  },
+) {
+  return request<UserBadgeItem>(`/admin/badges/${badgeId}/grant`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function revokeBadgeAdmin(badgeId: number, userId: number) {
+  return request<{ success: boolean; message: string }>(`/admin/badges/${badgeId}/revoke/${userId}`, {
+    method: 'DELETE',
+    token: requireToken(),
   });
 }
 

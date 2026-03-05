@@ -789,6 +789,40 @@ export interface HealthCheckResult {
   checkedAt: string;
 }
 
+export interface ResilienceCircuitSnapshot {
+  name: string;
+  status: 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+  failureCount: number;
+  successCount: number;
+  nextAttemptAt: string | null;
+  lastFailureReason: string | null;
+  options: {
+    failureThreshold: number;
+    openTimeoutMs: number;
+    halfOpenSuccessThreshold: number;
+  };
+}
+
+export interface ResiliencePolicyItem {
+  name: string;
+  options: {
+    failureThreshold: number;
+    openTimeoutMs: number;
+    halfOpenSuccessThreshold: number;
+  };
+  stats: {
+    success: number;
+    failure: number;
+    lastTunedAt: number;
+  };
+}
+
+export interface ErrorCodeItem {
+  key: string;
+  code: string;
+  message: string;
+}
+
 export interface NewsItem {
   id: number;
   title: string;

@@ -49,6 +49,8 @@ import AuctionApiPage from '@/pages/AuctionApiPage';
 import CompareApiPage from '@/pages/CompareApiPage';
 import AdminSettingsApiPage from '@/pages/AdminSettingsApiPage';
 import HealthApiPage from '@/pages/HealthApiPage';
+import ResilienceApiPage from '@/pages/ResilienceApiPage';
+import ErrorCodeApiPage from '@/pages/ErrorCodeApiPage';
 import { clearAuth, getAccessToken } from '@/lib/auth';
 import { logout } from '@/lib/endpoints';
 
@@ -104,6 +106,8 @@ function Header() {
           <Link to="/compare-api">CompareAPI</Link>
           <Link to="/admin-settings-api">AdminSettingsAPI</Link>
           <Link to="/health-api">HealthAPI</Link>
+          <Link to="/resilience-api">ResilienceAPI</Link>
+          <Link to="/error-code-api">ErrorCodeAPI</Link>
           {isLoggedIn ? <Link to="/mypage">My</Link> : <Link to="/signup">Signup</Link>}
           {isLoggedIn ? (
             <button
@@ -182,6 +186,8 @@ export default function App() {
           <Route path="/compare-api" element={<CompareApiPage />} />
           <Route path="/admin-settings-api" element={<AdminSettingsApiPage />} />
           <Route path="/health-api" element={<HealthApiPage />} />
+          <Route path="/resilience-api" element={<ResilienceApiPage />} />
+          <Route path="/error-code-api" element={<ErrorCodeApiPage />} />
         </Routes>
       </main>
     </div>

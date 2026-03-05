@@ -75,6 +75,9 @@ import type {
   AdminUploadLimitsResult,
   AdminReviewPolicyResult,
   HealthCheckResult,
+  ResilienceCircuitSnapshot,
+  ResiliencePolicyItem,
+  ErrorCodeItem,
   UserBadgeItem,
   ExchangeRateItem,
   ConvertedAmountResult,
@@ -1240,6 +1243,39 @@ export async function updateReviewPolicyAdmin(payload: { maxImageCount: number; 
 
 export async function fetchHealthCheck() {
   return request<HealthCheckResult>('/health');
+}
+
+export async function fetchResilienceSnapshotsAdmin() {
+  return request<{ items: ResilienceCircuitSnapshot[] }>('/resilience/circuit-breakers', {
+    token: requireToken(),
+  });
+}
+
+export async function fetchResiliencePoliciesAdmin() {
+  return request<{ items: ResiliencePolicyItem[] }>('/resilience/circuit-breakers/policies', {
+    token: requireToken(),
+  });
+}
+
+export async function fetchResilienceSnapshotAdmin(name: string) {
+  return request<ResilienceCircuitSnapshot>(`/resilience/circuit-breakers/${name}`, {
+    token: requireToken(),
+  });
+}
+
+export async function resetResilienceCircuitAdmin(name: string) {
+  return request<ResilienceCircuitSnapshot>(`/resilience/circuit-breakers/${name}/reset`, {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
+export async function fetchErrorCodes() {
+  return request<{ total: number; items: ErrorCodeItem[] }>('/errors/codes');
+}
+
+export async function fetchErrorCode(key: string) {
+  return request<ErrorCodeItem | null>(`/errors/codes/${key}`);
 }
 
 export async function signup(payload: SignupPayload) {

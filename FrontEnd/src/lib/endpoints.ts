@@ -88,6 +88,17 @@ export async function fetchRankingProducts(limit = 10) {
   return request<RankingProductItem[]>('/rankings/products/popular', { query: { limit } });
 }
 
+export async function fetchRankingKeywords(limit = 10) {
+  return request<PopularKeywordItem[]>('/rankings/keywords/popular', { query: { limit } });
+}
+
+export async function recalculateRankingAdmin() {
+  return request<{ updatedCount: number }>('/rankings/admin/recalculate', {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
 export async function fetchNews(limit = 6) {
   return request<NewsItem[]>('/news', { query: { page: 1, limit } });
 }

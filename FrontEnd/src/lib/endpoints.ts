@@ -54,6 +54,10 @@ import type {
   ShortformItem,
   ShortformCommentItem,
   MediaAssetItem,
+  NewsCategoryItem,
+  NewsSummaryItem,
+  NewsDetailItem,
+  ProductMappingItem,
   UserBadgeItem,
   ExchangeRateItem,
   ConvertedAmountResult,
@@ -136,6 +140,67 @@ export async function fetchRecommendationPersonal(limit = 20) {
 
 export async function fetchNews(limit = 6) {
   return request<NewsItem[]>('/news', { query: { page: 1, limit } });
+}
+
+export async function fetchNewsCategories() {
+  return request<NewsCategoryItem[]>('/news/categories');
+}
+
+export async function fetchNewsDetail(id: number) {
+  return request<NewsDetailItem>(`/news/${id}`);
+}
+
+export async function createNewsAdmin(payload: {
+  title: string;
+  content: string;
+  categoryId: number;
+  thumbnailUrl?: string;
+  productIds?: number[];
+}) {
+  return request<NewsDetailItem>('/news', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function updateNewsAdmin(
+  id: number,
+  payload: {
+    title?: string;
+    content?: string;
+    categoryId?: number;
+    thumbnailUrl?: string;
+    productIds?: number[];
+  },
+) {
+  return request<NewsDetailItem>(`/news/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeNewsAdmin(id: number) {
+  return request<{ success: boolean; message: string }>(`/news/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function createNewsCategoryAdmin(payload: { name: string; slug: string }) {
+  return request<NewsCategoryItem>('/news/categories', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeNewsCategoryAdmin(id: number) {
+  return request<{ success: boolean; message: string }>(`/news/categories/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
 }
 
 export async function fetchDeals(limit = 6) {
@@ -919,6 +984,42 @@ export async function fetchMediaMetadata(id: number) {
     ownerId: number;
     uploadedAt: string;
   }>(`/media/${id}/metadata`);
+}
+
+export async function fetchPendingMappings(page = 1, limit = 20) {
+  return request<ProductMappingItem[]>('/matching/pending', {
+    token: requireToken(),
+    query: { page, limit },
+  });
+}
+
+export async function approveMapping(id: number, payload: { productId: number }) {
+  return request<ProductMappingItem>(`/matching/${id}/approve`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function rejectMapping(id: number, payload: { reason: string }) {
+  return request<ProductMappingItem>(`/matching/${id}/reject`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function autoMatchMappings() {
+  return request<{ matchedCount: number; pendingCount: number }>('/matching/auto-match', {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
+export async function fetchMappingStats() {
+  return request<{ pending: number; approved: number; rejected: number; total: number }>('/matching/stats', {
+    token: requireToken(),
+  });
 }
 
 export async function signup(payload: SignupPayload) {

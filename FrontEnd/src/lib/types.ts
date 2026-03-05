@@ -576,6 +576,64 @@ export interface MediaAssetItem {
   createdAt: string;
 }
 
+export interface NewsCategoryItem {
+  id: number;
+  name: string;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NewsSummaryItem {
+  id: number;
+  title: string;
+  thumbnailUrl: string | null;
+  category: {
+    id: number;
+    name: string;
+    slug: string;
+  } | null;
+  viewCount: number;
+  createdAt: string;
+}
+
+export interface NewsDetailItem {
+  id: number;
+  title: string;
+  content: string;
+  thumbnailUrl: string | null;
+  category: {
+    id: number;
+    name: string;
+    slug: string;
+  } | null;
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
+  relatedProducts: Array<{
+    id: number;
+    name: string;
+    thumbnailUrl: string | null;
+    lowestPrice: number | null;
+  }>;
+}
+
+export interface ProductMappingItem {
+  id: number;
+  sourceName: string;
+  sourceBrand: string | null;
+  sourceSeller: string | null;
+  sourceUrl: string | null;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  productId: number | null;
+  confidence: number;
+  reason: string | null;
+  reviewedBy: number | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface NewsItem {
   id: number;
   title: string;

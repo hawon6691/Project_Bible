@@ -9,6 +9,8 @@ import type {
   BoardItem,
   CartItem,
   Category,
+  ChatMessageItem,
+  ChatRoomItem,
   CreateAddressPayload,
   CreateOrderPayload,
   FaqItem,
@@ -788,6 +790,43 @@ export async function clearSearchHistory() {
   return request<{ deleted: boolean; affected: number }>('/activities/searches', {
     method: 'DELETE',
     token: requireToken(),
+  });
+}
+
+export async function fetchChatRooms(query?: { page?: number; limit?: number }) {
+  return request<ChatRoomItem[]>('/chat/rooms', {
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function createChatRoom(payload: { name: string; isPrivate?: boolean }) {
+  return request<ChatRoomItem>('/chat/rooms', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function joinChatRoom(roomId: number) {
+  return request<ChatRoomItem>(`/chat/rooms/${roomId}/join`, {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
+export async function fetchChatMessages(roomId: number, query?: { page?: number; limit?: number }) {
+  return request<ChatMessageItem[]>(`/chat/rooms/${roomId}/messages`, {
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function sendChatMessage(roomId: number, payload: { message: string }) {
+  return request<ChatMessageItem>(`/chat/rooms/${roomId}/messages`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
   });
 }
 

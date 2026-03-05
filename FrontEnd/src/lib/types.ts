@@ -449,3 +449,21 @@ export interface ActivitySummary {
     totalOrderCount: number;
   };
 }
+
+export interface ChatRoomItem {
+  id: number;
+  name: string;
+  createdBy: number;
+  isPrivate: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ChatMessageItem {
+  id: number;
+  roomId: number;
+  senderId: number;
+  message: string;
+  createdAt: string;
+  updatedAt?: string;
+}

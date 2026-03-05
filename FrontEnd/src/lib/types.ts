@@ -320,15 +320,21 @@ export interface NewsItem {
 
 export interface DealItem {
   id: number;
+  product: {
+    id: number;
+    name: string;
+    thumbnailUrl: string | null;
+    lowestPrice: number | null;
+  } | null;
   title: string;
+  description: string | null;
   productId: number;
-  sellerId: number;
-  originalPrice: number;
-  dealPrice: number;
   discountRate: number;
-  startsAt: string;
-  endsAt: string;
+  startAt: string;
+  endAt: string;
   isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface BoardItem {

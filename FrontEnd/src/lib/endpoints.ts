@@ -22,6 +22,8 @@ import type {
   PricePredictionResult,
   CreateReviewPayload,
   DealItem,
+  FraudAlertItem,
+  FraudRealPriceResult,
   LoginPayload,
   NewsItem,
   OrderDetail,
@@ -170,6 +172,117 @@ export async function fetchPricePrediction(
 ) {
   return request<PricePredictionResult>(`/predictions/products/${productId}/price-trend`, {
     query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function fetchFraudAlertsAdmin(query?: {
+  page?: number;
+  limit?: number;
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED';
+}) {
+  return request<FraudAlertItem[]>('/fraud/alerts', {
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function approveFraudAlertAdmin(alertId: number) {
+  return request<{ success: boolean; message: string }>(`/fraud/alerts/${alertId}/approve`, {
+    method: 'PATCH',
+    token: requireToken(),
+  });
+}
+
+export async function rejectFraudAlertAdmin(alertId: number) {
+  return request<{ success: boolean; message: string }>(`/fraud/alerts/${alertId}/reject`, {
+    method: 'PATCH',
+    token: requireToken(),
+  });
+}
+
+export async function fetchProductRealPrice(productId: number, sellerId?: number) {
+  return request<FraudRealPriceResult>(`/products/${productId}/real-price`, {
+    query: sellerId ? { sellerId } : undefined,
+  });
+}
+
+export async function fetchEffectivePrices(productId: number) {
+  return request<Array<{
+    priceEntryId: number;
+    sellerId: number;
+    sellerName?: string;
+    productPrice: number;
+    shippingFee: number;
+    shippingType: string;
+    effectivePrice: number;
+    shippingInfo: string | null;
+    productUrl: string;
+  }>>(`/fraud/products/${productId}/effective-prices`);
+}
+
+export async function detectFraudAnomalies(productId: number, query?: {
+  lowerBoundRatio?: number;
+  upperBoundRatio?: number;
+  limit?: number;
+}) {
+  return request<{
+    productId: number;
+    baselineAverage: number;
+    lowerBound: number;
+    upperBound: number;
+    scannedCount: number;
+    anomalyCount: number;
+    anomalies: Array<{
+      priceEntryId: number;
+      sellerId: number;
+      sellerName?: string;
+      rawPrice: number;
+      effectivePrice: number;
+      baselineAverage: number;
+      lowerBound: number;
+      upperBound: number;
+      severity: 'LOW' | 'MEDIUM' | 'HIGH';
+      reason: string;
+    }>;
+  }>(`/fraud/products/${productId}/anomalies`, {
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function scanFraudAnomaliesAdmin(productId: number, query?: {
+  lowerBoundRatio?: number;
+  upperBoundRatio?: number;
+  limit?: number;
+}) {
+  return request<{
+    productId: number;
+    baselineAverage: number;
+    lowerBound: number;
+    upperBound: number;
+    scannedCount: number;
+    anomalyCount: number;
+    anomalies: Array<{
+      priceEntryId: number;
+      sellerId: number;
+      sellerName?: string;
+      rawPrice: number;
+      effectivePrice: number;
+      baselineAverage: number;
+      lowerBound: number;
+      upperBound: number;
+      severity: 'LOW' | 'MEDIUM' | 'HIGH';
+      reason: string;
+    }>;
+  }>(`/fraud/admin/products/${productId}/scan`, {
+    method: 'POST',
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function fetchFraudFlagsAdmin(productId: number) {
+  return request<FraudAlertItem[]>(`/fraud/admin/products/${productId}/flags`, {
+    token: requireToken(),
   });
 }
 

@@ -66,6 +66,11 @@ import type {
   AutoTrimItem,
   AutoEstimateResult,
   AutoLeaseOfferItem,
+  AuctionSummaryItem,
+  AuctionDetailItem,
+  AuctionBidItem,
+  CompareListItem,
+  CompareDetailResult,
   UserBadgeItem,
   ExchangeRateItem,
   ConvertedAmountResult,
@@ -1090,6 +1095,101 @@ export async function estimateAuto(payload: {
 
 export async function fetchAutoLeaseOffers(modelId: number) {
   return request<AutoLeaseOfferItem[]>(`/auto/models/${modelId}/lease-offers`);
+}
+
+export async function createAuction(payload: {
+  title: string;
+  description: string;
+  categoryId: number;
+  specs?: Record<string, unknown>;
+  budget: number;
+}) {
+  return request<AuctionDetailItem>('/auctions', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function fetchAuctions(query?: { page?: number; limit?: number; status?: string; categoryId?: number }) {
+  return request<AuctionSummaryItem[]>('/auctions', {
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function fetchAuctionDetail(id: number) {
+  return request<AuctionDetailItem>(`/auctions/${id}`);
+}
+
+export async function createAuctionBid(
+  id: number,
+  payload: { price: number; description?: string; deliveryDays: number },
+) {
+  return request<AuctionBidItem>(`/auctions/${id}/bids`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function selectAuctionBid(id: number, bidId: number) {
+  return request<{ success: boolean; message: string }>(`/auctions/${id}/bids/${bidId}/select`, {
+    method: 'PATCH',
+    token: requireToken(),
+  });
+}
+
+export async function cancelAuction(id: number) {
+  return request<{ success: boolean; message: string }>(`/auctions/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function updateAuctionBid(
+  id: number,
+  bidId: number,
+  payload: { price?: number; description?: string; deliveryDays?: number },
+) {
+  return request<AuctionBidItem>(`/auctions/${id}/bids/${bidId}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeAuctionBid(id: number, bidId: number) {
+  return request<{ success: boolean; message: string }>(`/auctions/${id}/bids/${bidId}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function addCompareItem(productId: number, compareKey?: string) {
+  return request<{ compareList: CompareListItem[] }>('/compare/add', {
+    method: 'POST',
+    headers: compareKey ? { 'x-compare-key': compareKey } : undefined,
+    body: { productId },
+  });
+}
+
+export async function removeCompareItem(productId: number, compareKey?: string) {
+  return request<{ compareList: CompareListItem[] }>(`/compare/${productId}`, {
+    method: 'DELETE',
+    headers: compareKey ? { 'x-compare-key': compareKey } : undefined,
+  });
+}
+
+export async function fetchCompareList(compareKey?: string) {
+  return request<{ compareList: CompareListItem[] }>('/compare', {
+    headers: compareKey ? { 'x-compare-key': compareKey } : undefined,
+  });
+}
+
+export async function fetchCompareDetail(compareKey?: string) {
+  return request<CompareDetailResult>('/compare/detail', {
+    headers: compareKey ? { 'x-compare-key': compareKey } : undefined,
+  });
 }
 
 export async function signup(payload: SignupPayload) {

@@ -704,6 +704,66 @@ export interface AutoLeaseOfferItem {
   downPayment: number;
 }
 
+export interface AuctionSummaryItem {
+  id: number;
+  ownerId: number;
+  title: string;
+  categoryId: number;
+  budget: number;
+  status: 'OPEN' | 'CLOSED' | 'CANCELLED';
+  createdAt: string;
+}
+
+export interface AuctionBidItem {
+  id: number;
+  auctionId: number;
+  sellerId: number;
+  price: number;
+  description: string | null;
+  deliveryDays: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuctionDetailItem {
+  id: number;
+  ownerId: number;
+  title: string;
+  description: string;
+  categoryId: number;
+  specs: Record<string, unknown> | null;
+  budget: number;
+  status: 'OPEN' | 'CLOSED' | 'CANCELLED';
+  selectedBidId: number | null;
+  bids: AuctionBidItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompareListItem {
+  productId: number;
+  name: string;
+  categoryId: number;
+  price: number;
+  averageRating: number;
+  reviewCount: number;
+  sellerCount: number;
+  salesCount: number;
+  thumbnailUrl: string | null;
+}
+
+export interface CompareDetailResult {
+  compareList: CompareListItem[];
+  differences: {
+    price: boolean;
+    categoryId: boolean;
+    averageRating: boolean;
+    reviewCount: boolean;
+    sellerCount: boolean;
+    salesCount: boolean;
+  };
+}
+
 export interface NewsItem {
   id: number;
   title: string;

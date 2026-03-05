@@ -60,6 +60,12 @@ import type {
   ProductMappingItem,
   LowestEverAnalyticsResult,
   UnitPriceAnalyticsResult,
+  UsedProductPriceResult,
+  UsedCategoryPriceItem,
+  AutoModelItem,
+  AutoTrimItem,
+  AutoEstimateResult,
+  AutoLeaseOfferItem,
   UserBadgeItem,
   ExchangeRateItem,
   ConvertedAmountResult,
@@ -1030,6 +1036,60 @@ export async function fetchLowestEverAnalytics(productId: number) {
 
 export async function fetchUnitPriceAnalytics(productId: number) {
   return request<UnitPriceAnalyticsResult>(`/analytics/products/${productId}/unit-price`);
+}
+
+export async function fetchUsedProductPrice(productId: number) {
+  return request<UsedProductPriceResult>(`/used-market/products/${productId}/price`);
+}
+
+export async function fetchUsedCategoryPrices(categoryId: number, page = 1, limit = 20) {
+  return request<UsedCategoryPriceItem[]>(`/used-market/categories/${categoryId}/prices`, {
+    query: { page, limit },
+  });
+}
+
+export async function estimateUsedPcBuildPrice(buildId: number) {
+  return request<{
+    buildId: number;
+    estimatedPrice: number;
+    partBreakdown: Array<{
+      partId: number;
+      partType: string;
+      productId: number;
+      productName: string | null;
+      originalPrice: number;
+      depreciationRate: number;
+      estimatedUsedPrice: number;
+    }>;
+  }>(`/used-market/pc-builds/${buildId}/estimate`, {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
+export async function fetchAutoModels(query?: { brand?: string; type?: string }) {
+  return request<AutoModelItem[]>('/auto/models', {
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function fetchAutoTrims(modelId: number) {
+  return request<AutoTrimItem[]>(`/auto/models/${modelId}/trims`);
+}
+
+export async function estimateAuto(payload: {
+  modelId: number;
+  trimId: number;
+  optionIds: number[];
+}) {
+  return request<AutoEstimateResult>('/auto/estimate', {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function fetchAutoLeaseOffers(modelId: number) {
+  return request<AutoLeaseOfferItem[]>(`/auto/models/${modelId}/lease-offers`);
 }
 
 export async function signup(payload: SignupPayload) {

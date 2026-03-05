@@ -647,6 +647,63 @@ export interface UnitPriceAnalyticsResult {
   quantity: number;
 }
 
+export interface UsedProductPriceResult {
+  productId: number;
+  averagePrice: number;
+  minPrice: number;
+  maxPrice: number;
+  trend: 'UP' | 'DOWN' | 'STABLE';
+}
+
+export interface UsedCategoryPriceItem {
+  productId: number;
+  productName: string;
+  averagePrice: number;
+  minPrice: number;
+  maxPrice: number;
+  trend: 'UP' | 'DOWN' | 'STABLE';
+}
+
+export interface AutoModelItem {
+  id: number;
+  brand: string;
+  name: string;
+  type: 'SEDAN' | 'SUV' | 'EV';
+  basePrice: number;
+}
+
+export interface AutoTrimItem {
+  id: number;
+  modelId: number;
+  name: string;
+  priceDelta: number;
+  options: Array<{
+    id: number;
+    trimId: number;
+    name: string;
+    price: number;
+  }>;
+}
+
+export interface AutoEstimateResult {
+  modelId: number;
+  trimId: number;
+  selectedOptionIds: number[];
+  basePrice: number;
+  optionPrice: number;
+  tax: number;
+  totalPrice: number;
+  monthlyPayment: number;
+}
+
+export interface AutoLeaseOfferItem {
+  modelId: number;
+  provider: string;
+  months: number;
+  monthlyFee: number;
+  downPayment: number;
+}
+
 export interface NewsItem {
   id: number;
   title: string;

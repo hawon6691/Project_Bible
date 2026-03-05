@@ -121,6 +121,48 @@ export async function fetchDeals(limit = 6) {
   return request<DealItem[]>('/deals', { query: { limit, activeOnly: true } });
 }
 
+export async function createDealAdmin(payload: {
+  productId: number;
+  title: string;
+  description?: string;
+  discountRate: number;
+  startAt: string;
+  endAt: string;
+  isActive?: boolean;
+}) {
+  return request<DealItem>('/deals/admin', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function updateDealAdmin(
+  id: number,
+  payload: {
+    productId?: number;
+    title?: string;
+    description?: string;
+    discountRate?: number;
+    startAt?: string;
+    endAt?: string;
+    isActive?: boolean;
+  },
+) {
+  return request<DealItem>(`/deals/admin/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeDealAdmin(id: number) {
+  return request<{ message: string }>(`/deals/admin/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
 export async function signup(payload: SignupPayload) {
   return request<{ id: number; email: string; name: string; message: string }>('/auth/signup', {
     method: 'POST',

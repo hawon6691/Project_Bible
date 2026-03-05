@@ -51,6 +51,9 @@ import type {
   PcCompatibilityRuleItem,
   FriendListItem,
   FriendFeedItem,
+  ShortformItem,
+  ShortformCommentItem,
+  MediaAssetItem,
   UserBadgeItem,
   ExchangeRateItem,
   ConvertedAmountResult,
@@ -724,6 +727,198 @@ export async function removeFriend(userId: number) {
     method: 'DELETE',
     token: requireToken(),
   });
+}
+
+export async function createShortform(payload: {
+  videoFile: File;
+  title: string;
+  durationSec?: number;
+  productIds?: number[];
+}) {
+  const token = requireToken();
+  const formData = new FormData();
+  formData.append('video', payload.videoFile);
+  formData.append('title', payload.title);
+  if (payload.durationSec !== undefined) {
+    formData.append('durationSec', String(payload.durationSec));
+  }
+  if (payload.productIds?.length) {
+    formData.append('productIds', JSON.stringify(payload.productIds));
+  }
+
+  const res = await fetch(`${API_BASE_URL}/shortforms`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+    credentials: 'include',
+  });
+
+  const raw = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const message =
+      typeof raw?.message === 'string'
+        ? raw.message
+        : Array.isArray(raw?.message)
+          ? raw.message.join(', ')
+          : `HTTP ${res.status}`;
+    throw new Error(message);
+  }
+
+  if (raw && typeof raw === 'object' && 'success' in raw && 'data' in raw) {
+    return { data: raw.data as ShortformItem };
+  }
+  return { data: raw as ShortformItem };
+}
+
+export async function fetchShortformFeed(page = 1, limit = 20) {
+  return request<ShortformItem[]>('/shortforms', {
+    query: { page, limit },
+  });
+}
+
+export async function fetchShortformDetail(id: number) {
+  return request<ShortformItem>(`/shortforms/${id}`);
+}
+
+export async function toggleShortformLike(id: number) {
+  return request<{ liked: boolean; likeCount: number }>(`/shortforms/${id}/like`, {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
+export async function createShortformComment(id: number, payload: { content: string }) {
+  return request<ShortformCommentItem>(`/shortforms/${id}/comments`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function fetchShortformComments(id: number, page = 1, limit = 20) {
+  return request<ShortformCommentItem[]>(`/shortforms/${id}/comments`, {
+    query: { page, limit },
+  });
+}
+
+export async function fetchShortformRanking(period: 'day' | 'week' | 'month' = 'day', limit = 20) {
+  return request<ShortformItem[]>('/shortforms/ranking/list', {
+    query: { period, limit },
+  });
+}
+
+export async function removeShortform(id: number) {
+  return request<{ success: boolean; message: string }>(`/shortforms/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function fetchShortformTranscodeStatus(id: number) {
+  return request<{
+    shortformId: number;
+    transcodeStatus: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+    transcodedVideoUrl: string | null;
+    transcodeError: string | null;
+    transcodedAt: string | null;
+  }>(`/shortforms/${id}/transcode-status`);
+}
+
+export async function retryShortformTranscode(id: number) {
+  return request<{ success: boolean; message: string }>(`/shortforms/${id}/transcode/retry`, {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
+export async function fetchUserShortforms(userId: number, page = 1, limit = 20) {
+  return request<ShortformItem[]>(`/shortforms/user/${userId}`, {
+    query: { page, limit },
+  });
+}
+
+export async function uploadMedia(
+  files: File[],
+  payload: {
+    ownerType: 'PRODUCT' | 'COMMUNITY' | 'SUPPORT' | 'SELLER' | 'SHORTFORM' | 'USER';
+    ownerId: number;
+  },
+) {
+  const token = requireToken();
+  const formData = new FormData();
+  files.forEach((file) => formData.append('files', file));
+  formData.append('ownerType', payload.ownerType);
+  formData.append('ownerId', String(payload.ownerId));
+
+  const res = await fetch(`${API_BASE_URL}/media/upload`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+    credentials: 'include',
+  });
+
+  const raw = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const message =
+      typeof raw?.message === 'string'
+        ? raw.message
+        : Array.isArray(raw?.message)
+          ? raw.message.join(', ')
+          : `HTTP ${res.status}`;
+    throw new Error(message);
+  }
+
+  if (raw && typeof raw === 'object' && 'success' in raw && 'data' in raw) {
+    return { data: raw.data as MediaAssetItem[] };
+  }
+  return { data: raw as MediaAssetItem[] };
+}
+
+export async function createMediaPresignedUrl(payload: {
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+}) {
+  return request<{ uploadUrl: string; fileKey: string; expiresInSec: number }>('/media/presigned-url', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function fetchMediaStreamInfo(id: number) {
+  return request<{
+    id: number;
+    fileUrl: string;
+    mime: string;
+    size: number;
+    duration: number | null;
+    resolution: string | null;
+  }>(`/media/stream/${id}`);
+}
+
+export async function removeMedia(id: number) {
+  return request<{ success: boolean; message: string }>(`/media/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function fetchMediaMetadata(id: number) {
+  return request<{
+    id: number;
+    mime: string;
+    size: number;
+    duration: number | null;
+    resolution: string | null;
+    ownerType: string;
+    ownerId: number;
+    uploadedAt: string;
+  }>(`/media/${id}/metadata`);
 }
 
 export async function signup(payload: SignupPayload) {

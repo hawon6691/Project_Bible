@@ -309,6 +309,24 @@ export interface RecommendationResult {
   items: RecommendationItem[];
 }
 
+export interface PricePredictionResult {
+  productId: number;
+  productName: string;
+  basis: {
+    dataPoints: number;
+    horizonDays: number;
+    lookbackDays: number;
+    fromDate?: string;
+    toDate?: string;
+  };
+  trend: 'UP' | 'DOWN' | 'FLAT' | 'UNKNOWN';
+  currentPrice: number;
+  predictedPrice: number;
+  expectedChange: number;
+  confidence: number;
+  message: string;
+}
+
 export interface NewsItem {
   id: number;
   title: string;

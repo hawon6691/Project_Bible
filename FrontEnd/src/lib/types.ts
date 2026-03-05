@@ -400,6 +400,54 @@ export interface ConvertedAmountResult {
   rate: number;
 }
 
+export interface ImageVariantItem {
+  id: number;
+  type: 'THUMBNAIL' | 'MEDIUM' | 'LARGE';
+  url: string;
+  width: number;
+  height: number;
+  format: string;
+  size: number;
+  createdAt: string;
+}
+
+export interface ImageUploadResult {
+  id: number;
+  originalUrl: string;
+  variants: ImageVariantItem[];
+  processingStatus: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+}
+
+export interface BadgeItem {
+  id: number;
+  name: string;
+  description: string;
+  iconUrl: string;
+  type: 'AUTO' | 'MANUAL';
+  condition: Record<string, unknown> | null;
+  rarity: 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
+  holderCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserBadgeItem {
+  id: number;
+  userId: number;
+  badgeId: number;
+  grantedByAdminId: number;
+  reason: string | null;
+  grantedAt: string;
+  badge: {
+    id: number;
+    name: string;
+    description: string;
+    iconUrl: string;
+    type: 'AUTO' | 'MANUAL';
+    rarity: 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
+  } | null;
+}
+
 export interface NewsItem {
   id: number;
   title: string;

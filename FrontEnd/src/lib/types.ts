@@ -375,6 +375,31 @@ export interface TrustHistoryItem {
   createdAt: string;
 }
 
+export interface TranslationItem {
+  id: number;
+  locale: string;
+  namespace: string;
+  key: string;
+  value: string;
+  updatedAt: string;
+}
+
+export interface ExchangeRateItem {
+  id: number;
+  baseCurrency: string;
+  targetCurrency: string;
+  rate: number;
+  updatedAt: string;
+}
+
+export interface ConvertedAmountResult {
+  originalAmount: number;
+  originalCurrency: string;
+  convertedAmount: number;
+  targetCurrency: string;
+  rate: number;
+}
+
 export interface NewsItem {
   id: number;
   title: string;

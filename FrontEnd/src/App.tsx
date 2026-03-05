@@ -30,6 +30,7 @@ import ChatApiPage from '@/pages/ChatApiPage';
 import RankingApiPage from '@/pages/RankingApiPage';
 import RecommendationApiPage from '@/pages/RecommendationApiPage';
 import DealApiPage from '@/pages/DealApiPage';
+import PredictionApiPage from '@/pages/PredictionApiPage';
 import { clearAuth, getAccessToken } from '@/lib/auth';
 import { logout } from '@/lib/endpoints';
 
@@ -66,6 +67,7 @@ function Header() {
           <Link to="/ranking-api">RankingAPI</Link>
           <Link to="/recommendation-api">RecommendationAPI</Link>
           <Link to="/deal-api">DealAPI</Link>
+          <Link to="/prediction-api">PredictionAPI</Link>
           {isLoggedIn ? <Link to="/mypage">My</Link> : <Link to="/signup">Signup</Link>}
           {isLoggedIn ? (
             <button
@@ -125,6 +127,7 @@ export default function App() {
           <Route path="/ranking-api" element={<RankingApiPage />} />
           <Route path="/recommendation-api" element={<RecommendationApiPage />} />
           <Route path="/deal-api" element={<DealApiPage />} />
+          <Route path="/prediction-api" element={<PredictionApiPage />} />
         </Routes>
       </main>
     </div>

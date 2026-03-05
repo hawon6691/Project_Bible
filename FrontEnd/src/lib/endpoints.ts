@@ -19,6 +19,7 @@ import type {
   PostCommentItem,
   PostDetailItem,
   PostSummaryItem,
+  PricePredictionResult,
   CreateReviewPayload,
   DealItem,
   LoginPayload,
@@ -160,6 +161,15 @@ export async function removeDealAdmin(id: number) {
   return request<{ message: string }>(`/deals/admin/${id}`, {
     method: 'DELETE',
     token: requireToken(),
+  });
+}
+
+export async function fetchPricePrediction(
+  productId: number,
+  query?: { horizonDays?: number; lookbackDays?: number },
+) {
+  return request<PricePredictionResult>(`/predictions/products/${productId}/price-trend`, {
+    query: query as Record<string, unknown> | undefined,
   });
 }
 

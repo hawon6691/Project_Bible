@@ -327,6 +327,31 @@ export interface PricePredictionResult {
   message: string;
 }
 
+export interface FraudAlertItem {
+  id: number;
+  productId: number;
+  priceEntryId: number;
+  sellerId: number;
+  reason: string;
+  rawPrice: number;
+  effectivePrice: number;
+  baselineAverage: number;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  reviewedBy: number | null;
+  reviewedAt: string | null;
+  createdAt: string;
+}
+
+export interface FraudRealPriceResult {
+  productId: number;
+  sellerId: number;
+  productPrice: number;
+  shippingFee: number;
+  shippingType: string;
+  totalPrice: number;
+}
+
 export interface NewsItem {
   id: number;
   title: string;

@@ -29,6 +29,9 @@ import type {
   FraudRealPriceResult,
   LoginPayload,
   NewsItem,
+  ObservabilityDashboard,
+  ObservabilityMetricsSummary,
+  ObservabilityTraceItem,
   OrderDetail,
   OrderSummary,
   PopularKeywordItem,
@@ -1344,6 +1347,25 @@ export async function removeQueueJobAdmin(queueName: string, jobId: string) {
 
 export async function fetchOpsDashboardSummaryAdmin() {
   return request<OpsDashboardSummary>('/admin/ops-dashboard/summary', {
+    token: requireToken(),
+  });
+}
+
+export async function fetchObservabilityMetricsAdmin() {
+  return request<ObservabilityMetricsSummary>('/admin/observability/metrics', {
+    token: requireToken(),
+  });
+}
+
+export async function fetchObservabilityTracesAdmin(query?: { limit?: number; pathContains?: string }) {
+  return request<{ items: ObservabilityTraceItem[] }>('/admin/observability/traces', {
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function fetchObservabilityDashboardAdmin() {
+  return request<ObservabilityDashboard>('/admin/observability/dashboard', {
     token: requireToken(),
   });
 }

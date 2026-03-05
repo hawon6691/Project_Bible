@@ -914,6 +914,69 @@ export interface OpsDashboardSummary {
   alertCount: number;
 }
 
+export interface ObservabilityMetricsSummary {
+  totalRequests: number;
+  errorRequests: number;
+  errorRate: number;
+  avgLatencyMs: number;
+  p95LatencyMs: number;
+  p99LatencyMs: number;
+  statusBuckets: {
+    s2xx: number;
+    s3xx: number;
+    s4xx: number;
+    s5xx: number;
+  };
+}
+
+export interface ObservabilityTraceItem {
+  requestId: string;
+  method: string;
+  path: string;
+  statusCode: number;
+  durationMs: number;
+  ip?: string | null;
+  userId?: number | null;
+  timestamp: string;
+}
+
+export interface ObservabilityDashboard {
+  checkedAt: string;
+  process: {
+    uptimeSec: number;
+    memory: {
+      rss: number;
+      heapTotal: number;
+      heapUsed: number;
+      external: number;
+      arrayBuffers: number;
+    };
+  };
+  metrics: ObservabilityMetricsSummary;
+  queue: QueueStatsResult;
+  resilience: {
+    circuits: ResilienceCircuitSnapshot[];
+    adaptivePolicies: ResiliencePolicyItem[];
+  };
+  searchSync: {
+    pending: number;
+    processing: number;
+    completed: number;
+    failed: number;
+  };
+  crawler: {
+    totalRuns: number;
+    queuedRuns: number;
+    processingRuns: number;
+    successRuns: number;
+    failedRuns: number;
+    successRate: number;
+    latestRunAt: string | null;
+    latestSuccessAt: string | null;
+  };
+  opsSummary: OpsDashboardSummary;
+}
+
 export interface NewsItem {
   id: number;
   title: string;

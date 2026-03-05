@@ -42,6 +42,7 @@ import ShortformApiPage from '@/pages/ShortformApiPage';
 import MediaApiPage from '@/pages/MediaApiPage';
 import NewsApiPage from '@/pages/NewsApiPage';
 import MatchingApiPage from '@/pages/MatchingApiPage';
+import PriceAnalyticsApiPage from '@/pages/PriceAnalyticsApiPage';
 import { clearAuth, getAccessToken } from '@/lib/auth';
 import { logout } from '@/lib/endpoints';
 
@@ -90,6 +91,7 @@ function Header() {
           <Link to="/media-api">MediaAPI</Link>
           <Link to="/news-api">NewsAPI</Link>
           <Link to="/matching-api">MatchingAPI</Link>
+          <Link to="/price-analytics-api">PriceAnalyticsAPI</Link>
           {isLoggedIn ? <Link to="/mypage">My</Link> : <Link to="/signup">Signup</Link>}
           {isLoggedIn ? (
             <button
@@ -161,6 +163,7 @@ export default function App() {
           <Route path="/media-api" element={<MediaApiPage />} />
           <Route path="/news-api" element={<NewsApiPage />} />
           <Route path="/matching-api" element={<MatchingApiPage />} />
+          <Route path="/price-analytics-api" element={<PriceAnalyticsApiPage />} />
         </Routes>
       </main>
     </div>

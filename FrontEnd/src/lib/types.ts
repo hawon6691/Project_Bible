@@ -634,6 +634,19 @@ export interface ProductMappingItem {
   updatedAt: string;
 }
 
+export interface LowestEverAnalyticsResult {
+  isLowestEver: boolean;
+  currentPrice: number;
+  lowestPrice: number;
+  lowestDate: string | null;
+}
+
+export interface UnitPriceAnalyticsResult {
+  unitPrice: number;
+  unit: string;
+  quantity: number;
+}
+
 export interface NewsItem {
   id: number;
   title: string;

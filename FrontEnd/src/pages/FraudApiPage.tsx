@@ -22,6 +22,9 @@ export default function FraudApiPage() {
   const [anomalies, setAnomalies] = useState<unknown>(null);
   const [scanResult, setScanResult] = useState<unknown>(null);
   const [flags, setFlags] = useState<FraudAlertItem[]>([]);
+  const [lowerBoundRatio, setLowerBoundRatio] = useState('0.5');
+  const [upperBoundRatio, setUpperBoundRatio] = useState('1.8');
+  const [scanLimit, setScanLimit] = useState('100');
 
   const [page, setPage] = useState('1');
   const [limit, setLimit] = useState('20');
@@ -45,7 +48,7 @@ export default function FraudApiPage() {
   return (
     <section>
       <h1>Fraud API Step</h1>
-      <p className="sub">next step - fraud API integration</p>
+      <p className="sub">step 39 - fraud detection API integration</p>
       {message ? <p className="sub">{message}</p> : null}
       {error ? <p className="error">{error}</p> : null}
 
@@ -99,7 +102,11 @@ export default function FraudApiPage() {
               type="button"
               onClick={() =>
                 run(async () => {
-                  const res = await detectFraudAnomalies(parsedProductId);
+                  const res = await detectFraudAnomalies(parsedProductId, {
+                    lowerBoundRatio: Number(lowerBoundRatio),
+                    upperBoundRatio: Number(upperBoundRatio),
+                    limit: Number(scanLimit),
+                  });
                   setAnomalies(res.data);
                   setMessage('GET /fraud/products/:productId/anomalies success');
                 })
@@ -107,6 +114,27 @@ export default function FraudApiPage() {
             >
               detect anomalies
             </button>
+          </div>
+
+          <div className="form-box mt-12">
+            <label htmlFor="fraud-lower-bound">lowerBoundRatio</label>
+            <input
+              id="fraud-lower-bound"
+              value={lowerBoundRatio}
+              onChange={(e) => setLowerBoundRatio(e.target.value)}
+            />
+            <label htmlFor="fraud-upper-bound">upperBoundRatio</label>
+            <input
+              id="fraud-upper-bound"
+              value={upperBoundRatio}
+              onChange={(e) => setUpperBoundRatio(e.target.value)}
+            />
+            <label htmlFor="fraud-scan-limit">scan limit</label>
+            <input
+              id="fraud-scan-limit"
+              value={scanLimit}
+              onChange={(e) => setScanLimit(e.target.value)}
+            />
           </div>
 
           {realPrice ? <pre className="code-view mt-12">{JSON.stringify(realPrice, null, 2)}</pre> : null}
@@ -154,7 +182,11 @@ export default function FraudApiPage() {
               type="button"
               onClick={() =>
                 run(async () => {
-                  const res = await scanFraudAnomaliesAdmin(parsedProductId);
+                  const res = await scanFraudAnomaliesAdmin(parsedProductId, {
+                    lowerBoundRatio: Number(lowerBoundRatio),
+                    upperBoundRatio: Number(upperBoundRatio),
+                    limit: Number(scanLimit),
+                  });
                   setScanResult(res.data);
                   setMessage('POST /fraud/admin/products/:productId/scan success');
                 })

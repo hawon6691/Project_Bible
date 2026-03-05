@@ -58,6 +58,8 @@ import type {
   NewsSummaryItem,
   NewsDetailItem,
   ProductMappingItem,
+  LowestEverAnalyticsResult,
+  UnitPriceAnalyticsResult,
   UserBadgeItem,
   ExchangeRateItem,
   ConvertedAmountResult,
@@ -1020,6 +1022,14 @@ export async function fetchMappingStats() {
   return request<{ pending: number; approved: number; rejected: number; total: number }>('/matching/stats', {
     token: requireToken(),
   });
+}
+
+export async function fetchLowestEverAnalytics(productId: number) {
+  return request<LowestEverAnalyticsResult>(`/analytics/products/${productId}/lowest-ever`);
+}
+
+export async function fetchUnitPriceAnalytics(productId: number) {
+  return request<UnitPriceAnalyticsResult>(`/analytics/products/${productId}/unit-price`);
 }
 
 export async function signup(payload: SignupPayload) {

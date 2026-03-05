@@ -46,6 +46,11 @@ import type {
   TokenResponse,
   TranslationItem,
   BadgeItem,
+  PcBuildSummaryItem,
+  PcBuildDetailItem,
+  PcCompatibilityRuleItem,
+  FriendListItem,
+  FriendFeedItem,
   UserBadgeItem,
   ExchangeRateItem,
   ConvertedAmountResult,
@@ -508,6 +513,214 @@ export async function grantBadgeAdmin(
 
 export async function revokeBadgeAdmin(badgeId: number, userId: number) {
   return request<{ success: boolean; message: string }>(`/admin/badges/${badgeId}/revoke/${userId}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function fetchMyPcBuilds(page = 1, limit = 20) {
+  return request<PcBuildSummaryItem[]>('/pc-builds', {
+    token: requireToken(),
+    query: { page, limit },
+  });
+}
+
+export async function createPcBuild(payload: {
+  name: string;
+  description?: string;
+  purpose: 'GAMING' | 'OFFICE' | 'DESIGN' | 'DEVELOPMENT' | 'STREAMING';
+  budget?: number;
+}) {
+  return request<PcBuildDetailItem>('/pc-builds', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function fetchPcBuildDetail(id: number) {
+  return request<PcBuildDetailItem>(`/pc-builds/${id}`);
+}
+
+export async function updatePcBuild(
+  id: number,
+  payload: {
+    name?: string;
+    description?: string;
+    purpose?: 'GAMING' | 'OFFICE' | 'DESIGN' | 'DEVELOPMENT' | 'STREAMING';
+    budget?: number;
+  },
+) {
+  return request<PcBuildDetailItem>(`/pc-builds/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removePcBuild(id: number) {
+  return request<{ success: boolean; message: string }>(`/pc-builds/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function addPcBuildPart(
+  id: number,
+  payload: {
+    productId: number;
+    partType: 'CPU' | 'MOTHERBOARD' | 'RAM' | 'GPU' | 'SSD' | 'HDD' | 'PSU' | 'CASE' | 'COOLER' | 'MONITOR';
+    sellerId?: number;
+    quantity: number;
+  },
+) {
+  return request<PcBuildDetailItem>(`/pc-builds/${id}/parts`, {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removePcBuildPart(id: number, partId: number) {
+  return request<PcBuildDetailItem>(`/pc-builds/${id}/parts/${partId}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function fetchPcBuildCompatibility(id: number) {
+  return request<PcBuildDetailItem['compatibility']>(`/pc-builds/${id}/compatibility`);
+}
+
+export async function createPcBuildShareLink(id: number) {
+  return request<{ shareCode: string; shareUrl: string }>(`/pc-builds/${id}/share`, {
+    token: requireToken(),
+  });
+}
+
+export async function fetchSharedPcBuild(shareCode: string) {
+  return request<PcBuildDetailItem>(`/pc-builds/shared/${shareCode}`);
+}
+
+export async function fetchPopularPcBuilds(page = 1, limit = 20) {
+  return request<PcBuildSummaryItem[]>('/pc-builds/popular', {
+    query: { page, limit },
+  });
+}
+
+export async function fetchCompatibilityRulesAdmin() {
+  return request<PcCompatibilityRuleItem[]>('/admin/compatibility-rules', {
+    token: requireToken(),
+  });
+}
+
+export async function createCompatibilityRuleAdmin(payload: {
+  partType: 'CPU' | 'MOTHERBOARD' | 'RAM' | 'GPU' | 'SSD' | 'HDD' | 'PSU' | 'CASE' | 'COOLER' | 'MONITOR';
+  targetPartType?: 'CPU' | 'MOTHERBOARD' | 'RAM' | 'GPU' | 'SSD' | 'HDD' | 'PSU' | 'CASE' | 'COOLER' | 'MONITOR';
+  title: string;
+  description: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  enabled?: boolean;
+  metadata?: { required?: boolean };
+}) {
+  return request<PcCompatibilityRuleItem>('/admin/compatibility-rules', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function updateCompatibilityRuleAdmin(
+  id: number,
+  payload: {
+    partType?: 'CPU' | 'MOTHERBOARD' | 'RAM' | 'GPU' | 'SSD' | 'HDD' | 'PSU' | 'CASE' | 'COOLER' | 'MONITOR';
+    targetPartType?: 'CPU' | 'MOTHERBOARD' | 'RAM' | 'GPU' | 'SSD' | 'HDD' | 'PSU' | 'CASE' | 'COOLER' | 'MONITOR';
+    title?: string;
+    description?: string;
+    severity?: 'LOW' | 'MEDIUM' | 'HIGH';
+    enabled?: boolean;
+    metadata?: { required?: boolean };
+  },
+) {
+  return request<PcCompatibilityRuleItem>(`/admin/compatibility-rules/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeCompatibilityRuleAdmin(id: number) {
+  return request<{ success: boolean; message: string }>(`/admin/compatibility-rules/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function requestFriend(userId: number) {
+  return request<{ success: boolean; message: string }>(`/friends/request/${userId}`, {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
+export async function acceptFriendRequest(friendshipId: number) {
+  return request<{ success: boolean; message: string }>(`/friends/request/${friendshipId}/accept`, {
+    method: 'PATCH',
+    token: requireToken(),
+  });
+}
+
+export async function rejectFriendRequest(friendshipId: number) {
+  return request<{ success: boolean; message: string }>(`/friends/request/${friendshipId}/reject`, {
+    method: 'PATCH',
+    token: requireToken(),
+  });
+}
+
+export async function fetchFriends(page = 1, limit = 20) {
+  return request<FriendListItem[]>('/friends', {
+    token: requireToken(),
+    query: { page, limit },
+  });
+}
+
+export async function fetchReceivedFriendRequests(page = 1, limit = 20) {
+  return request<FriendListItem[]>('/friends/requests/received', {
+    token: requireToken(),
+    query: { page, limit },
+  });
+}
+
+export async function fetchSentFriendRequests(page = 1, limit = 20) {
+  return request<FriendListItem[]>('/friends/requests/sent', {
+    token: requireToken(),
+    query: { page, limit },
+  });
+}
+
+export async function fetchFriendFeed(page = 1, limit = 20) {
+  return request<FriendFeedItem[]>('/friends/feed', {
+    token: requireToken(),
+    query: { page, limit },
+  });
+}
+
+export async function blockUser(userId: number) {
+  return request<{ success: boolean; message: string }>(`/friends/block/${userId}`, {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
+export async function unblockUser(userId: number) {
+  return request<{ success: boolean; message: string }>(`/friends/block/${userId}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function removeFriend(userId: number) {
+  return request<{ success: boolean; message: string }>(`/friends/${userId}`, {
     method: 'DELETE',
     token: requireToken(),
   });

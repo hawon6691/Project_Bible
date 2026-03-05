@@ -448,6 +448,89 @@ export interface UserBadgeItem {
   } | null;
 }
 
+export interface PcBuildSummaryItem {
+  id: number;
+  name: string;
+  purpose: 'GAMING' | 'OFFICE' | 'DESIGN' | 'DEVELOPMENT' | 'STREAMING';
+  budget: number | null;
+  totalPrice: number;
+  shareCode: string | null;
+  viewCount: number;
+  updatedAt: string;
+}
+
+export interface PcBuildDetailItem {
+  id: number;
+  userId: number;
+  name: string;
+  description: string | null;
+  purpose: 'GAMING' | 'OFFICE' | 'DESIGN' | 'DEVELOPMENT' | 'STREAMING';
+  budget: number | null;
+  totalPrice: number;
+  shareCode: string | null;
+  viewCount: number;
+  parts: Array<{
+    id: number;
+    partType: 'CPU' | 'MOTHERBOARD' | 'RAM' | 'GPU' | 'SSD' | 'HDD' | 'PSU' | 'CASE' | 'COOLER' | 'MONITOR';
+    quantity: number;
+    product: { id: number; name: string; lowestPrice: number | null } | null;
+    seller: { id: number; name: string; price: number } | null;
+    unitPrice: number;
+    totalPrice: number;
+  }>;
+  compatibility: {
+    status: string;
+    issues: unknown[];
+    warnings: Array<{ type: string; message: string; severity: string }>;
+    missingParts: string[];
+    powerEstimate?: {
+      totalWattage: number;
+      psuWattage: number;
+      headroom: number;
+      sufficient: boolean;
+    };
+    socketCompatible?: boolean;
+    ramCompatible?: boolean;
+    formFactorCompatible?: boolean;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PcCompatibilityRuleItem {
+  id: number;
+  partType: string;
+  targetPartType: string | null;
+  title: string;
+  description: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  enabled: boolean;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FriendListItem {
+  friendshipId: number;
+  userId: number;
+  nickname: string | null;
+  profileImageUrl: string | null;
+  status?: string;
+  since?: string | null;
+  requestedAt?: string;
+}
+
+export interface FriendFeedItem {
+  id: number;
+  userId: number;
+  nickname: string | null;
+  profileImageUrl: string | null;
+  type: string;
+  message: string;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+}
+
 export interface NewsItem {
   id: number;
   title: string;

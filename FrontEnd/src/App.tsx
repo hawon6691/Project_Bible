@@ -36,6 +36,8 @@ import TrustApiPage from '@/pages/TrustApiPage';
 import I18nApiPage from '@/pages/I18nApiPage';
 import ImageApiPage from '@/pages/ImageApiPage';
 import BadgeApiPage from '@/pages/BadgeApiPage';
+import PcBuilderApiPage from '@/pages/PcBuilderApiPage';
+import FriendApiPage from '@/pages/FriendApiPage';
 import { clearAuth, getAccessToken } from '@/lib/auth';
 import { logout } from '@/lib/endpoints';
 
@@ -78,6 +80,8 @@ function Header() {
           <Link to="/i18n-api">I18nAPI</Link>
           <Link to="/image-api">ImageAPI</Link>
           <Link to="/badge-api">BadgeAPI</Link>
+          <Link to="/pc-builder-api">PcBuilderAPI</Link>
+          <Link to="/friend-api">FriendAPI</Link>
           {isLoggedIn ? <Link to="/mypage">My</Link> : <Link to="/signup">Signup</Link>}
           {isLoggedIn ? (
             <button
@@ -143,6 +147,8 @@ export default function App() {
           <Route path="/i18n-api" element={<I18nApiPage />} />
           <Route path="/image-api" element={<ImageApiPage />} />
           <Route path="/badge-api" element={<BadgeApiPage />} />
+          <Route path="/pc-builder-api" element={<PcBuilderApiPage />} />
+          <Route path="/friend-api" element={<FriendApiPage />} />
         </Routes>
       </main>
     </div>

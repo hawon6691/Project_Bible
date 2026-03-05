@@ -291,6 +291,24 @@ export interface RankingProductItem {
   lowestPrice: number | null;
 }
 
+export interface RecommendationItem {
+  rank: number;
+  productId: number;
+  name: string;
+  thumbnailUrl: string | null;
+  lowestPrice: number | null;
+  averageRating: number;
+  reviewCount: number;
+  salesCount: number;
+  popularityScore: number;
+  categoryId: number | null;
+}
+
+export interface RecommendationResult {
+  source: string;
+  items: RecommendationItem[];
+}
+
 export interface NewsItem {
   id: number;
   title: string;

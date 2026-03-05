@@ -29,6 +29,7 @@ import type {
   ProductDetail,
   ProductQuery,
   ProductSummary,
+  RecommendationResult,
   RankingProductItem,
   RequestPasswordResetPayload,
   ResetPasswordPayload,
@@ -96,6 +97,19 @@ export async function recalculateRankingAdmin() {
   return request<{ updatedCount: number }>('/rankings/admin/recalculate', {
     method: 'POST',
     token: requireToken(),
+  });
+}
+
+export async function fetchRecommendationTrending(limit = 20) {
+  return request<RecommendationResult>('/recommendations/trending', {
+    query: { limit },
+  });
+}
+
+export async function fetchRecommendationPersonal(limit = 20) {
+  return request<RecommendationResult>('/recommendations/personal', {
+    token: requireToken(),
+    query: { limit },
   });
 }
 

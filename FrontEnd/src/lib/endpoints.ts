@@ -4,6 +4,8 @@ import { getOrCreateGuestCartKey } from '@/lib/cartKey';
 import type {
   AddCartItemPayload,
   Address,
+  ActivitySearchItem,
+  ActivitySummary,
   BoardItem,
   CartItem,
   Category,
@@ -735,6 +737,55 @@ export async function updateNoticeAdmin(id: number, payload: {
 
 export async function removeNoticeAdmin(id: number) {
   return request<{ message: string }>(`/admin/notices/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function fetchActivitySummary() {
+  return request<ActivitySummary>('/activities', {
+    token: requireToken(),
+  });
+}
+
+export async function fetchRecentProducts(query?: { page?: number; limit?: number }) {
+  return request('/activities/recent-products', {
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function trackRecentProduct(productId: number) {
+  return request<{ queued: boolean; event: string; userId: number; productId: number }>(`/activities/recent-products/${productId}`, {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
+export async function fetchSearchHistory(query?: { page?: number; limit?: number }) {
+  return request<ActivitySearchItem[]>('/activities/searches', {
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function addSearchHistory(keyword: string) {
+  return request<{ queued: boolean; event: string; userId: number; keyword: string }>('/activities/searches', {
+    method: 'POST',
+    token: requireToken(),
+    body: { keyword },
+  });
+}
+
+export async function removeSearchHistory(id: number) {
+  return request<{ deleted: boolean; id: number }>(`/activities/searches/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function clearSearchHistory() {
+  return request<{ deleted: boolean; affected: number }>('/activities/searches', {
     method: 'DELETE',
     token: requireToken(),
   });

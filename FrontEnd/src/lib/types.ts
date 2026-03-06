@@ -1159,3 +1159,115 @@ export interface ChatMessageItem {
   createdAt: string;
   updatedAt?: string;
 }
+
+export interface PushSubscriptionItem {
+  id: number;
+  endpoint: string;
+  expirationTime: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PushPreferenceItem {
+  id: number;
+  userId: number;
+  priceAlertEnabled: boolean;
+  orderStatusEnabled: boolean;
+  chatMessageEnabled: boolean;
+  dealEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaginationMeta {
+  totalItems: number;
+  itemCount: number;
+  itemsPerPage: number;
+  totalPages: number;
+  currentPage: number;
+}
+
+export interface CrawlerJobItem {
+  id: number;
+  sellerId: number;
+  name: string;
+  cronExpression: string | null;
+  collectPrice: boolean;
+  collectSpec: boolean;
+  detectAnomaly: boolean;
+  isActive: boolean;
+  lastTriggeredAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CrawlerRunItem {
+  id: number;
+  jobId: number | null;
+  sellerId: number;
+  productId: number | null;
+  triggerType: string;
+  collectPrice: boolean;
+  collectSpec: boolean;
+  detectAnomaly: boolean;
+  status: string;
+  startedAt: string | null;
+  endedAt: string | null;
+  durationMs: number | null;
+  collectedPriceCount: number;
+  collectedSpecCount: number;
+  anomalyCount: number;
+  errorMessage: string | null;
+  createdAt: string;
+}
+
+export interface CrawlerMonitoringSummary {
+  totalRuns: number;
+  queuedRuns: number;
+  processingRuns: number;
+  successRuns: number;
+  failedRuns: number;
+  successRate: number;
+  latestRunAt: string | null;
+  latestSuccessAt: string | null;
+}
+
+export interface CrawlerJobListResult {
+  items: CrawlerJobItem[];
+  meta: PaginationMeta;
+}
+
+export interface CrawlerRunListResult {
+  items: CrawlerRunItem[];
+  meta: PaginationMeta;
+}
+
+export interface ProductQueryViewItem {
+  productId: number;
+  categoryId: number;
+  name: string;
+  thumbnailUrl: string | null;
+  status: string;
+  basePrice: number | null;
+  lowestPrice: number | null;
+  sellerCount: number;
+  averageRating: number;
+  reviewCount: number;
+  viewCount: number;
+  popularityScore: number;
+  syncedAt: string | null;
+  updatedAt: string;
+}
+
+export interface ProductQueryViewListResult {
+  items: ProductQueryViewItem[];
+  meta: PaginationMeta;
+}
+
+export interface SearchSyncOutboxSummary {
+  pending: number;
+  processing: number;
+  completed: number;
+  failed: number;
+}

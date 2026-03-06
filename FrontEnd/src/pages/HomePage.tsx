@@ -72,7 +72,7 @@ export default function HomePage() {
           <ul className="list">
             {flatCategories.map((cat) => (
               <li key={cat.id}>
-                <Link to={`/products?categoryId=${cat.id}`}>{cat.name}</Link>
+                <Link to={`/public/products?categoryId=${cat.id}`}>{cat.name}</Link>
               </li>
             ))}
           </ul>
@@ -83,7 +83,7 @@ export default function HomePage() {
           <ul className="cards">
             {products.map((product) => (
               <li key={product.id} className="card">
-                <Link to={`/products/${product.id}`}>
+                <Link to={`/public/products/${product.id}`}>
                   <div className="thumb">
                     {product.thumbnailUrl ? <img src={product.thumbnailUrl} alt={product.name} /> : <span>NO IMAGE</span>}
                   </div>
@@ -113,7 +113,7 @@ export default function HomePage() {
           <ul className="list">
             {popularKeywords.map((keyword) => (
               <li key={keyword}>
-                <Link to={`/products?search=${encodeURIComponent(keyword)}`}>{keyword}</Link>
+                <Link to={`/public/products?search=${encodeURIComponent(keyword)}`}>{keyword}</Link>
               </li>
             ))}
           </ul>

@@ -5,11 +5,11 @@ services:
     container_name: projectbible-postgres
     restart: unless-stopped
     ports:
-      - '5432:5432'
+      - "5432:5432"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: nestshop
+      POSTGRES_USER: project_bible
+      POSTGRES_PASSWORD: project_bible
+      POSTGRES_DB: pbdb
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -19,12 +19,12 @@ services:
     container_name: projectbible-mysql
     restart: unless-stopped
     ports:
-      - '3306:3306'
+      - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: nestshop
-      MYSQL_USER: app
-      MYSQL_PASSWORD: app
+      MYSQL_ROOT_PASSWORD: project_bible
+      MYSQL_DATABASE: pbdb
+      MYSQL_USER: project_bible
+      MYSQL_PASSWORD: project_bible
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
@@ -37,7 +37,7 @@ services:
     container_name: projectbible-redis
     restart: unless-stopped
     ports:
-      - '6379:6379'
+      - "6379:6379"
     volumes:
       - redis_data:/data
 
@@ -47,8 +47,8 @@ services:
     container_name: projectbible-elasticsearch
     restart: unless-stopped
     ports:
-      - '9200:9200'
-      - '9300:9300'
+      - "9200:9200"
+      - "9300:9300"
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false

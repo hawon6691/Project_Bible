@@ -13,7 +13,12 @@ import type {
   ChatMessageItem,
   ChatRoomItem,
   CreateAddressPayload,
+  CrawlerJobItem,
+  CrawlerJobListResult,
+  CrawlerMonitoringSummary,
   CreateOrderPayload,
+  CrawlerRunItem,
+  CrawlerRunListResult,
   FaqItem,
   InquiryItem,
   ImageUploadResult,
@@ -36,8 +41,13 @@ import type {
   OrderSummary,
   PopularKeywordItem,
   ProductDetail,
+  ProductQueryViewItem,
+  ProductQueryViewListResult,
   ProductQuery,
   ProductSummary,
+  PushPreferenceItem,
+  PushSubscriptionItem,
+  SearchSyncOutboxSummary,
   RecommendationResult,
   RankingProductItem,
   RequestPasswordResetPayload,
@@ -2101,6 +2111,192 @@ export async function sendChatMessage(roomId: number, payload: { message: string
     method: 'POST',
     token: requireToken(),
     body: payload,
+  });
+}
+
+export async function registerPushSubscription(payload: {
+  endpoint: string;
+  p256dhKey: string;
+  authKey: string;
+  expirationTime?: string;
+}) {
+  return request<PushSubscriptionItem>('/push/subscriptions', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function unregisterPushSubscription(endpoint: string) {
+  return request<{ success: boolean; message: string }>('/push/subscriptions/unsubscribe', {
+    method: 'POST',
+    token: requireToken(),
+    body: { endpoint },
+  });
+}
+
+export async function fetchPushSubscriptions() {
+  return request<PushSubscriptionItem[]>('/push/subscriptions', {
+    token: requireToken(),
+  });
+}
+
+export async function fetchPushPreference() {
+  return request<PushPreferenceItem>('/push/preferences', {
+    token: requireToken(),
+  });
+}
+
+export async function updatePushPreference(payload: {
+  priceAlertEnabled?: boolean;
+  orderStatusEnabled?: boolean;
+  chatMessageEnabled?: boolean;
+  dealEnabled?: boolean;
+}) {
+  return request<PushPreferenceItem>('/push/preferences', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function fetchCrawlerJobsAdmin(query?: {
+  page?: number;
+  limit?: number;
+  sellerId?: number;
+  isActive?: boolean;
+}) {
+  return request<CrawlerJobListResult>('/crawler/admin/jobs', {
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function createCrawlerJobAdmin(payload: {
+  sellerId: number;
+  name: string;
+  cronExpression?: string;
+  collectPrice?: boolean;
+  collectSpec?: boolean;
+  detectAnomaly?: boolean;
+  isActive?: boolean;
+}) {
+  return request<CrawlerJobItem>('/crawler/admin/jobs', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function updateCrawlerJobAdmin(
+  id: number,
+  payload: {
+    sellerId?: number;
+    name?: string;
+    cronExpression?: string;
+    collectPrice?: boolean;
+    collectSpec?: boolean;
+    detectAnomaly?: boolean;
+    isActive?: boolean;
+  },
+) {
+  return request<CrawlerJobItem>(`/crawler/admin/jobs/${id}`, {
+    method: 'PATCH',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function removeCrawlerJobAdmin(id: number) {
+  return request<{ success: boolean; message: string }>(`/crawler/admin/jobs/${id}`, {
+    method: 'DELETE',
+    token: requireToken(),
+  });
+}
+
+export async function triggerCrawlerJobAdmin(id: number) {
+  return request<CrawlerRunItem>(`/crawler/admin/jobs/${id}/run`, {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
+export async function triggerCrawlerManualAdmin(payload: {
+  sellerId: number;
+  productId?: number;
+  collectPrice?: boolean;
+  collectSpec?: boolean;
+  detectAnomaly?: boolean;
+}) {
+  return request<CrawlerRunItem>('/crawler/admin/triggers', {
+    method: 'POST',
+    token: requireToken(),
+    body: payload,
+  });
+}
+
+export async function fetchCrawlerRunsAdmin(query?: {
+  page?: number;
+  limit?: number;
+  jobId?: number;
+  sellerId?: number;
+  status?: string;
+}) {
+  return request<CrawlerRunListResult>('/crawler/admin/runs', {
+    token: requireToken(),
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function fetchCrawlerMonitoringAdmin() {
+  return request<CrawlerMonitoringSummary>('/crawler/admin/monitoring', {
+    token: requireToken(),
+  });
+}
+
+export async function fetchQueryProducts(query?: {
+  page?: number;
+  limit?: number;
+  categoryId?: number;
+  keyword?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sort?: 'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC' | 'POPULARITY' | 'RATING';
+}) {
+  return request<ProductQueryViewListResult>('/query/products', {
+    query: query as Record<string, unknown> | undefined,
+  });
+}
+
+export async function fetchQueryProductDetail(productId: number) {
+  return request<ProductQueryViewItem>(`/query/products/${productId}`);
+}
+
+export async function syncQueryProductAdmin(productId: number) {
+  return request<ProductQueryViewItem>(`/admin/query/products/${productId}/sync`, {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
+export async function rebuildQueryProductsAdmin() {
+  return request<{ syncedCount: number }>('/admin/query/products/rebuild', {
+    method: 'POST',
+    token: requireToken(),
+  });
+}
+
+export async function fetchSearchSyncOutboxSummaryAdmin() {
+  return request<SearchSyncOutboxSummary>('/search/admin/index/outbox/summary', {
+    token: requireToken(),
+  });
+}
+
+export async function requeueSearchSyncFailedAdmin(limit?: number) {
+  return request<{ requeuedCount: number }>('/search/admin/index/outbox/requeue-failed', {
+    method: 'POST',
+    token: requireToken(),
+    query: limit ? { limit } : undefined,
   });
 }
 

@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'api.locale' => \App\Http\Middleware\SetApiLocale::class,
             'api.context' => \App\Http\Middleware\SetApiRequestContext::class,
+            'auth.api' => \App\Http\Middleware\AuthenticateApiToken::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -4,7 +4,7 @@ use App\Common\Constants\ApiRoutes;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix(ApiRoutes::API_PREFIX)
-    ->middleware(['api', 'api.locale'])
+    ->middleware(['api', 'api.context', 'api.locale'])
     ->group(function (): void {
         require __DIR__.'/api_v1/system.php';
         require __DIR__.'/api_v1/auth.php';

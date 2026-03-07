@@ -1,5 +1,7 @@
 # 쇼핑몰 프로젝트 API 명세서
 
+> 기준 구현(Reference Implementation): `TypeScript + NestJS + PostgreSQL`
+> 다중 언어 확장: `PHP`, `JavaScript`, `Java`, `Python`, `Kotlin` 백엔드는 본 명세를 공통 계약(contract)으로 사용하여 순차 구현한다.
 > Base URL: `/api/v1`
 > 인증: `Authorization: Bearer {accessToken}`
 > 공통 응답 형식: `{ success, data, meta?, error? }`

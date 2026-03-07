@@ -2,12 +2,24 @@
 
 ## 1. 프로젝트 개요
 
-| 항목       | 내용                                                                                                                                    |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| 프로젝트명 | NestShop (다나와 스타일 가격비교 쇼핑몰)                                                                                                |
-| 기술 스택  | TypeScript, NestJS, TypeORM, PostgreSQL, Redis, Elasticsearch, JWT, WebSocket, Bull Queue, Nodemailer, Passport (OAuth 2.0), FFmpeg, S3 |
-| 아키텍처   | REST API + WebSocket + Worker (Monolithic + Background Jobs)                                                                            |
-| 인증 방식  | JWT (Access Token + Refresh Token)                                                                                                      |
+| 항목       | 내용                                                         |
+| ---------- | ------------------------------------------------------------ |
+| 프로젝트명 | PBShop (다나와 스타일 가격비교 쇼핑몰)                       |
+| 아키텍처   | REST API + WebSocket + Worker (Monolithic + Background Jobs) |
+| 인증 방식  | JWT (Access Token + Refresh Token)                           |
+
+### 1.1 언어별 기술 스택
+
+> 현재 기준 구현(Reference Implementation)은 `TypeScript + NestJS + PostgreSQL`이며, 아래 나머지 언어 스택은 동일 요구사항/명세를 기준으로 순차 구현할 예정인 후보 스택이다.
+
+| 언어       | 구현 상태 | 프레임워크/런타임 | ORM/데이터 접근        | 데이터베이스               | 실시간 통신 | 큐/비동기    | 인증/보안      | 검색/스토리지/기타                           |
+| ---------- | --------- | ----------------- | ---------------------- | -------------------------- | ----------- | ------------ | -------------- | -------------------------------------------- |
+| TypeScript | 기준 구현 | NestJS            | TypeORM                | PostgreSQL                 | WebSocket   | Bull Queue   | JWT, Passport  | Redis, Elasticsearch, Nodemailer, FFmpeg, S3 |
+| PHP        | 예정 스택 | Laravel           | Eloquent ORM           | PostgreSQL, MySQL, MariaDB | WebSocket   | Queue        | JWT, OAuth 2.0 | Redis, Elasticsearch, Mail, Storage          |
+| JavaScript | 예정 스택 | Express           | Sequelize, Prisma      | PostgreSQL, MySQL          | Socket.IO   | Queue        | JWT, OAuth 2.0 | Redis, Elasticsearch, Mail, Storage          |
+| Java       | 예정 스택 | Spring Boot       | Spring Data JPA        | PostgreSQL, MySQL          | WebSocket   | Batch, Queue | JWT, OAuth 2.0 | Redis, Elasticsearch, Mail, Storage          |
+| Python     | 예정 스택 | Django, FastAPI   | Django ORM, SQLAlchemy | PostgreSQL, MySQL          | WebSocket   | Queue        | JWT, OAuth 2.0 | Redis, Elasticsearch, Mail, Storage          |
+| Kotlin     | 예정 스택 | Spring Boot       | Spring Data JPA        | PostgreSQL, MySQL          | WebSocket   | Batch, Queue | JWT, OAuth 2.0 | Redis, Elasticsearch, Mail, Storage          |
 
 ---
 

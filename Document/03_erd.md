@@ -1,5 +1,8 @@
 # 쇼핑몰 프로젝트 ERD (Entity Relationship Diagram)
 
+> 기준 스키마(Reference Schema): `TypeScript + PostgreSQL` 구현을 기준으로 유지한다.
+> 다중 언어 확장: `PHP`, `JavaScript`, `Java`, `Python`, `Kotlin` 백엔드는 본 ERD와 동일한 엔터티/관계 구조를 기준으로 구현한다.
+
 ---
 
 ## 1. 테이블 목록

@@ -1011,13 +1011,13 @@ Response: 201 Created
 
 | Method | Endpoint | 설명 | 권한 | Request | Response |
 |--------|----------|------|------|---------|----------|
-| GET | `/rankings/products` | 인기 상품 랭킹 | Public | QueryParams | `RankedProduct[]` |
-| GET | `/rankings/searches` | 실시간 인기 검색어 | Public | - | `SearchRank[]` |
-| GET | `/rankings/price-drops` | 가격 하락 랭킹 | Public | QueryParams | `PriceDropProduct[]` |
+| GET | `/rankings/products/popular` | 인기 상품 랭킹 | Public | QueryParams | `RankedProduct[]` |
+| GET | `/rankings/keywords/popular` | 실시간 인기 검색어 | Public | QueryParams | `SearchRank[]` |
+| POST | `/rankings/admin/recalculate` | 인기 점수 재계산 | Admin | - | `{ updatedCount }` |
 
 ### 상세
 
-#### GET `/rankings/products`
+#### GET `/rankings/products/popular`
 ```
 Query Parameters:
 - categoryId: number (카테고리별)
@@ -1037,6 +1037,8 @@ Response: 200 OK
   ]
 }
 ```
+
+> 구현 메모: 초기 초안에 있던 `가격 하락 랭킹`, `시장 점유율 차트`는 현재 TypeScript 기준 구현 범위에 포함되지 않습니다.
 
 #### GET `/rankings/searches`
 ```
@@ -1322,40 +1324,39 @@ Response: 200 OK
 
 | Method | Endpoint | 설명 | 권한 | Request | Response |
 |--------|----------|------|------|---------|----------|
-| POST | `/push/subscribe` | 푸시 구독 등록 | User | Body | `{ subscriptionId }` |
-| DELETE | `/push/subscribe` | 푸시 구독 해제 | User | Body | `{ message }` |
-| GET | `/push/notifications` | 알림 내역 | User | `?page&limit` | `Notification[]` |
-| PATCH | `/push/notifications/:id/read` | 읽음 처리 | User | - | `{ message }` |
-| PATCH | `/push/notifications/read-all` | 전체 읽음 | User | - | `{ message }` |
-| POST | `/admin/push/send` | 관리자 푸시 발송 | Admin | Body | `{ sentCount }` |
-| GET | `/admin/push/stats` | 푸시 발송 통계 | Admin | QueryParams | `PushStats` |
+| POST | `/push/subscriptions` | 푸시 구독 등록 | User | Body | `PushSubscription` |
+| POST | `/push/subscriptions/unsubscribe` | 푸시 구독 해제 | User | Body | `{ success, message }` |
+| GET | `/push/subscriptions` | 내 활성 푸시 구독 목록 | User | - | `PushSubscription[]` |
+| GET | `/push/preferences` | 내 푸시 알림 설정 조회 | User | - | `PushPreference` |
+| POST | `/push/preferences` | 내 푸시 알림 설정 변경 | User | Body | `PushPreference` |
 
 ### 상세
 
-#### POST `/push/subscribe`
+#### POST `/push/subscriptions`
 ```
 Request:
 {
-  "subscription": {
-    "endpoint": "https://fcm.googleapis.com/fcm/send/...",
-    "keys": {
-      "p256dh": "BNcRd...",
-      "auth": "tBHI..."
-    }
-  },
-  "deviceName": "Chrome - Windows"       // 선택
+  "endpoint": "https://fcm.googleapis.com/fcm/send/...",
+  "p256dhKey": "BNcRd...",
+  "authKey": "tBHI...",
+  "expirationTime": "1741000000000"      // 선택, epoch ms string
 }
 
 Response: 201 Created
 {
   "success": true,
   "data": {
-    "subscriptionId": 1,
-    "deviceName": "Chrome - Windows",
-    "createdAt": "..."
+    "id": 1,
+    "endpoint": "https://fcm.googleapis.com/fcm/send/...",
+    "expirationTime": null,
+    "isActive": true,
+    "createdAt": "...",
+    "updatedAt": "..."
   }
 }
 ```
+
+> 구현 메모: 초기 초안에 있던 `알림 내역`, `읽음 처리`, `관리자 수동 발송`, `발송 통계` API는 현재 TypeScript 기준 구현 범위에 포함되지 않습니다.
 
 #### POST `/admin/push/send`
 ```

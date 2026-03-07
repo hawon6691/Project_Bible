@@ -1729,3 +1729,61 @@ categories (1) ──── (N) auctions
 | 상품 조회/검색 | READ COMMITTED (기본) | - | 일반 조회 성능 우선 |
 | 가격 업데이트 | READ COMMITTED | 낙관적 잠금 (version 컬럼) | 크롤러 병렬 업데이트 |
 | 배지 자동 부여 | REPEATABLE READ | - | 동일 배지 중복 부여 방지 |
+
+---
+
+## 7. TypeScript / PostgreSQL 기준 구현 정합 메모 (2026-03-06)
+
+현재 `TypeScript + NestJS` 구현은 초안 ERD보다 운영/읽기모델 계층이 확장되어 있으며, 일부 테이블명도 실제 Entity 기준으로 조정되었습니다. 아래 항목을 실제 구현 기준으로 우선 참조합니다.
+
+### 7.1 이름이 달라진 테이블
+
+| ERD 초안 | 실제 구현(Entity / Migration 기준) | 비고 |
+|---|---|---|
+| `view_history` | `recent_product_views` | 활동 내역 모듈 |
+| `search_history` | `search_histories` | 활동 내역 모듈 |
+| `crawler_logs` | `crawler_runs` | 크롤러 실행 이력 |
+| `user_social_accounts` | `social_accounts` | 소셜 계정 연동 |
+| `short_forms` | `shortforms` | 숏폼 본문 |
+| `news_articles` | `news` | 뉴스 본문 |
+| `news_related_products` | `news_products` | 뉴스-상품 매핑 |
+| `build_parts` | `pc_build_parts` | PC 견적 부품 |
+| `compatibility_rules` | `pc_compatibility_rules` | PC 호환성 규칙 |
+| `bids` | `auction_bids` | 역경매 입찰 |
+| `admin_settings` | `system_settings` | 관리자 설정 저장소 |
+| `fraud_alerts` | `fraud_flags` | 이상 가격 탐지 플래그 |
+
+### 7.2 실제 구현에 추가된 테이블
+
+| 실제 구현 테이블 | 설명 |
+|---|---|
+| `push_preferences` | 사용자별 푸시 알림 on/off 설정 |
+| `product_query_views` | CQRS 조회 모델 상품 뷰 |
+| `search_index_outbox` | 검색 인덱스 동기화 Outbox |
+| `chat_room_members` | 채팅방 참여자 관계 |
+| `friend_blocks` | 친구/팔로우 차단 관계 |
+| `friend_activities` | 친구 활동 피드 |
+| `trust_score_histories` | 판매처 신뢰도 이력 |
+| `search_weight_settings` | 검색 가중치 설정 |
+| `search_recent_keywords` | 사용자 최근 검색어 |
+| `compare_items` | 비교함 담기 항목 |
+| `community_posts` | 커뮤니티 게시글 단일 테이블 |
+| `media_assets` | 통합 미디어 자산 |
+| `image_assets` | 이미지 원본 자산 |
+| `shortform_comments` | 숏폼 댓글 |
+
+### 7.3 구현 기준에서 단순화되거나 통합된 구조
+
+| ERD 초안 | 현재 기준 구현 |
+|---|---|
+| `deal_products` 별도 매핑 | `deals.product_id` 단일 상품 참조 |
+| `attachments` 단일 통합 테이블 | `media_assets`, `image_assets`로 분리 |
+| `seller_trust_metrics`, `seller_reviews` | `trust_score_histories` 중심으로 이력 관리 |
+
+### 7.4 스키마 참조 우선순위
+
+1. `BackEnd/TypeScript/nestshop/src/**/entities/*.entity.ts`
+2. `BackEnd/TypeScript/nestshop/src/database/migrations/*`
+3. 본 ERD 문서
+
+> 참고: `Database/postgresql/postgres_table.sql`은 초기 73개 테이블 기준 부트스트랩 스크립트이며, 이후 추가된 읽기모델/운영용 테이블 전체를 완전히 반영하지 않을 수 있습니다.

@@ -609,20 +609,17 @@ CREATE INDEX idx_search_history_user ON search_history (user_id, searched_at DES
 -- ============================================================
 -- 33. chat_rooms (채팅방)
 -- ============================================================
-CREATE TYPE chat_room_status AS ENUM ('OPEN', 'ACTIVE', 'CLOSED');
-
 CREATE TABLE chat_rooms (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id),
-    admin_id INT NULL REFERENCES users(id),
-    status chat_room_status NOT NULL DEFAULT 'OPEN',
-    last_message_at TIMESTAMP NULL,
+    name VARCHAR(100) NOT NULL,
+    created_by INT NOT NULL REFERENCES users(id),
+    is_private BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    closed_at TIMESTAMP NULL
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_chat_rooms_user ON chat_rooms (user_id);
-CREATE INDEX idx_chat_rooms_status ON chat_rooms (status);
+CREATE INDEX idx_chat_rooms_name ON chat_rooms (name);
+CREATE INDEX idx_chat_rooms_created_by ON chat_rooms (created_by);
 
 -- ============================================================
 -- 34. chat_messages (채팅 메시지)
@@ -631,13 +628,12 @@ CREATE TABLE chat_messages (
     id SERIAL PRIMARY KEY,
     room_id INT NOT NULL REFERENCES chat_rooms(id),
     sender_id INT NOT NULL REFERENCES users(id),
-    content TEXT NOT NULL,
-    is_read BOOLEAN NOT NULL DEFAULT false,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    message TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_chat_messages_room ON chat_messages (room_id, created_at);
-CREATE INDEX idx_chat_messages_unread ON chat_messages (room_id, is_read);
 
 -- ============================================================
 -- 35. recommendations (추천 상품)
@@ -660,24 +656,23 @@ CREATE INDEX idx_recommendations_date ON recommendations (start_date, end_date);
 -- ============================================================
 -- 36. deals (특가/세일)
 -- ============================================================
-CREATE TYPE deal_type AS ENUM ('SPECIAL', 'TIME_SALE', 'CLEARANCE');
-
 CREATE TABLE deals (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(200) NOT NULL,
-    type deal_type NOT NULL,
+    product_id INT NOT NULL REFERENCES products(id),
+    title VARCHAR(120) NOT NULL,
     description TEXT NULL,
-    discount_rate INT NOT NULL,
-    banner_url VARCHAR(500) NULL,
-    start_date TIMESTAMP NOT NULL,
-    end_date TIMESTAMP NOT NULL,
+    discount_rate INT NOT NULL DEFAULT 0,
+    start_at TIMESTAMP NOT NULL,
+    end_at TIMESTAMP NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_deals_active ON deals (is_active, start_date, end_date);
-CREATE INDEX idx_deals_type ON deals (type);
+CREATE INDEX idx_deals_product_id ON deals (product_id);
+CREATE INDEX idx_deals_start_at ON deals (start_at);
+CREATE INDEX idx_deals_end_at ON deals (end_at);
+CREATE INDEX idx_deals_is_active ON deals (is_active);
 
 -- ============================================================
 -- 37. deal_products (특가 대상 상품)
@@ -728,25 +723,21 @@ CREATE TABLE search_synonyms (
 -- ============================================================
 -- 40. crawler_jobs (크롤러 작업)
 -- ============================================================
-CREATE TYPE crawler_job_status AS ENUM ('IDLE', 'RUNNING', 'FAILED');
-
 CREATE TABLE crawler_jobs (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
     seller_id INT NOT NULL REFERENCES sellers(id),
-    target_url VARCHAR(1000) NOT NULL,
-    category_id INT NOT NULL REFERENCES categories(id),
-    schedule VARCHAR(50) NOT NULL,
-    parser_type VARCHAR(50) NOT NULL,
-    config JSON NULL,
-    status crawler_job_status NOT NULL DEFAULT 'IDLE',
+    name VARCHAR(100) NOT NULL,
+    cron_expression VARCHAR(100) NULL,
+    collect_price BOOLEAN NOT NULL DEFAULT true,
+    collect_spec BOOLEAN NOT NULL DEFAULT true,
+    detect_anomaly BOOLEAN NOT NULL DEFAULT true,
     is_active BOOLEAN NOT NULL DEFAULT true,
-    last_run_at TIMESTAMP NULL,
+    last_triggered_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_crawler_jobs_seller ON crawler_jobs (seller_id);
+CREATE INDEX idx_crawler_jobs_seller_id ON crawler_jobs (seller_id);
 CREATE INDEX idx_crawler_jobs_active ON crawler_jobs (is_active);
 
 -- ============================================================
@@ -779,12 +770,12 @@ CREATE TABLE push_subscriptions (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id),
     endpoint VARCHAR(1000) UNIQUE NOT NULL,
-    p256dh VARCHAR(500) NOT NULL,
-    auth VARCHAR(500) NOT NULL,
-    device_name VARCHAR(100) NULL,
+    p256dh_key VARCHAR(255) NOT NULL,
+    auth_key VARCHAR(255) NOT NULL,
+    expiration_time BIGINT NULL,
     is_active BOOLEAN NOT NULL DEFAULT true,
-    last_used_at TIMESTAMP NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_push_subscriptions_user ON push_subscriptions (user_id);
@@ -894,20 +885,18 @@ CREATE TYPE image_processing_status AS ENUM ('PENDING', 'PROCESSING', 'COMPLETED
 
 CREATE TABLE image_variants (
     id SERIAL PRIMARY KEY,
-    original_url VARCHAR(500) NOT NULL,
-    variant_type image_variant_type NOT NULL,
+    image_id INT NOT NULL,
+    type image_variant_type NOT NULL,
     url VARCHAR(500) NOT NULL,
     format image_format NOT NULL,
     width INT NOT NULL,
     height INT NOT NULL,
-    file_size INT NOT NULL,
-    processing_status image_processing_status NOT NULL DEFAULT 'PENDING',
-    category VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    size INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_image_variants_original ON image_variants (original_url);
-CREATE INDEX idx_image_variants_status ON image_variants (processing_status);
+CREATE INDEX idx_image_variants_image_id ON image_variants (image_id);
 
 -- product_images FK 추가 (image_variants 테이블 생성 후)
 ALTER TABLE product_images
@@ -945,12 +934,16 @@ CREATE TABLE user_badges (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id),
     badge_id INT NOT NULL REFERENCES badges(id),
-    granted_by badge_granted_by NOT NULL,
+    granted_by_admin_id INT NULL REFERENCES users(id),
+    reason VARCHAR(255) NULL,
     granted_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT uq_user_badges UNIQUE (user_id, badge_id)
 );
 
-CREATE INDEX idx_user_badges_user ON user_badges (user_id);
+CREATE INDEX idx_user_badges_user_id ON user_badges (user_id);
+CREATE INDEX idx_user_badges_badge_id ON user_badges (badge_id);
 
 -- ============================================================
 -- 51. pc_builds (PC 견적)
@@ -960,22 +953,20 @@ CREATE TYPE build_purpose AS ENUM ('GAMING', 'OFFICE', 'DESIGN', 'DEVELOPMENT', 
 CREATE TABLE pc_builds (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id),
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(120) NOT NULL,
     description VARCHAR(500) NULL,
     purpose build_purpose NOT NULL,
     budget INT NULL,
     total_price INT NOT NULL DEFAULT 0,
     share_code VARCHAR(20) UNIQUE NULL,
-    is_public BOOLEAN NOT NULL DEFAULT false,
     view_count INT NOT NULL DEFAULT 0,
-    like_count INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP NULL
 );
 
 CREATE INDEX idx_pc_builds_user ON pc_builds (user_id);
-CREATE INDEX idx_pc_builds_public ON pc_builds (is_public, like_count DESC);
+CREATE INDEX idx_pc_builds_share_code ON pc_builds (share_code);
 
 -- ============================================================
 -- 52. build_parts (견적 부품)
@@ -1146,11 +1137,10 @@ CREATE INDEX idx_attachments_type ON attachments (file_type);
 -- ============================================================
 CREATE TABLE news_categories (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(30) NOT NULL,
-    slug VARCHAR(30) UNIQUE NOT NULL,
-    sort_order INT NOT NULL DEFAULT 0,
-    is_active BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    name VARCHAR(80) UNIQUE NOT NULL,
+    slug VARCHAR(80) UNIQUE NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- ============================================================
@@ -1159,12 +1149,11 @@ CREATE TABLE news_categories (
 CREATE TABLE news_articles (
     id SERIAL PRIMARY KEY,
     category_id INT NOT NULL REFERENCES news_categories(id),
-    author_id INT NOT NULL REFERENCES users(id),
+    author_id INT NULL REFERENCES users(id),
     title VARCHAR(200) NOT NULL,
     content TEXT NOT NULL,
     thumbnail_url VARCHAR(500) NULL,
     view_count INT NOT NULL DEFAULT 0,
-    is_published BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP NULL
@@ -1343,9 +1332,8 @@ CREATE TABLE bids (
     auction_id INT NOT NULL REFERENCES auctions(id),
     seller_id INT NOT NULL REFERENCES sellers(id),
     price INT NOT NULL,
-    description TEXT NULL,
+    description VARCHAR(500) NULL,
     delivery_days INT NOT NULL,
-    is_selected BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -1358,13 +1346,361 @@ CREATE INDEX idx_bids_seller ON bids (seller_id);
 -- ============================================================
 CREATE TABLE admin_settings (
     id SERIAL PRIMARY KEY,
-    setting_key VARCHAR(50) UNIQUE NOT NULL,
+    setting_key VARCHAR(100) UNIQUE NOT NULL,
     setting_value JSONB NOT NULL,
     description VARCHAR(200) NULL,
     updated_by INT NULL REFERENCES users(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- ============================================================
--- 완료: 73개 테이블 생성 완료
+-- 74+. TypeScript 구현 정합 보강 테이블
+-- 참고: 아래 섹션은 실제 Nest/TypeORM 구현에서 추가된 읽기모델/운영용 테이블을
+--       수기 스키마에도 반영하기 위한 보강 정의다.
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS recent_product_views (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id),
+    product_id INT NOT NULL REFERENCES products(id),
+    viewed_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_recent_product_view_user_product UNIQUE (user_id, product_id)
+);
+
+CREATE TABLE IF NOT EXISTS search_histories (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id),
+    keyword VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS chat_room_members (
+    id SERIAL PRIMARY KEY,
+    room_id INT NOT NULL REFERENCES chat_rooms(id),
+    user_id INT NOT NULL REFERENCES users(id),
+    joined_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS push_preferences (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE REFERENCES users(id),
+    price_alert_enabled BOOLEAN NOT NULL DEFAULT true,
+    order_status_enabled BOOLEAN NOT NULL DEFAULT true,
+    chat_message_enabled BOOLEAN NOT NULL DEFAULT true,
+    deal_enabled BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS crawler_runs (
+    id SERIAL PRIMARY KEY,
+    job_id INT NULL REFERENCES crawler_jobs(id),
+    seller_id INT NOT NULL REFERENCES sellers(id),
+    product_id INT NULL REFERENCES products(id),
+    trigger_type VARCHAR(20) NOT NULL,
+    collect_price BOOLEAN NOT NULL DEFAULT true,
+    collect_spec BOOLEAN NOT NULL DEFAULT true,
+    detect_anomaly BOOLEAN NOT NULL DEFAULT true,
+    status VARCHAR(20) NOT NULL,
+    started_at TIMESTAMP NOT NULL,
+    ended_at TIMESTAMP NOT NULL,
+    duration_ms INT NOT NULL DEFAULT 0,
+    collected_price_count INT NOT NULL DEFAULT 0,
+    collected_spec_count INT NOT NULL DEFAULT 0,
+    anomaly_count INT NOT NULL DEFAULT 0,
+    error_message VARCHAR(500) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS trust_score_histories (
+    id SERIAL PRIMARY KEY,
+    seller_id INT NOT NULL REFERENCES sellers(id),
+    delivery_accuracy DECIMAL(5,2) NOT NULL DEFAULT 0,
+    price_accuracy DECIMAL(5,2) NOT NULL DEFAULT 0,
+    customer_rating DECIMAL(5,2) NOT NULL DEFAULT 0,
+    response_speed DECIMAL(5,2) NOT NULL DEFAULT 0,
+    return_rate DECIMAL(5,2) NOT NULL DEFAULT 0,
+    trust_score INT NOT NULL,
+    trust_grade VARCHAR(2) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS social_accounts (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id),
+    provider VARCHAR(20) NOT NULL,
+    provider_user_id VARCHAR(200) NOT NULL,
+    provider_email VARCHAR(255) NULL,
+    provider_name VARCHAR(100) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_social_accounts_provider_user UNIQUE (provider, provider_user_id)
+);
+
+CREATE TABLE IF NOT EXISTS system_settings (
+    id SERIAL PRIMARY KEY,
+    setting_key VARCHAR(100) NOT NULL UNIQUE,
+    setting_value JSONB NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS image_assets (
+    id SERIAL PRIMARY KEY,
+    uploaded_by_user_id INT NULL REFERENCES users(id),
+    original_filename VARCHAR(255) NOT NULL,
+    stored_filename VARCHAR(255) NOT NULL UNIQUE,
+    original_url VARCHAR(500) NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    size INT NOT NULL,
+    category VARCHAR(20) NOT NULL,
+    processing_status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE image_variants
+    ADD CONSTRAINT fk_image_variants_image_id
+    FOREIGN KEY (image_id) REFERENCES image_assets(id);
+
+CREATE TABLE IF NOT EXISTS media_assets (
+    id SERIAL PRIMARY KEY,
+    uploader_id INT NOT NULL REFERENCES users(id),
+    owner_type VARCHAR(30) NOT NULL,
+    owner_id INT NOT NULL,
+    original_name VARCHAR(255) NOT NULL,
+    file_key VARCHAR(500) NOT NULL UNIQUE,
+    file_url VARCHAR(500) NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    mime VARCHAR(120) NOT NULL,
+    size BIGINT NOT NULL,
+    duration INT NULL,
+    width INT NULL,
+    height INT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS shortforms (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id),
+    title VARCHAR(120) NOT NULL,
+    video_url VARCHAR(500) NOT NULL,
+    thumbnail_url VARCHAR(500) NULL,
+    duration_sec INT NOT NULL DEFAULT 0,
+    view_count INT NOT NULL DEFAULT 0,
+    like_count INT NOT NULL DEFAULT 0,
+    comment_count INT NOT NULL DEFAULT 0,
+    transcode_status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    transcoded_video_url VARCHAR(500) NULL,
+    transcode_error VARCHAR(500) NULL,
+    transcoded_at TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS shortform_products (
+    id SERIAL PRIMARY KEY,
+    shortform_id INT NOT NULL REFERENCES shortforms(id),
+    product_id INT NOT NULL REFERENCES products(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_shortform_products_shortform_product UNIQUE (shortform_id, product_id)
+);
+
+CREATE TABLE IF NOT EXISTS shortform_likes (
+    id SERIAL PRIMARY KEY,
+    shortform_id INT NOT NULL REFERENCES shortforms(id),
+    user_id INT NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_shortform_likes_shortform_user UNIQUE (shortform_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS shortform_comments (
+    id SERIAL PRIMARY KEY,
+    shortform_id INT NOT NULL REFERENCES shortforms(id),
+    user_id INT NOT NULL REFERENCES users(id),
+    content VARCHAR(500) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS news (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    content TEXT NOT NULL,
+    category_id INT NOT NULL REFERENCES news_categories(id),
+    thumbnail_url VARCHAR(500) NULL,
+    view_count INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS news_products (
+    id SERIAL PRIMARY KEY,
+    news_id INT NOT NULL REFERENCES news(id),
+    product_id INT NOT NULL REFERENCES products(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_news_products_news_product UNIQUE (news_id, product_id)
+);
+
+CREATE TABLE IF NOT EXISTS fraud_flags (
+    id SERIAL PRIMARY KEY,
+    product_id INT NOT NULL REFERENCES products(id),
+    price_entry_id INT NOT NULL REFERENCES price_entries(id),
+    seller_id INT NOT NULL REFERENCES sellers(id),
+    reason VARCHAR(100) NOT NULL,
+    raw_price INT NOT NULL,
+    effective_price INT NOT NULL,
+    baseline_average INT NOT NULL,
+    severity VARCHAR(10) NOT NULL DEFAULT 'LOW',
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    reviewed_by INT NULL REFERENCES users(id),
+    reviewed_at TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS pc_build_parts (
+    id SERIAL PRIMARY KEY,
+    build_id INT NOT NULL REFERENCES pc_builds(id),
+    product_id INT NOT NULL REFERENCES products(id),
+    seller_id INT NOT NULL REFERENCES sellers(id),
+    part_type VARCHAR(20) NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    unit_price INT NOT NULL,
+    total_price INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_pc_build_parts_build_part_type UNIQUE (build_id, part_type)
+);
+
+CREATE TABLE IF NOT EXISTS pc_compatibility_rules (
+    id SERIAL PRIMARY KEY,
+    part_type VARCHAR(20) NOT NULL,
+    target_part_type VARCHAR(20) NULL,
+    title VARCHAR(100) NOT NULL,
+    description VARCHAR(500) NOT NULL,
+    severity VARCHAR(10) NOT NULL DEFAULT 'MEDIUM',
+    enabled BOOLEAN NOT NULL DEFAULT true,
+    metadata JSONB NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS auction_bids (
+    id SERIAL PRIMARY KEY,
+    auction_id INT NOT NULL REFERENCES auctions(id),
+    seller_id INT NOT NULL REFERENCES sellers(id),
+    price INT NOT NULL,
+    description VARCHAR(500) NULL,
+    delivery_days INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS compare_items (
+    id SERIAL PRIMARY KEY,
+    compare_key VARCHAR(100) NOT NULL,
+    product_id INT NOT NULL REFERENCES products(id),
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_compare_items_compare_key_product_id UNIQUE (compare_key, product_id)
+);
+
+CREATE TABLE IF NOT EXISTS product_query_views (
+    id SERIAL PRIMARY KEY,
+    product_id INT NOT NULL UNIQUE REFERENCES products(id),
+    category_id INT NOT NULL REFERENCES categories(id),
+    name VARCHAR(200) NOT NULL,
+    thumbnail_url VARCHAR(500) NULL,
+    status VARCHAR(20) NOT NULL,
+    base_price INT NOT NULL,
+    lowest_price INT NULL,
+    seller_count INT NOT NULL DEFAULT 0,
+    average_rating DECIMAL(3,2) NOT NULL DEFAULT 0,
+    review_count INT NOT NULL DEFAULT 0,
+    view_count INT NOT NULL DEFAULT 0,
+    popularity_score DECIMAL(10,2) NOT NULL DEFAULT 0,
+    synced_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS search_index_outbox (
+    id SERIAL PRIMARY KEY,
+    event_type VARCHAR(30) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    aggregate_id INT NOT NULL,
+    payload JSONB NULL,
+    attempt_count INT NOT NULL DEFAULT 0,
+    last_error VARCHAR(500) NULL,
+    processed_at TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS friend_blocks (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id),
+    blocked_user_id INT NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_friend_blocks_user_blocked_user UNIQUE (user_id, blocked_user_id)
+);
+
+CREATE TABLE IF NOT EXISTS friend_activities (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id),
+    type VARCHAR(40) NOT NULL,
+    message VARCHAR(300) NOT NULL,
+    metadata JSONB NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS search_weight_settings (
+    id SERIAL PRIMARY KEY,
+    field VARCHAR(50) NOT NULL UNIQUE,
+    weight INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS search_recent_keywords (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id),
+    keyword VARCHAR(100) NOT NULL,
+    searched_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS community_posts (
+    id SERIAL PRIMARY KEY,
+    board_id INT NOT NULL REFERENCES boards(id),
+    user_id INT NOT NULL REFERENCES users(id),
+    title VARCHAR(200) NOT NULL,
+    content TEXT NOT NULL,
+    view_count INT NOT NULL DEFAULT 0,
+    like_count INT NOT NULL DEFAULT 0,
+    comment_count INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMP NULL
+);
+
+-- ============================================================
+-- 완료: 초기 73개 테이블 + TypeScript 구현 정합 보강 테이블 반영
 -- ============================================================

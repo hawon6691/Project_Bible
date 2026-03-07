@@ -1,0 +1,527 @@
+-- Project Bible Shop
+-- MariaDB baseline schema draft aligned to the current TypeScript/PostgreSQL naming.
+-- This is a forward-looking starter schema for future MariaDB backend tracks.
+
+CREATE DATABASE IF NOT EXISTS pbdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE pbdb;
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS user_badges;
+DROP TABLE IF EXISTS badges;
+DROP TABLE IF EXISTS media_assets;
+DROP TABLE IF EXISTS image_variants;
+DROP TABLE IF EXISTS image_assets;
+DROP TABLE IF EXISTS news_products;
+DROP TABLE IF EXISTS news;
+DROP TABLE IF EXISTS trust_score_histories;
+DROP TABLE IF EXISTS fraud_flags;
+DROP TABLE IF EXISTS compare_items;
+DROP TABLE IF EXISTS product_query_views;
+DROP TABLE IF EXISTS search_index_outbox;
+DROP TABLE IF EXISTS crawler_runs;
+DROP TABLE IF EXISTS crawler_jobs;
+DROP TABLE IF EXISTS push_preferences;
+DROP TABLE IF EXISTS push_subscriptions;
+DROP TABLE IF EXISTS chat_messages;
+DROP TABLE IF EXISTS chat_room_members;
+DROP TABLE IF EXISTS chat_rooms;
+DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS addresses;
+DROP TABLE IF EXISTS cart_items;
+DROP TABLE IF EXISTS wishlist_items;
+DROP TABLE IF EXISTS deals;
+DROP TABLE IF EXISTS price_entries;
+DROP TABLE IF EXISTS sellers;
+DROP TABLE IF EXISTS product_specs;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS system_settings;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+CREATE TABLE users (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  email VARCHAR(255) NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  nickname VARCHAR(100) NULL,
+  role VARCHAR(30) NOT NULL DEFAULT 'USER',
+  status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
+  phone VARCHAR(30) NULL,
+  profile_image_url VARCHAR(500) NULL,
+  bio TEXT NULL,
+  last_login_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_users_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE categories (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  parent_id BIGINT UNSIGNED NULL,
+  name VARCHAR(120) NOT NULL,
+  slug VARCHAR(160) NOT NULL,
+  depth INT NOT NULL DEFAULT 0,
+  sort_order INT NOT NULL DEFAULT 0,
+  is_visible TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_categories_slug (slug),
+  KEY idx_categories_parent_id (parent_id),
+  CONSTRAINT fk_categories_parent FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE sellers (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(150) NOT NULL,
+  code VARCHAR(80) NOT NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
+  rating DECIMAL(4,2) NOT NULL DEFAULT 0.00,
+  contact_email VARCHAR(255) NULL,
+  homepage_url VARCHAR(500) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_sellers_code (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE products (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  category_id BIGINT UNSIGNED NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL,
+  description TEXT NULL,
+  brand VARCHAR(120) NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
+  thumbnail_url VARCHAR(500) NULL,
+  rating_avg DECIMAL(4,2) NOT NULL DEFAULT 0.00,
+  review_count INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_products_slug (slug),
+  KEY idx_products_category_id (category_id),
+  CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE product_specs (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  product_id BIGINT UNSIGNED NOT NULL,
+  spec_key VARCHAR(120) NOT NULL,
+  spec_value VARCHAR(255) NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_product_specs_product_id (product_id),
+  CONSTRAINT fk_product_specs_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE price_entries (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  product_id BIGINT UNSIGNED NOT NULL,
+  seller_id BIGINT UNSIGNED NOT NULL,
+  price DECIMAL(12,2) NOT NULL,
+  shipping_fee DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  is_card_discount TINYINT(1) NOT NULL DEFAULT 0,
+  is_cash_discount TINYINT(1) NOT NULL DEFAULT 0,
+  stock_status VARCHAR(30) NOT NULL DEFAULT 'IN_STOCK',
+  collected_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_price_entries_product_id (product_id),
+  KEY idx_price_entries_seller_id (seller_id),
+  CONSTRAINT fk_price_entries_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  CONSTRAINT fk_price_entries_seller FOREIGN KEY (seller_id) REFERENCES sellers(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE deals (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  product_id BIGINT UNSIGNED NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT NULL,
+  discount_rate DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+  start_at DATETIME NOT NULL,
+  end_at DATETIME NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_deals_product_id (product_id),
+  CONSTRAINT fk_deals_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE wishlist_items (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_wishlist_user_product (user_id, product_id),
+  CONSTRAINT fk_wishlist_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_wishlist_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE cart_items (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED NOT NULL,
+  quantity INT NOT NULL DEFAULT 1,
+  unit_price DECIMAL(12,2) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_cart_user_product (user_id, product_id),
+  CONSTRAINT fk_cart_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_cart_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE addresses (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  recipient_name VARCHAR(100) NOT NULL,
+  phone VARCHAR(30) NOT NULL,
+  zip_code VARCHAR(20) NOT NULL,
+  address1 VARCHAR(255) NOT NULL,
+  address2 VARCHAR(255) NULL,
+  is_default TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_addresses_user_id (user_id),
+  CONSTRAINT fk_addresses_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE orders (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  address_id BIGINT UNSIGNED NULL,
+  order_number VARCHAR(80) NOT NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'CREATED',
+  total_amount DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  point_used INT NOT NULL DEFAULT 0,
+  note VARCHAR(500) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_orders_order_number (order_number),
+  KEY idx_orders_user_id (user_id),
+  CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT fk_orders_address FOREIGN KEY (address_id) REFERENCES addresses(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE order_items (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED NOT NULL,
+  quantity INT NOT NULL,
+  unit_price DECIMAL(12,2) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_order_items_order_id (order_id),
+  KEY idx_order_items_product_id (product_id),
+  CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  CONSTRAINT fk_order_items_product FOREIGN KEY (product_id) REFERENCES products(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE payments (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id BIGINT UNSIGNED NOT NULL,
+  payment_key VARCHAR(120) NOT NULL,
+  provider VARCHAR(60) NOT NULL,
+  method VARCHAR(60) NOT NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'READY',
+  approved_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_payments_payment_key (payment_key),
+  KEY idx_payments_order_id (order_id),
+  CONSTRAINT fk_payments_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE reviews (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED NOT NULL,
+  rating INT NOT NULL,
+  title VARCHAR(255) NULL,
+  content TEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_reviews_user_id (user_id),
+  KEY idx_reviews_product_id (product_id),
+  CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_reviews_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE chat_rooms (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(150) NOT NULL,
+  created_by BIGINT UNSIGNED NOT NULL,
+  is_private TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_chat_rooms_created_by (created_by),
+  CONSTRAINT fk_chat_rooms_created_by FOREIGN KEY (created_by) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE chat_room_members (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  room_id BIGINT UNSIGNED NOT NULL,
+  user_id BIGINT UNSIGNED NOT NULL,
+  joined_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_chat_room_members_room_user (room_id, user_id),
+  CONSTRAINT fk_chat_room_members_room FOREIGN KEY (room_id) REFERENCES chat_rooms(id) ON DELETE CASCADE,
+  CONSTRAINT fk_chat_room_members_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE chat_messages (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  room_id BIGINT UNSIGNED NOT NULL,
+  sender_id BIGINT UNSIGNED NOT NULL,
+  message TEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_chat_messages_room_id (room_id),
+  KEY idx_chat_messages_sender_id (sender_id),
+  CONSTRAINT fk_chat_messages_room FOREIGN KEY (room_id) REFERENCES chat_rooms(id) ON DELETE CASCADE,
+  CONSTRAINT fk_chat_messages_sender FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE push_subscriptions (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  endpoint VARCHAR(1000) NOT NULL,
+  p256dh_key VARCHAR(255) NOT NULL,
+  auth_key VARCHAR(255) NOT NULL,
+  expiration_time DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_push_subscriptions_user_id (user_id),
+  CONSTRAINT fk_push_subscriptions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE push_preferences (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  marketing_enabled TINYINT(1) NOT NULL DEFAULT 0,
+  order_enabled TINYINT(1) NOT NULL DEFAULT 1,
+  chat_enabled TINYINT(1) NOT NULL DEFAULT 1,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_push_preferences_user_id (user_id),
+  CONSTRAINT fk_push_preferences_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE crawler_jobs (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  seller_id BIGINT UNSIGNED NOT NULL,
+  name VARCHAR(150) NOT NULL,
+  cron_expression VARCHAR(100) NOT NULL,
+  collect_price TINYINT(1) NOT NULL DEFAULT 1,
+  collect_spec TINYINT(1) NOT NULL DEFAULT 0,
+  detect_anomaly TINYINT(1) NOT NULL DEFAULT 0,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  last_triggered_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_crawler_jobs_seller_id (seller_id),
+  CONSTRAINT fk_crawler_jobs_seller FOREIGN KEY (seller_id) REFERENCES sellers(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE crawler_runs (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  job_id BIGINT UNSIGNED NOT NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+  started_at DATETIME NULL,
+  finished_at DATETIME NULL,
+  summary_json JSON NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_crawler_runs_job_id (job_id),
+  CONSTRAINT fk_crawler_runs_job FOREIGN KEY (job_id) REFERENCES crawler_jobs(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE system_settings (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  setting_key VARCHAR(100) NOT NULL,
+  setting_value JSON NULL,
+  description VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_system_settings_key (setting_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE fraud_flags (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NULL,
+  product_id BIGINT UNSIGNED NULL,
+  flag_type VARCHAR(80) NOT NULL,
+  score DECIMAL(6,2) NOT NULL DEFAULT 0.00,
+  detail_json JSON NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_fraud_flags_user_id (user_id),
+  KEY idx_fraud_flags_product_id (product_id),
+  CONSTRAINT fk_fraud_flags_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+  CONSTRAINT fk_fraud_flags_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE trust_score_histories (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  seller_id BIGINT UNSIGNED NOT NULL,
+  score DECIMAL(6,2) NOT NULL,
+  reason VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_trust_score_histories_seller_id (seller_id),
+  CONSTRAINT fk_trust_score_histories_seller FOREIGN KEY (seller_id) REFERENCES sellers(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE image_assets (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  owner_type VARCHAR(80) NOT NULL,
+  owner_id BIGINT UNSIGNED NOT NULL,
+  original_url VARCHAR(500) NOT NULL,
+  alt_text VARCHAR(255) NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_image_assets_owner (owner_type, owner_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE image_variants (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  image_id BIGINT UNSIGNED NOT NULL,
+  type VARCHAR(50) NOT NULL,
+  size VARCHAR(50) NOT NULL,
+  url VARCHAR(500) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_image_variants_image_id (image_id),
+  CONSTRAINT fk_image_variants_image FOREIGN KEY (image_id) REFERENCES image_assets(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE media_assets (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  owner_type VARCHAR(80) NOT NULL,
+  owner_id BIGINT UNSIGNED NOT NULL,
+  media_type VARCHAR(30) NOT NULL,
+  url VARCHAR(500) NOT NULL,
+  meta_json JSON NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_media_assets_owner (owner_type, owner_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE news (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  title VARCHAR(255) NOT NULL,
+  summary VARCHAR(500) NULL,
+  body TEXT NULL,
+  source_name VARCHAR(120) NULL,
+  source_url VARCHAR(500) NULL,
+  published_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE news_products (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  news_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_news_products (news_id, product_id),
+  CONSTRAINT fk_news_products_news FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE,
+  CONSTRAINT fk_news_products_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE badges (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL,
+  code VARCHAR(80) NOT NULL,
+  description VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_badges_code (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE user_badges (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  badge_id BIGINT UNSIGNED NOT NULL,
+  granted_by_admin_id BIGINT UNSIGNED NULL,
+  reason VARCHAR(255) NULL,
+  granted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_user_badges_user_id (user_id),
+  KEY idx_user_badges_badge_id (badge_id),
+  CONSTRAINT fk_user_badges_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_user_badges_badge FOREIGN KEY (badge_id) REFERENCES badges(id) ON DELETE CASCADE,
+  CONSTRAINT fk_user_badges_admin FOREIGN KEY (granted_by_admin_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE compare_items (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_compare_items_user_product (user_id, product_id),
+  CONSTRAINT fk_compare_items_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_compare_items_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE product_query_views (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  product_id BIGINT UNSIGNED NOT NULL,
+  search_keyword VARCHAR(255) NULL,
+  hit_count INT NOT NULL DEFAULT 0,
+  last_viewed_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_product_query_views_product_keyword (product_id, search_keyword),
+  CONSTRAINT fk_product_query_views_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE search_index_outbox (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  aggregate_type VARCHAR(80) NOT NULL,
+  aggregate_id BIGINT UNSIGNED NOT NULL,
+  event_type VARCHAR(80) NOT NULL,
+  payload_json JSON NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+  retry_count INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_search_index_outbox_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

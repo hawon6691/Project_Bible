@@ -14,13 +14,14 @@ DECLARE
   t text;
 BEGIN
   FOREACH t IN ARRAY ARRAY[
-    'admin_settings','bids','auctions','lease_offers','car_models','used_prices','review_tags','review_images',
-    'fraud_alerts','product_mappings','news_related_products','news_articles','news_categories','attachments',
-    'short_form_likes','short_form_products','short_forms','friendships','user_social_accounts','email_verifications',
-    'compatibility_rules','build_parts','pc_builds','user_badges','badges','image_variants','exchange_rates',
-    'translations','seller_reviews','seller_trust_metrics','push_notifications','push_subscriptions','crawler_logs',
-    'crawler_jobs','search_synonyms','search_logs','deal_products','deals','recommendations','chat_messages',
-    'chat_rooms','search_history','view_history','notices','faqs','ticket_replies','support_tickets','inquiries',
+    'system_settings','auction_bids','auctions','lease_offers','car_models','used_prices','review_tags','review_images',
+    'fraud_flags','product_mappings','news_products','news','news_categories','media_assets','image_assets',
+    'shortform_comments','shortform_likes','shortform_products','shortforms','friend_activities','friend_blocks',
+    'friendships','social_accounts','email_verifications','pc_compatibility_rules','pc_build_parts','pc_builds',
+    'user_badges','badges','image_variants','exchange_rates','translations','trust_score_histories',
+    'push_preferences','push_subscriptions','crawler_runs','crawler_jobs','search_recent_keywords','search_weight_settings',
+    'search_logs','search_index_outbox','compare_items','deals','chat_room_members','chat_messages',
+    'chat_rooms','search_histories','recent_product_views','notices','faqs','ticket_replies','support_tickets','inquiries',
     'post_likes','comments','posts','boards','point_transactions','wishlists','reviews','payments','order_items',
     'orders','addresses','cart_items','price_predictions','price_alerts','price_history','price_entries','sellers',
     'spec_scores','product_specs','spec_definitions','product_images','product_options','products','categories','users'
@@ -226,75 +227,107 @@ INSERT INTO notices (id,title,content,is_pinned,view_count) VALUES
 (1,'[점검 안내] 2/28 새벽 시스템 점검','2/28 02:00~04:00 서비스 점검 예정입니다.',true,102),
 (2,'배송 정책 변경 안내','무료배송 기준이 일부 변경됩니다.',false,58);
 
-INSERT INTO view_history (id,user_id,product_id,viewed_at) VALUES
-(1,4,1,NOW() - INTERVAL '30 minute'),
-(2,4,4,NOW() - INTERVAL '10 minute'),
-(3,5,3,NOW() - INTERVAL '1 hour');
+INSERT INTO recent_product_views (id,user_id,product_id,viewed_at,created_at,updated_at) VALUES
+(1,4,1,NOW() - INTERVAL '30 minute',NOW() - INTERVAL '30 minute',NOW() - INTERVAL '30 minute'),
+(2,4,4,NOW() - INTERVAL '10 minute',NOW() - INTERVAL '10 minute',NOW() - INTERVAL '10 minute'),
+(3,5,3,NOW() - INTERVAL '1 hour',NOW() - INTERVAL '1 hour',NOW() - INTERVAL '1 hour');
 
-INSERT INTO search_history (id,user_id,keyword,searched_at) VALUES
-(1,4,'게이밍 노트북',NOW() - INTERVAL '20 minute'),
-(2,4,'RTX 5070',NOW() - INTERVAL '15 minute'),
-(3,5,'미니 데스크탑',NOW() - INTERVAL '50 minute');
+INSERT INTO search_histories (id,user_id,keyword,created_at,updated_at) VALUES
+(1,4,'게이밍 노트북',NOW() - INTERVAL '20 minute',NOW() - INTERVAL '20 minute'),
+(2,4,'RTX 5070',NOW() - INTERVAL '15 minute',NOW() - INTERVAL '15 minute'),
+(3,5,'미니 데스크탑',NOW() - INTERVAL '50 minute',NOW() - INTERVAL '50 minute');
 
-INSERT INTO chat_rooms (id,user_id,admin_id,status,last_message_at,closed_at) VALUES
-(1,4,1,'ACTIVE',NOW() - INTERVAL '5 minute',NULL);
+INSERT INTO chat_rooms (id,name,created_by,is_private,created_at,updated_at) VALUES
+(1,'배송 문의 방',4,true,NOW() - INTERVAL '6 minute',NOW() - INTERVAL '5 minute');
 
-INSERT INTO chat_messages (id,room_id,sender_id,content,is_read,created_at) VALUES
-(1,1,4,'배송 관련 문의드립니다.',true,NOW() - INTERVAL '6 minute'),
-(2,1,1,'확인 후 안내드리겠습니다.',false,NOW() - INTERVAL '5 minute');
+INSERT INTO chat_room_members (id,room_id,user_id,joined_at,created_at,updated_at) VALUES
+(1,1,4,NOW() - INTERVAL '6 minute',NOW() - INTERVAL '6 minute',NOW() - INTERVAL '6 minute'),
+(2,1,1,NOW() - INTERVAL '5 minute',NOW() - INTERVAL '5 minute',NOW() - INTERVAL '5 minute');
+
+INSERT INTO chat_messages (id,room_id,sender_id,message,created_at,updated_at) VALUES
+(1,1,4,'배송 관련 문의드립니다.',NOW() - INTERVAL '6 minute',NOW() - INTERVAL '6 minute'),
+(2,1,1,'확인 후 안내드리겠습니다.',NOW() - INTERVAL '5 minute',NOW() - INTERVAL '5 minute');
 
 -- ------------------------------------------------------------
 -- 7) 추천 / 특가 / 검색 / 크롤러 / 푸시
 -- ------------------------------------------------------------
-INSERT INTO recommendations (id,product_id,type,sort_order,start_date,end_date) VALUES
-(1,1,'TODAY',1,CURRENT_DATE - 1,CURRENT_DATE + 7),
-(2,3,'EDITOR_PICK',1,CURRENT_DATE - 3,CURRENT_DATE + 10),
-(3,5,'NEW_ARRIVAL',1,CURRENT_DATE - 1,CURRENT_DATE + 14);
+DO $$
+BEGIN
+  IF to_regclass('public.recommendations') IS NOT NULL THEN
+    INSERT INTO recommendations (id,product_id,type,sort_order,start_date,end_date) VALUES
+    (1,1,'TODAY',1,CURRENT_DATE - 1,CURRENT_DATE + 7),
+    (2,3,'EDITOR_PICK',1,CURRENT_DATE - 3,CURRENT_DATE + 10),
+    (3,5,'NEW_ARRIVAL',1,CURRENT_DATE - 1,CURRENT_DATE + 14);
+  END IF;
+END $$;
 
-INSERT INTO deals (id,title,type,description,discount_rate,banner_url,start_date,end_date,is_active) VALUES
-(1,'노트북 특가전','SPECIAL','인기 노트북 한정 특가',8,'https://img.example.com/deal1.jpg',NOW() - INTERVAL '1 day',NOW() + INTERVAL '5 day',true);
-
-INSERT INTO deal_products (id,deal_id,product_id,deal_price,stock,sold_count) VALUES
-(1,1,1,1690000,20,5),
-(2,1,2,920000,30,9);
+INSERT INTO deals (id,product_id,title,description,discount_rate,start_at,end_at,is_active,created_at,updated_at) VALUES
+(1,1,'노트북 특가전','인기 노트북 한정 특가',8,NOW() - INTERVAL '1 day',NOW() + INTERVAL '5 day',true,NOW() - INTERVAL '1 day',NOW()),
+(2,2,'슬림북 특가전','가벼운 사무용 노트북 프로모션',7,NOW() - INTERVAL '12 hour',NOW() + INTERVAL '3 day',true,NOW() - INTERVAL '12 hour',NOW());
 
 INSERT INTO search_logs (id,user_id,keyword,result_count,category_id,filters,response_time_ms,searched_at) VALUES
 (1,4,'게이밍 노트북',12,2,'{"sort":"popularity"}',120,NOW() - INTERVAL '30 minute'),
 (2,4,'RTX 5070',4,3,'{"minPrice":900000}',98,NOW() - INTERVAL '22 minute'),
 (3,5,'미니 데스크탑',6,3,'{"sort":"newest"}',110,NOW() - INTERVAL '1 hour');
 
-INSERT INTO search_synonyms (id,word,synonyms,is_active) VALUES
-(1,'그래픽카드','["GPU","비디오카드"]',true),
-(2,'노트북','["랩탑","Laptop"]',true);
+DO $$
+BEGIN
+  IF to_regclass('public.search_synonyms') IS NOT NULL THEN
+    INSERT INTO search_synonyms (id,word,synonyms,is_active) VALUES
+    (1,'그래픽카드','["GPU","비디오카드"]',true),
+    (2,'노트북','["랩탑","Laptop"]',true);
+  END IF;
+END $$;
 
-INSERT INTO crawler_jobs (id,name,seller_id,target_url,category_id,schedule,parser_type,config,status,is_active,last_run_at) VALUES
-(1,'공식몰 노트북 크롤러',1,'https://official.example.com/laptops',2,'0 */2 * * *','css','{"retry":2}', 'IDLE', true, NOW() - INTERVAL '3 hour'),
-(2,'테크마켓 GPU 크롤러',2,'https://techmarket.example.com/gpu',3,'30 */3 * * *','xpath','{"retry":3}', 'FAILED', true, NOW() - INTERVAL '6 hour');
+INSERT INTO crawler_jobs (
+  id,seller_id,name,cron_expression,collect_price,collect_spec,detect_anomaly,is_active,last_triggered_at,created_at,updated_at
+) VALUES
+(1,1,'공식몰 노트북 크롤러','0 */2 * * *',true,true,true,true,NOW() - INTERVAL '3 hour',NOW() - INTERVAL '7 day',NOW()),
+(2,2,'테크마켓 GPU 크롤러','30 */3 * * *',true,false,true,true,NOW() - INTERVAL '6 hour',NOW() - INTERVAL '7 day',NOW());
 
-INSERT INTO crawler_logs (id,job_id,status,started_at,finished_at,duration_ms,items_processed,items_created,items_updated,items_failed,error_message) VALUES
-(1,1,'SUCCESS',NOW() - INTERVAL '3 hour',NOW() - INTERVAL '2 hour 58 minute',120000,24,3,16,0,NULL),
-(2,2,'FAILED',NOW() - INTERVAL '6 hour',NOW() - INTERVAL '5 hour 59 minute',60000,10,0,2,8,'페이지 파싱 실패');
+INSERT INTO crawler_runs (
+  id,job_id,seller_id,product_id,trigger_type,collect_price,collect_spec,detect_anomaly,status,started_at,ended_at,
+  duration_ms,collected_price_count,collected_spec_count,anomaly_count,error_message,created_at,updated_at
+) VALUES
+(1,1,1,NULL,'SCHEDULED',true,true,true,'SUCCESS',NOW() - INTERVAL '3 hour',NOW() - INTERVAL '2 hour 58 minute',120000,24,16,0,NULL,NOW() - INTERVAL '3 hour',NOW() - INTERVAL '2 hour 58 minute'),
+(2,2,2,NULL,'SCHEDULED',true,false,true,'FAILED',NOW() - INTERVAL '6 hour',NOW() - INTERVAL '5 hour 59 minute',60000,10,2,8,'페이지 파싱 실패',NOW() - INTERVAL '6 hour',NOW() - INTERVAL '5 hour 59 minute');
 
-INSERT INTO push_subscriptions (id,user_id,endpoint,p256dh,auth,device_name,is_active,last_used_at) VALUES
-(1,4,'https://push.example.com/sub/abc123','p256dh_key_value','auth_key_value','Chrome-Windows',true,NOW() - INTERVAL '1 day');
+INSERT INTO push_subscriptions (id,user_id,endpoint,p256dh_key,auth_key,expiration_time,is_active,created_at,updated_at) VALUES
+(1,4,'https://push.example.com/sub/abc123','p256dh_key_value','auth_key_value',NULL,true,NOW() - INTERVAL '1 day',NOW() - INTERVAL '1 day');
 
-INSERT INTO push_notifications (id,user_id,title,body,url,icon_url,type,is_read,sent_at,read_at) VALUES
-(1,4,'가격 알림','관심 상품 가격이 하락했습니다.','/products/1',NULL,'PRICE_ALERT',false,NOW() - INTERVAL '5 minute',NULL),
-(2,4,'특가 알림','노트북 특가전이 시작되었습니다.','/products',NULL,'DEAL',true,NOW() - INTERVAL '1 day',NOW() - INTERVAL '23 hour');
+INSERT INTO push_preferences (
+  id,user_id,price_alert_enabled,order_status_enabled,chat_message_enabled,deal_enabled,created_at,updated_at
+) VALUES
+(1,4,true,true,true,true,NOW() - INTERVAL '1 day',NOW() - INTERVAL '1 day'),
+(2,5,true,false,true,false,NOW() - INTERVAL '1 day',NOW() - INTERVAL '1 day');
+
+DO $$
+BEGIN
+  IF to_regclass('public.push_notifications') IS NOT NULL THEN
+    INSERT INTO push_notifications (id,user_id,title,body,url,icon_url,type,is_read,sent_at,read_at) VALUES
+    (1,4,'가격 알림','관심 상품 가격이 하락했습니다.','/products/1',NULL,'PRICE_ALERT',false,NOW() - INTERVAL '5 minute',NULL),
+    (2,4,'특가 알림','노트북 특가전이 시작되었습니다.','/products',NULL,'DEAL',true,NOW() - INTERVAL '1 day',NOW() - INTERVAL '23 hour');
+  END IF;
+END $$;
 
 -- ------------------------------------------------------------
 -- 8) 신뢰도 / 다국어 / 이미지 / 배지 / PC견적
 -- ------------------------------------------------------------
-INSERT INTO seller_trust_metrics (
-  id,seller_id,delivery_score,price_accuracy,return_rate,response_time_hours,review_score,order_count,dispute_rate,overall_score,grade,trend,calculated_at
+INSERT INTO trust_score_histories (
+  id,seller_id,delivery_accuracy,price_accuracy,customer_rating,response_speed,return_rate,trust_score,trust_grade,created_at,updated_at
 ) VALUES
-(1,1,92,95,1.20,2.5,4.8,1200,0.3,94,'A','IMPROVING',NOW()),
-(2,2,84,88,2.10,4.0,4.4,860,0.8,86,'B','STABLE',NOW()),
-(3,3,79,81,2.80,5.2,4.1,430,1.4,80,'B','STABLE',NOW());
+(1,1,92.00,95.00,4.80,2.50,1.20,94,'A',NOW() - INTERVAL '30 day',NOW() - INTERVAL '30 day'),
+(2,2,84.00,88.00,4.40,4.00,2.10,86,'B',NOW() - INTERVAL '30 day',NOW() - INTERVAL '30 day'),
+(3,3,79.00,81.00,4.10,5.20,2.80,80,'B',NOW() - INTERVAL '30 day',NOW() - INTERVAL '30 day');
 
-INSERT INTO seller_reviews (id,seller_id,user_id,order_id,rating,delivery_rating,content) VALUES
-(1,1,4,1,5,5,'배송이 빠르고 포장 상태가 좋았습니다.'),
-(2,1,5,2,4,4,'가격 경쟁력이 좋아요.');
+DO $$
+BEGIN
+  IF to_regclass('public.seller_reviews') IS NOT NULL THEN
+    INSERT INTO seller_reviews (id,seller_id,user_id,order_id,rating,delivery_rating,content) VALUES
+    (1,1,4,1,5,5,'배송이 빠르고 포장 상태가 좋았습니다.'),
+    (2,1,5,2,4,4,'가격 경쟁력이 좋아요.');
+  END IF;
+END $$;
 
 INSERT INTO translations (id,locale,namespace,key,value) VALUES
 (1,'ko','common','welcome','환영합니다'),
@@ -306,38 +339,44 @@ INSERT INTO exchange_rates (id,base_currency,target_currency,rate,source,fetched
 (1,'KRW','USD',0.00075,'mock-api',NOW()),
 (2,'USD','KRW',1330.250000,'mock-api',NOW());
 
-INSERT INTO image_variants (id,original_url,variant_type,url,format,width,height,file_size,processing_status,category) VALUES
-(1,'https://img.example.com/p1-1.jpg','THUMBNAIL','https://img.example.com/p1-1-thumb.webp','WEBP',320,240,45231,'COMPLETED','product'),
-(2,'https://img.example.com/p2-1.jpg','MEDIUM','https://img.example.com/p2-1-medium.webp','WEBP',800,600,112345,'COMPLETED','product');
+INSERT INTO image_assets (
+  id,uploaded_by_user_id,original_filename,stored_filename,original_url,mime_type,size,category,processing_status,created_at,updated_at
+) VALUES
+(1,1,'p1-1.jpg','p1-1-stored.jpg','https://img.example.com/p1-1.jpg','image/jpeg',45231,'product','COMPLETED',NOW() - INTERVAL '2 day',NOW() - INTERVAL '2 day'),
+(2,1,'p2-1.jpg','p2-1-stored.jpg','https://img.example.com/p2-1.jpg','image/jpeg',112345,'product','COMPLETED',NOW() - INTERVAL '2 day',NOW() - INTERVAL '2 day');
+
+INSERT INTO image_variants (id,image_id,type,url,format,width,height,size,created_at,updated_at) VALUES
+(1,1,'THUMBNAIL','https://img.example.com/p1-1-thumb.webp','WEBP',320,240,45231,NOW() - INTERVAL '2 day',NOW() - INTERVAL '2 day'),
+(2,2,'MEDIUM','https://img.example.com/p2-1-medium.webp','WEBP',800,600,112345,NOW() - INTERVAL '2 day',NOW() - INTERVAL '2 day');
 
 UPDATE product_images SET image_variant_id = 1 WHERE id = 1;
 UPDATE product_images SET image_variant_id = 2 WHERE id = 3;
 
-INSERT INTO badges (id,name,description,icon_url,type,condition,rarity,holder_count,is_active) VALUES
-(1,'첫 구매','첫 주문 완료 사용자','https://img.example.com/badge-first.png','AUTO','{"orders":1}','COMMON',2,true),
-(2,'리뷰 장인','리뷰 10개 이상 작성','https://img.example.com/badge-review.png','AUTO','{"reviews":10}','RARE',1,true),
-(3,'운영자 픽','운영자 수동 지급','https://img.example.com/badge-admin.png','MANUAL',NULL,'EPIC',1,true);
+INSERT INTO badges (id,name,description,icon_url,type,condition,rarity,created_at,updated_at) VALUES
+(1,'첫 구매','첫 주문 완료 사용자','https://img.example.com/badge-first.png','AUTO','{"orders":1}','COMMON',NOW() - INTERVAL '10 day',NOW() - INTERVAL '10 day'),
+(2,'리뷰 장인','리뷰 10개 이상 작성','https://img.example.com/badge-review.png','AUTO','{"reviews":10}','RARE',NOW() - INTERVAL '10 day',NOW() - INTERVAL '10 day'),
+(3,'운영자 픽','운영자 수동 지급','https://img.example.com/badge-admin.png','MANUAL',NULL,'EPIC',NOW() - INTERVAL '10 day',NOW() - INTERVAL '10 day');
 
-INSERT INTO user_badges (id,user_id,badge_id,granted_by) VALUES
-(1,4,1,'SYSTEM'),
-(2,4,3,'ADMIN'),
-(3,5,1,'SYSTEM');
+INSERT INTO user_badges (id,user_id,badge_id,granted_by_admin_id,reason,granted_at,created_at,updated_at) VALUES
+(1,4,1,NULL,'시스템 자동 부여',NOW() - INTERVAL '9 day',NOW() - INTERVAL '9 day',NOW() - INTERVAL '9 day'),
+(2,4,3,1,'운영자 수동 지급',NOW() - INTERVAL '8 day',NOW() - INTERVAL '8 day',NOW() - INTERVAL '8 day'),
+(3,5,1,NULL,'시스템 자동 부여',NOW() - INTERVAL '7 day',NOW() - INTERVAL '7 day',NOW() - INTERVAL '7 day');
 
-INSERT INTO pc_builds (id,user_id,name,description,purpose,budget,total_price,share_code,is_public,view_count,like_count,deleted_at) VALUES
-(1,4,'FHD 게이밍 견적','가성비 게이밍 빌드','GAMING',2500000,2355000,'PCBUILD001',true,45,7,NULL),
-(2,5,'개발용 저소음 견적','도커/IDE 작업용','DEVELOPMENT',1800000,1680000,'PCBUILD002',false,8,1,NULL);
+INSERT INTO pc_builds (id,user_id,name,description,purpose,budget,total_price,share_code,view_count,created_at,updated_at) VALUES
+(1,4,'FHD 게이밍 견적','가성비 게이밍 빌드','GAMING',2500000,2355000,'PCBUILD001',45,NOW() - INTERVAL '3 day',NOW()),
+(2,5,'개발용 저소음 견적','도커/IDE 작업용','DEVELOPMENT',1800000,1680000,'PCBUILD002',8,NOW() - INTERVAL '2 day',NOW());
 
-INSERT INTO build_parts (id,build_id,product_id,seller_id,part_type,quantity,price_at_add) VALUES
-(1,1,1,1,'CPU',1,420000),
-(2,1,4,2,'GPU',1,955000),
-(3,1,3,1,'SSD',1,180000),
-(4,2,3,1,'CPU',1,380000);
+INSERT INTO pc_build_parts (id,build_id,product_id,seller_id,part_type,quantity,unit_price,total_price,created_at,updated_at) VALUES
+(1,1,1,1,'CPU',1,420000,420000,NOW() - INTERVAL '3 day',NOW() - INTERVAL '3 day'),
+(2,1,4,2,'GPU',1,955000,955000,NOW() - INTERVAL '3 day',NOW() - INTERVAL '3 day'),
+(3,1,3,1,'SSD',1,180000,180000,NOW() - INTERVAL '3 day',NOW() - INTERVAL '3 day'),
+(4,2,3,1,'CPU',1,380000,380000,NOW() - INTERVAL '2 day',NOW() - INTERVAL '2 day');
 
-INSERT INTO compatibility_rules (
-  id,rule_type,part_type_a,spec_key_a,part_type_b,spec_key_b,match_type,error_message,severity,is_active
+INSERT INTO pc_compatibility_rules (
+  id,part_type,target_part_type,title,description,severity,enabled,metadata,created_at,updated_at
 ) VALUES
-(1,'SOCKET','CPU','socket','MOTHERBOARD','socket','EXACT','CPU와 메인보드 소켓이 호환되지 않습니다.','ERROR',true),
-(2,'POWER','GPU','power','PSU','watt','RANGE','GPU 권장 전력 대비 PSU 용량이 부족합니다.','WARNING',true);
+(1,'CPU','MOTHERBOARD','소켓 호환성','CPU와 메인보드 소켓이 호환되지 않습니다.','HIGH',true,'{"match":"socket"}',NOW() - INTERVAL '5 day',NOW() - INTERVAL '5 day'),
+(2,'GPU','PSU','전력 용량 체크','GPU 권장 전력 대비 PSU 용량이 부족합니다.','MEDIUM',true,'{"match":"watt"}',NOW() - INTERVAL '5 day',NOW() - INTERVAL '5 day');
 
 -- ------------------------------------------------------------
 -- 9) 인증/소셜/친구/숏폼/미디어/뉴스/매핑/사기탐지
@@ -346,49 +385,67 @@ INSERT INTO email_verifications (id,user_id,type,code,attempt_count,is_used,expi
 (1,6,'SIGNUP','123456',0,false,NOW() + INTERVAL '10 minute'),
 (2,4,'PASSWORD_RESET','654321',1,false,NOW() + INTERVAL '5 minute');
 
-INSERT INTO user_social_accounts (id,user_id,provider,social_id,social_email) VALUES
-(1,4,'google','google_10001','user1@nestshop.com'),
-(2,5,'kakao','kakao_20002',NULL);
+INSERT INTO social_accounts (id,user_id,provider,provider_user_id,provider_email,provider_name,created_at,updated_at) VALUES
+(1,4,'google','google_10001','user1@nestshop.com','홍길동 Google',NOW() - INTERVAL '30 day',NOW() - INTERVAL '30 day'),
+(2,5,'kakao','kakao_20002',NULL,'김영희 Kakao',NOW() - INTERVAL '20 day',NOW() - INTERVAL '20 day');
 
 INSERT INTO friendships (id,requester_id,addressee_id,status) VALUES
 (1,4,5,'ACCEPTED'),
 (2,5,6,'PENDING');
 
-INSERT INTO short_forms (id,user_id,title,video_url,thumbnail_url,duration,view_count,like_count,comment_count,status,deleted_at) VALUES
-(1,4,'게이밍 노트북 언박싱','https://cdn.example.com/short/1.mp4','https://cdn.example.com/short/1.jpg',45,1200,95,12,'ACTIVE',NULL),
-(2,5,'데스크탑 조립 팁','https://cdn.example.com/short/2.mp4','https://cdn.example.com/short/2.jpg',60,860,64,7,'ACTIVE',NULL);
+INSERT INTO friend_blocks (id,user_id,blocked_user_id,created_at,updated_at) VALUES
+(1,4,6,NOW() - INTERVAL '1 day',NOW() - INTERVAL '1 day');
 
-INSERT INTO short_form_products (id,short_form_id,product_id,display_order) VALUES
-(1,1,1,1),
-(2,2,3,1);
+INSERT INTO friend_activities (id,user_id,type,message,metadata,created_at,updated_at) VALUES
+(1,5,'REVIEW','홍길동님이 게이밍 노트북 A15 리뷰를 작성했습니다.','{"productId":1}',NOW() - INTERVAL '2 hour',NOW() - INTERVAL '2 hour'),
+(2,4,'POST','김영희님이 미니 데스크탑 사용기를 등록했습니다.','{"postId":2}',NOW() - INTERVAL '90 minute',NOW() - INTERVAL '90 minute');
 
-INSERT INTO short_form_likes (id,short_form_id,user_id) VALUES
-(1,1,5),
-(2,2,4);
+INSERT INTO shortforms (
+  id,user_id,title,video_url,thumbnail_url,duration_sec,view_count,like_count,comment_count,transcode_status,
+  transcoded_video_url,transcode_error,transcoded_at,created_at,updated_at
+) VALUES
+(1,4,'게이밍 노트북 언박싱','https://cdn.example.com/short/1.mp4','https://cdn.example.com/short/1.jpg',45,1200,95,12,'COMPLETED','https://cdn.example.com/short/1-transcoded.mp4',NULL,NOW() - INTERVAL '2 day',NOW() - INTERVAL '3 day',NOW() - INTERVAL '2 day'),
+(2,5,'데스크탑 조립 팁','https://cdn.example.com/short/2.mp4','https://cdn.example.com/short/2.jpg',60,860,64,7,'COMPLETED','https://cdn.example.com/short/2-transcoded.mp4',NULL,NOW() - INTERVAL '2 day',NOW() - INTERVAL '3 day',NOW() - INTERVAL '2 day');
 
-INSERT INTO attachments (id,owner_id,owner_type,file_type,original_name,storage_path,mime_type,file_size,metadata) VALUES
-(1,1,'support_ticket','IMAGE','ticket1.png','/uploads/ticket1.png','image/png',324455,'{"width":1200,"height":900}'),
-(2,1,'short_form','VIDEO','short1.mp4','/uploads/short1.mp4','video/mp4',12204455,'{"duration":45}');
+INSERT INTO shortform_products (id,shortform_id,product_id,created_at,updated_at) VALUES
+(1,1,1,NOW() - INTERVAL '3 day',NOW() - INTERVAL '3 day'),
+(2,2,3,NOW() - INTERVAL '3 day',NOW() - INTERVAL '3 day');
 
-INSERT INTO news_categories (id,name,slug,sort_order,is_active) VALUES
-(1,'테크뉴스','tech',1,true),
-(2,'자동차뉴스','auto',2,true);
+INSERT INTO shortform_likes (id,shortform_id,user_id,created_at,updated_at) VALUES
+(1,1,5,NOW() - INTERVAL '2 day',NOW() - INTERVAL '2 day'),
+(2,2,4,NOW() - INTERVAL '2 day',NOW() - INTERVAL '2 day');
 
-INSERT INTO news_articles (id,category_id,author_id,title,content,thumbnail_url,view_count,is_published,deleted_at) VALUES
-(1,1,1,'차세대 GPU 출시 소식','신제품 GPU가 공식 발표되었습니다.','https://img.example.com/news1.jpg',220,true,NULL),
-(2,2,1,'전기차 보조금 개편','2026년 전기차 보조금 정책이 변경됩니다.','https://img.example.com/news2.jpg',180,true,NULL);
+INSERT INTO shortform_comments (id,shortform_id,user_id,content,created_at,updated_at) VALUES
+(1,1,5,'구성 괜찮네요.',NOW() - INTERVAL '1 day',NOW() - INTERVAL '1 day'),
+(2,2,4,'조립 팁 감사합니다.',NOW() - INTERVAL '1 day',NOW() - INTERVAL '1 day');
 
-INSERT INTO news_related_products (id,news_id,product_id,display_order) VALUES
-(1,1,4,1),
-(2,2,5,1);
+INSERT INTO media_assets (
+  id,uploader_id,owner_type,owner_id,original_name,file_key,file_url,type,mime,size,duration,width,height,created_at,updated_at
+) VALUES
+(1,4,'SUPPORT',1,'ticket1.png','support/ticket1.png','https://cdn.example.com/support/ticket1.png','IMAGE','image/png',324455,NULL,1200,900,NOW() - INTERVAL '5 day',NOW() - INTERVAL '5 day'),
+(2,4,'SHORTFORM',1,'short1.mp4','shortform/short1.mp4','https://cdn.example.com/short/1.mp4','VIDEO','video/mp4',12204455,45,1080,1920,NOW() - INTERVAL '5 day',NOW() - INTERVAL '5 day');
+
+INSERT INTO news_categories (id,name,slug,created_at,updated_at) VALUES
+(1,'테크뉴스','tech',NOW() - INTERVAL '10 day',NOW() - INTERVAL '10 day'),
+(2,'자동차뉴스','auto',NOW() - INTERVAL '10 day',NOW() - INTERVAL '10 day');
+
+INSERT INTO news (id,title,content,category_id,thumbnail_url,view_count,created_at,updated_at) VALUES
+(1,'차세대 GPU 출시 소식','신제품 GPU가 공식 발표되었습니다.',1,'https://img.example.com/news1.jpg',220,NOW() - INTERVAL '3 day',NOW() - INTERVAL '3 day'),
+(2,'전기차 보조금 개편','2026년 전기차 보조금 정책이 변경됩니다.',2,'https://img.example.com/news2.jpg',180,NOW() - INTERVAL '2 day',NOW() - INTERVAL '2 day');
+
+INSERT INTO news_products (id,news_id,product_id,created_at,updated_at) VALUES
+(1,1,4,NOW() - INTERVAL '3 day',NOW() - INTERVAL '3 day'),
+(2,2,5,NOW() - INTERVAL '2 day',NOW() - INTERVAL '2 day');
 
 INSERT INTO product_mappings (id,crawled_product_name,extracted_model,seller_id,product_id,status,confidence,reviewed_by) VALUES
 (1,'A15 Gaming Laptop 2026','A15',2,1,'APPROVED',0.94,1),
 (2,'Model E Long Range','Model E',3,5,'PENDING',0.71,NULL);
 
-INSERT INTO fraud_alerts (id,price_entry_id,product_id,seller_id,detected_price,average_price,deviation_percent,status,reviewed_by) VALUES
-(1,2,1,2,1753000,1835000,-4.47,'PENDING',NULL),
-(2,6,4,2,955000,1030000,-7.28,'APPROVED',1);
+INSERT INTO fraud_flags (
+  id,price_entry_id,product_id,seller_id,reason,raw_price,effective_price,baseline_average,severity,status,reviewed_by,reviewed_at,created_at,updated_at
+) VALUES
+(1,2,1,2,'평균가 대비 급격한 가격 하락',1753000,1756000,1835000,'LOW','PENDING',NULL,NULL,NOW() - INTERVAL '1 day',NOW() - INTERVAL '1 day'),
+(2,6,4,2,'이상 할인 패턴 감지',955000,955000,1030000,'MEDIUM','APPROVED',1,NOW() - INTERVAL '12 hour',NOW() - INTERVAL '2 day',NOW() - INTERVAL '12 hour');
 
 INSERT INTO review_images (id,review_id,image_url,display_order) VALUES
 (1,1,'https://img.example.com/review1-1.jpg',1),
@@ -415,14 +472,14 @@ INSERT INTO lease_offers (id,car_model_id,company,type,monthly_payment,deposit,c
 INSERT INTO auctions (id,user_id,title,description,category_id,budget,status,bid_count,expires_at) VALUES
 (1,4,'게이밍 PC 견적 요청','RTX급 게이밍 PC 견적을 원합니다.',3,2200000,'OPEN',2,NOW() + INTERVAL '3 day');
 
-INSERT INTO bids (id,auction_id,seller_id,price,description,delivery_days,is_selected) VALUES
-(1,1,1,2140000,'정품 부품 구성, 1년 A/S',3,false),
-(2,1,2,2090000,'조립 + 케이블 정리 포함',4,true);
+INSERT INTO auction_bids (id,auction_id,seller_id,price,description,delivery_days,created_at,updated_at) VALUES
+(1,1,1,2140000,'정품 부품 구성, 1년 A/S',3,NOW() - INTERVAL '6 hour',NOW() - INTERVAL '6 hour'),
+(2,1,2,2090000,'조립 + 케이블 정리 포함',4,NOW() - INTERVAL '4 hour',NOW() - INTERVAL '4 hour');
 
-INSERT INTO admin_settings (id,setting_key,setting_value,description,updated_by) VALUES
-(1,'upload_limits','{"imageMb":10,"videoMb":200}','업로드 제한 설정',1),
-(2,'review_policy','{"minOrderDays":1,"maxImages":5}','리뷰 정책',1),
-(3,'extensions','{"featureFlags":{"opsDashboard":true,"searchOutbox":true}}','확장 모듈 플래그',1);
+INSERT INTO system_settings (id,setting_key,setting_value,created_at,updated_at) VALUES
+(1,'upload_limits','{"imageMb":10,"videoMb":200}',NOW() - INTERVAL '10 day',NOW() - INTERVAL '10 day'),
+(2,'review_policy','{"minOrderDays":1,"maxImages":5}',NOW() - INTERVAL '10 day',NOW() - INTERVAL '10 day'),
+(3,'extensions','{"featureFlags":{"opsDashboard":true,"searchOutbox":true}}',NOW() - INTERVAL '10 day',NOW() - INTERVAL '10 day');
 
 COMMIT;
 

@@ -18,4 +18,7 @@ Route::prefix(ApiRoutes::API_PREFIX)
         require __DIR__.'/api_v1/addresses.php';
         require __DIR__.'/api_v1/orders.php';
         require __DIR__.'/api_v1/payments.php';
+        require __DIR__.'/api_v1/reviews.php';
+        require __DIR__.'/api_v1/wishlist.php';
+        require __DIR__.'/api_v1/points.php';
     });

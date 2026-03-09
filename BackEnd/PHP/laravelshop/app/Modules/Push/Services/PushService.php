@@ -10,9 +10,12 @@ class PushService
 {
     public function registerSubscription(User $user, array $payload): array
     {
+        $endpointHash = hash('sha256', $payload['endpoint']);
+
         $subscription = PushSubscription::query()->updateOrCreate(
-            ['user_id' => $user->id, 'endpoint' => $payload['endpoint']],
+            ['user_id' => $user->id, 'endpoint_hash' => $endpointHash],
             [
+                'endpoint' => $payload['endpoint'],
                 'p256dh_key' => $payload['p256dhKey'],
                 'auth_key' => $payload['authKey'],
                 'expiration_time' => $payload['expirationTime'] ?? null,
@@ -25,9 +28,11 @@ class PushService
 
     public function unregisterSubscription(User $user, array $payload): array
     {
+        $endpointHash = hash('sha256', $payload['endpoint']);
+
         PushSubscription::query()
             ->where('user_id', $user->id)
-            ->where('endpoint', $payload['endpoint'])
+            ->where('endpoint_hash', $endpointHash)
             ->update(['is_active' => false]);
 
         return [

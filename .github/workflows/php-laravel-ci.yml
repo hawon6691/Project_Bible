@@ -12,13 +12,80 @@ on:
       - 'BackEnd/PHP/laravelshop/**'
       - '.github/workflows/php-laravel-ci.yml'
   workflow_dispatch:
+    inputs:
+      target_ref:
+        description: 'Branch or tag to run manual jobs on (ex: main, develop, release/v1)'
+        required: true
+        default: 'main'
+        type: string
+      run_release_gate:
+        description: 'Run release gate suite (route/pint/api/db)'
+        required: true
+        default: true
+        type: boolean
+      run_api_regression:
+        description: 'Run API feature regression tests manually'
+        required: true
+        default: false
+        type: boolean
+      run_db_integration:
+        description: 'Run MySQL-backed migration and API integration checks'
+        required: true
+        default: false
+        type: boolean
+      run_route_snapshot:
+        description: 'Export route list artifact manually'
+        required: true
+        default: false
+        type: boolean
+      run_live_smoke:
+        description: 'Run live smoke against external PHP API base URL'
+        required: true
+        default: false
+        type: boolean
+      live_smoke_base_url:
+        description: 'External API base URL for live smoke (required when run_live_smoke=true)'
+        required: false
+        default: ''
+        type: string
 
 concurrency:
   group: php-laravel-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  validate-dispatch-inputs:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Manual Inputs
+        run: |
+          if [[ "${{ inputs.run_release_gate }}" != "true" && "${{ inputs.run_api_regression }}" != "true" && "${{ inputs.run_db_integration }}" != "true" && "${{ inputs.run_route_snapshot }}" != "true" && "${{ inputs.run_live_smoke }}" != "true" ]]; then
+            echo "At least one manual job must be enabled." >&2
+            exit 1
+          fi
+
+          if [[ "${{ inputs.run_live_smoke }}" == "true" && -z "${{ inputs.live_smoke_base_url }}" ]]; then
+            echo "live_smoke_base_url is required when run_live_smoke=true." >&2
+            exit 1
+          fi
+
+      - name: Write Validation Summary
+        if: always()
+        run: |
+          echo "## Manual Dispatch Validation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Target ref: \`${{ inputs.target_ref }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_release_gate: \`${{ inputs.run_release_gate }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_api_regression: \`${{ inputs.run_api_regression }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_db_integration: \`${{ inputs.run_db_integration }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_route_snapshot: \`${{ inputs.run_route_snapshot }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_live_smoke: \`${{ inputs.run_live_smoke }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- live_smoke_base_url: \`${{ inputs.live_smoke_base_url }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Result: \`${{ job.status }}\`" >> $GITHUB_STEP_SUMMARY
+
   quality:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -57,5 +124,408 @@ jobs:
       - name: Laravel Pint Check
         run: vendor/bin/pint --test
 
-      - name: Run Test Suite
+      - name: Run Full Test Suite
         run: php artisan test
+
+  api-regression:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: quality
+    defaults:
+      run:
+        working-directory: BackEnd/PHP/laravelshop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+          extensions: mbstring, sqlite3, pdo_sqlite, curl, openssl, intl, zip
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: BackEnd/PHP/laravelshop/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-8.3-composer-
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare Environment
+        run: |
+          if [ ! -f .env ]; then cp .env.example .env; fi
+          php artisan key:generate --force
+
+      - name: Run API Regression Tests
+        run: |
+          mkdir -p test-results
+          php artisan test tests/Feature/Api --log-junit test-results/api-regression-report.xml
+
+      - name: Upload API Regression Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-api-regression-report
+          path: BackEnd/PHP/laravelshop/test-results/api-regression-report.xml
+          if-no-files-found: warn
+
+  db-integration:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: quality
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: pbdb_ci
+          MYSQL_USER: project_bible
+          MYSQL_PASSWORD: project_bible
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=20
+        ports:
+          - 3306:3306
+    defaults:
+      run:
+        working-directory: BackEnd/PHP/laravelshop
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: pbdb_ci
+      DB_USERNAME: project_bible
+      DB_PASSWORD: project_bible
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+          extensions: mbstring, pdo_mysql, mysqli, curl, openssl, intl, zip
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: BackEnd/PHP/laravelshop/vendor
+          key: ${{ runner.os }}-php-8.3-mysql-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-8.3-mysql-composer-
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare Environment
+        run: |
+          if [ ! -f .env ]; then cp .env.example .env; fi
+          php artisan key:generate --force
+
+      - name: Run Migration Fresh
+        run: php artisan migrate:fresh --force
+
+      - name: Run API Regression Tests on MySQL
+        run: |
+          mkdir -p test-results
+          php artisan test tests/Feature/Api --log-junit test-results/db-integration-report.xml
+
+      - name: Upload DB Integration Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-db-integration-report
+          path: BackEnd/PHP/laravelshop/test-results/db-integration-report.xml
+          if-no-files-found: warn
+
+  release-gate:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_release_gate
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: pbdb_ci
+          MYSQL_USER: project_bible
+          MYSQL_PASSWORD: project_bible
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=20
+        ports:
+          - 3306:3306
+    defaults:
+      run:
+        working-directory: BackEnd/PHP/laravelshop
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: pbdb_ci
+      DB_USERNAME: project_bible
+      DB_PASSWORD: project_bible
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+          extensions: mbstring, pdo_mysql, mysqli, sqlite3, pdo_sqlite, curl, openssl, intl, zip
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: BackEnd/PHP/laravelshop/vendor
+          key: ${{ runner.os }}-php-8.3-release-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-8.3-release-composer-
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare Environment
+        run: |
+          if [ ! -f .env ]; then cp .env.example .env; fi
+          php artisan key:generate --force
+
+      - name: Run Release Gate
+        run: |
+          mkdir -p test-results
+          php artisan route:list > test-results/route-list.txt
+          vendor/bin/pint --test
+          php artisan test --log-junit test-results/release-gate-tests.xml
+          php artisan migrate:fresh --force
+
+      - name: Upload Release Gate Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-release-gate-report
+          path: |
+            BackEnd/PHP/laravelshop/test-results/route-list.txt
+            BackEnd/PHP/laravelshop/test-results/release-gate-tests.xml
+          if-no-files-found: warn
+
+      - name: Write Release Gate Summary
+        if: always()
+        run: |
+          echo "## PHP Release Gate Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Trigger: \`workflow_dispatch\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Target ref: \`${{ inputs.target_ref }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Job result: \`${{ job.status }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Artifact: \`php-release-gate-report\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+
+  api-regression-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_api_regression
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BackEnd/PHP/laravelshop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+          extensions: mbstring, sqlite3, pdo_sqlite, curl, openssl, intl, zip
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: BackEnd/PHP/laravelshop/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-8.3-composer-
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare Environment
+        run: |
+          if [ ! -f .env ]; then cp .env.example .env; fi
+          php artisan key:generate --force
+
+      - name: Run API Regression
+        run: |
+          mkdir -p test-results
+          php artisan test tests/Feature/Api --log-junit test-results/api-regression-report.xml
+
+      - name: Upload API Regression Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-api-regression-manual-report
+          path: BackEnd/PHP/laravelshop/test-results/api-regression-report.xml
+          if-no-files-found: warn
+
+  db-integration-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_db_integration
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: pbdb_ci
+          MYSQL_USER: project_bible
+          MYSQL_PASSWORD: project_bible
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=20
+        ports:
+          - 3306:3306
+    defaults:
+      run:
+        working-directory: BackEnd/PHP/laravelshop
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: pbdb_ci
+      DB_USERNAME: project_bible
+      DB_PASSWORD: project_bible
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+          extensions: mbstring, pdo_mysql, mysqli, curl, openssl, intl, zip
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: BackEnd/PHP/laravelshop/vendor
+          key: ${{ runner.os }}-php-8.3-mysql-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-8.3-mysql-composer-
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare Environment
+        run: |
+          if [ ! -f .env ]; then cp .env.example .env; fi
+          php artisan key:generate --force
+
+      - name: Run DB Integration Checks
+        run: |
+          mkdir -p test-results
+          php artisan migrate:fresh --force
+          php artisan test tests/Feature/Api --log-junit test-results/db-integration-report.xml
+
+      - name: Upload DB Integration Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-db-integration-manual-report
+          path: BackEnd/PHP/laravelshop/test-results/db-integration-report.xml
+          if-no-files-found: warn
+
+  route-snapshot-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_route_snapshot
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BackEnd/PHP/laravelshop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+          extensions: mbstring, sqlite3, pdo_sqlite, curl, openssl, intl, zip
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: BackEnd/PHP/laravelshop/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-8.3-composer-
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare Environment
+        run: |
+          if [ ! -f .env ]; then cp .env.example .env; fi
+          php artisan key:generate --force
+
+      - name: Export Route Snapshot
+        run: |
+          mkdir -p test-results
+          php artisan route:list > test-results/route-list.txt
+
+      - name: Upload Route Snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-route-snapshot
+          path: BackEnd/PHP/laravelshop/test-results/route-list.txt
+          if-no-files-found: warn
+
+  live-smoke-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_live_smoke
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Live Smoke
+        run: |
+          curl -fsS "${{ inputs.live_smoke_base_url }}/api/v1/health" > live-smoke-health.json
+
+      - name: Upload Live Smoke Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-live-smoke-artifact
+          path: live-smoke-health.json
+          if-no-files-found: warn
+

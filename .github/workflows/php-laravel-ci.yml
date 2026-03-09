@@ -1,0 +1,61 @@
+name: PBShop PHP Laravel CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'BackEnd/PHP/laravelshop/**'
+      - '.github/workflows/php-laravel-ci.yml'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'BackEnd/PHP/laravelshop/**'
+      - '.github/workflows/php-laravel-ci.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: php-laravel-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BackEnd/PHP/laravelshop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+          extensions: mbstring, sqlite3, pdo_sqlite, curl, openssl, intl, zip
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: BackEnd/PHP/laravelshop/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-8.3-composer-
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare Environment
+        run: |
+          if [ ! -f .env ]; then cp .env.example .env; fi
+          php artisan key:generate --force
+
+      - name: Route Smoke Check
+        run: php artisan route:list
+
+      - name: Laravel Pint Check
+        run: vendor/bin/pint --test
+
+      - name: Run Test Suite
+        run: php artisan test

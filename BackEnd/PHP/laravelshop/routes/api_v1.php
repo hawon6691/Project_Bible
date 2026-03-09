@@ -36,4 +36,11 @@ Route::prefix(ApiRoutes::API_PREFIX)
         require __DIR__.'/api_v1/i18n.php';
         require __DIR__.'/api_v1/images.php';
         require __DIR__.'/api_v1/badges.php';
+        require __DIR__.'/api_v1/pc-builds.php';
+        require __DIR__.'/api_v1/friends.php';
+        require __DIR__.'/api_v1/shortforms.php';
+        require __DIR__.'/api_v1/media.php';
+        require __DIR__.'/api_v1/news.php';
+        require __DIR__.'/api_v1/matching.php';
     });
+

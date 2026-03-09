@@ -24,4 +24,7 @@ Route::prefix(ApiRoutes::API_PREFIX)
         require __DIR__.'/api_v1/community.php';
         require __DIR__.'/api_v1/inquiries.php';
         require __DIR__.'/api_v1/support.php';
+        require __DIR__.'/api_v1/activity.php';
+        require __DIR__.'/api_v1/chat.php';
+        require __DIR__.'/api_v1/push.php';
     });

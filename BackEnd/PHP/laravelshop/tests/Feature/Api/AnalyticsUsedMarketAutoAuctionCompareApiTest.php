@@ -42,9 +42,9 @@ class AnalyticsUsedMarketAutoAuctionCompareApiTest extends TestCase
         $option = AutoOption::query()->create(['auto_trim_id' => $trim->id, 'name' => 'HUD', 'price' => 1200000]);
         AutoLeaseOffer::query()->create(['auto_model_id' => $model->id, 'provider' => 'PB Lease', 'monthly_payment' => 590000, 'contract_months' => 48]);
 
-        $this->getJson('/api/v1/analytics/products/' . $product->id . '/lowest-ever')->assertOk()->assertJsonPath('data.lowestPrice', 140000);
-        $this->getJson('/api/v1/used-market/products/' . $product->id . '/price')->assertOk()->assertJsonPath('data.averagePrice', 92500);
-        $this->actingAsApiUser($user)->postJson('/api/v1/used-market/pc-builds/' . $build->id . '/estimate')->assertOk()->assertJsonStructure(['data' => ['estimatedPrice', 'partBreakdown']]);
+        $this->getJson('/api/v1/analytics/products/'.$product->id.'/lowest-ever')->assertOk()->assertJsonPath('data.lowestPrice', 140000);
+        $this->getJson('/api/v1/used-market/products/'.$product->id.'/price')->assertOk()->assertJsonPath('data.averagePrice', 92500);
+        $this->actingAsApiUser($user)->postJson('/api/v1/used-market/pc-builds/'.$build->id.'/estimate')->assertOk()->assertJsonStructure(['data' => ['estimatedPrice', 'partBreakdown']]);
         $this->getJson('/api/v1/auto/models')->assertOk()->assertJsonPath('data.0.name', 'PB E-Car');
         $this->postJson('/api/v1/auto/estimate', ['modelId' => $model->id, 'trimId' => $trim->id, 'optionIds' => [$option->id]])->assertOk()->assertJsonPath('data.optionPrice', 1200000);
     }
@@ -67,7 +67,7 @@ class AnalyticsUsedMarketAutoAuctionCompareApiTest extends TestCase
         $auction->assertCreated();
         $auctionId = $auction->json('data.id');
 
-        $bid = $this->actingAsApiUser($sellerUser)->postJson('/api/v1/auctions/' . $auctionId . '/bids', [
+        $bid = $this->actingAsApiUser($sellerUser)->postJson('/api/v1/auctions/'.$auctionId.'/bids', [
             'price' => 1420000,
             'description' => '3일 내 배송',
             'deliveryDays' => 3,
@@ -75,8 +75,8 @@ class AnalyticsUsedMarketAutoAuctionCompareApiTest extends TestCase
         $bid->assertCreated();
         $bidId = $bid->json('data.id');
 
-        $this->actingAsApiUser($owner)->patchJson('/api/v1/auctions/' . $auctionId . '/bids/' . $bidId . '/select')->assertOk()->assertJsonPath('data.message', '낙찰을 선택했습니다.');
-        $this->getJson('/api/v1/auctions/' . $auctionId)->assertOk()->assertJsonPath('data.status', 'CLOSED');
+        $this->actingAsApiUser($owner)->patchJson('/api/v1/auctions/'.$auctionId.'/bids/'.$bidId.'/select')->assertOk()->assertJsonPath('data.message', '낙찰을 선택했습니다.');
+        $this->getJson('/api/v1/auctions/'.$auctionId)->assertOk()->assertJsonPath('data.status', 'CLOSED');
 
         $headers = ['X-Compare-Key' => 'test-compare'];
         $this->withHeaders($headers)->postJson('/api/v1/compare/add', ['productId' => $productA->id])->assertOk();
@@ -88,7 +88,7 @@ class AnalyticsUsedMarketAutoAuctionCompareApiTest extends TestCase
     private function createUser(string $role): User
     {
         return User::query()->create([
-            'email' => uniqid('auc-', true) . '@example.com',
+            'email' => uniqid('auc-', true).'@example.com',
             'password' => Hash::make('Password123!'),
             'name' => 'PB User',
             'nickname' => uniqid('pb-', false),
@@ -106,7 +106,7 @@ class AnalyticsUsedMarketAutoAuctionCompareApiTest extends TestCase
 
     private function createProduct(int $categoryId, string $name, string $slug): Product
     {
-        return Product::query()->create(['category_id' => $categoryId, 'name' => $name, 'slug' => $slug . '-' . uniqid(), 'status' => 'ACTIVE']);
+        return Product::query()->create(['category_id' => $categoryId, 'name' => $name, 'slug' => $slug.'-'.uniqid(), 'status' => 'ACTIVE']);
     }
 
     private function createSeller(): Seller
@@ -117,6 +117,7 @@ class AnalyticsUsedMarketAutoAuctionCompareApiTest extends TestCase
     private function actingAsApiUser(User $user): self
     {
         $token = app(JwtService::class)->createAccessToken($user);
-        return $this->withHeader('Authorization', 'Bearer ' . $token);
+
+        return $this->withHeader('Authorization', 'Bearer '.$token);
     }
 }

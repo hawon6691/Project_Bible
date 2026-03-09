@@ -7,9 +7,7 @@ use App\Modules\Analytics\Services\AnalyticsService;
 
 class AnalyticsController extends ApiController
 {
-    public function __construct(private readonly AnalyticsService $service)
-    {
-    }
+    public function __construct(private readonly AnalyticsService $service) {}
 
     public function lowestEver(int $id)
     {

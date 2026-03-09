@@ -11,9 +11,7 @@ use Illuminate\Http\Request;
 
 class AuctionController extends ApiController
 {
-    public function __construct(private readonly AuctionService $service)
-    {
-    }
+    public function __construct(private readonly AuctionService $service) {}
 
     public function store(StoreAuctionRequest $request)
     {

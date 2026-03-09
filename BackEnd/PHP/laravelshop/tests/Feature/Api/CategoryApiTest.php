@@ -37,7 +37,7 @@ class CategoryApiTest extends TestCase
         $treeResponse->assertJsonPath('data.0.name', '컴퓨터');
         $treeResponse->assertJsonPath('data.0.children.0.name', '노트북');
 
-        $showResponse = $this->getJson('/api/v1/categories/' . $child->id);
+        $showResponse = $this->getJson('/api/v1/categories/'.$child->id);
         $showResponse->assertOk();
         $showResponse->assertJsonPath('data.name', '노트북');
         $showResponse->assertJsonPath('data.parent.name', '컴퓨터');
@@ -59,7 +59,7 @@ class CategoryApiTest extends TestCase
         $this->assertIsString($createResponse->json('data.slug'));
         $this->assertNotEmpty($createResponse->json('data.slug'));
 
-        $updateResponse = $this->actingAsApiUser($admin)->patchJson('/api/v1/categories/' . $categoryId, [
+        $updateResponse = $this->actingAsApiUser($admin)->patchJson('/api/v1/categories/'.$categoryId, [
             'name' => '가전 및 TV',
             'sortOrder' => 20,
             'isVisible' => false,
@@ -77,7 +77,7 @@ class CategoryApiTest extends TestCase
         $forbiddenResponse->assertForbidden();
         $forbiddenResponse->assertJsonPath('error.code', 'FORBIDDEN');
 
-        $deleteResponse = $this->actingAsApiUser($admin)->deleteJson('/api/v1/categories/' . $categoryId);
+        $deleteResponse = $this->actingAsApiUser($admin)->deleteJson('/api/v1/categories/'.$categoryId);
         $deleteResponse->assertOk();
         $deleteResponse->assertJsonPath('data.message', '카테고리가 삭제되었습니다.');
         $this->assertDatabaseMissing('categories', ['id' => $categoryId]);
@@ -104,7 +104,7 @@ class CategoryApiTest extends TestCase
             'is_visible' => true,
         ]);
 
-        $response = $this->actingAsApiUser($admin)->deleteJson('/api/v1/categories/' . $parent->id);
+        $response = $this->actingAsApiUser($admin)->deleteJson('/api/v1/categories/'.$parent->id);
         $response->assertBadRequest();
         $response->assertJsonPath('error.code', 'CATEGORY_HAS_CHILDREN');
     }
@@ -112,7 +112,7 @@ class CategoryApiTest extends TestCase
     private function createUser(string $role): User
     {
         return User::query()->create([
-            'email' => uniqid('category-', true) . '@example.com',
+            'email' => uniqid('category-', true).'@example.com',
             'password' => Hash::make('Password123!'),
             'name' => 'Category User',
             'nickname' => 'category-user',
@@ -127,6 +127,6 @@ class CategoryApiTest extends TestCase
     {
         $token = app(JwtService::class)->createAccessToken($user);
 
-        return $this->withHeader('Authorization', 'Bearer ' . $token);
+        return $this->withHeader('Authorization', 'Bearer '.$token);
     }
 }

@@ -11,8 +11,7 @@ class CartController extends ApiController
 {
     public function __construct(
         private readonly CartService $cartService,
-    ) {
-    }
+    ) {}
 
     public function index()
     {

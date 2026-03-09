@@ -38,6 +38,7 @@ class CompareService
     {
         $items = CompareItem::query()->where('compare_key', $compareKey)->orderBy('id')->get()->map(function (CompareItem $item): array {
             $product = Product::query()->find($item->product_id);
+
             return [
                 'productId' => $item->product_id,
                 'name' => $product?->name,

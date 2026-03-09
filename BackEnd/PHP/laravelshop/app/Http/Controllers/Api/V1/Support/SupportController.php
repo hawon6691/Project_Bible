@@ -12,8 +12,7 @@ class SupportController extends ApiController
 {
     public function __construct(
         private readonly SupportService $supportService,
-    ) {
-    }
+    ) {}
 
     public function index()
     {

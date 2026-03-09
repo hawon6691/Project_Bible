@@ -43,6 +43,7 @@ class BadgeService
             'condition' => $payload['condition'] ?? null,
             'rarity' => strtoupper($payload['rarity'] ?? 'COMMON'),
         ]);
+
         return $this->serializeBadge($badge);
     }
 
@@ -72,6 +73,7 @@ class BadgeService
         if ($updates !== []) {
             $badge->forceFill($updates)->save();
         }
+
         return $this->serializeBadge($badge);
     }
 
@@ -80,6 +82,7 @@ class BadgeService
         $this->assertAdmin($actor);
         $badge = $this->findBadge($badgeId);
         $badge->delete();
+
         return ['message' => '배지가 삭제되었습니다.'];
     }
 
@@ -92,6 +95,7 @@ class BadgeService
             ['granted_by' => $actor->id, 'granted_at' => now()],
         );
         $granted->load('badge');
+
         return [
             'id' => $granted->id,
             'grantedAt' => optional($granted->granted_at)?->toISOString(),
@@ -104,6 +108,7 @@ class BadgeService
     {
         $this->assertAdmin($actor);
         UserBadge::query()->where('badge_id', $badgeId)->where('user_id', $userId)->delete();
+
         return ['message' => '배지가 회수되었습니다.'];
     }
 
@@ -113,6 +118,7 @@ class BadgeService
         if (! $badge) {
             throw new BusinessException('배지를 찾을 수 없습니다.', 'BADGE_NOT_FOUND', Response::HTTP_NOT_FOUND);
         }
+
         return $badge;
     }
 

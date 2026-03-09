@@ -61,9 +61,9 @@ class AuctionService
         }
 
         $seller = Seller::query()->firstOrCreate([
-            'code' => 'seller-user-' . $sellerUser->id,
+            'code' => 'seller-user-'.$sellerUser->id,
         ], [
-            'name' => $sellerUser->name . ' Seller',
+            'name' => $sellerUser->name.' Seller',
             'status' => 'ACTIVE',
             'rating' => 4.5,
         ]);
@@ -142,7 +142,7 @@ class AuctionService
 
     private function findSellerBid(User $sellerUser, int $auctionId, int $bidId): AuctionBid
     {
-        $seller = Seller::query()->where('code', 'seller-user-' . $sellerUser->id)->first();
+        $seller = Seller::query()->where('code', 'seller-user-'.$sellerUser->id)->first();
         if (! $seller) {
             throw new BusinessException('판매자 정보를 찾을 수 없습니다.', 'SELLER_NOT_FOUND', Response::HTTP_NOT_FOUND);
         }

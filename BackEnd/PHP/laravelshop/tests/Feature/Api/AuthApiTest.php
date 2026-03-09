@@ -110,7 +110,7 @@ class AuthApiTest extends TestCase
         $this->assertNotEmpty($refreshedAccessToken);
 
         $logoutResponse = $this
-            ->withHeader('Authorization', 'Bearer ' . $refreshedAccessToken)
+            ->withHeader('Authorization', 'Bearer '.$refreshedAccessToken)
             ->postJson('/api/v1/auth/logout');
 
         $logoutResponse->assertOk();

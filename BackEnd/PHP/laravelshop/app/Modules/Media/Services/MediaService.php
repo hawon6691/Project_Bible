@@ -18,7 +18,7 @@ class MediaService
                 'owner_type' => $payload['ownerType'] ?? 'SYSTEM',
                 'owner_id' => $payload['ownerId'] ?? null,
                 'file_name' => $file['fileName'],
-                'file_path' => parse_url($file['fileUrl'], PHP_URL_PATH) ?: '/uploads/' . $file['fileName'],
+                'file_path' => parse_url($file['fileUrl'], PHP_URL_PATH) ?: '/uploads/'.$file['fileName'],
                 'file_url' => $file['fileUrl'],
                 'mime_type' => $file['mimeType'],
                 'size' => $file['size'],
@@ -30,10 +30,10 @@ class MediaService
 
     public function presignedUrl(array $payload): array
     {
-        $key = 'uploads/' . Str::random(16) . '-' . $payload['fileName'];
+        $key = 'uploads/'.Str::random(16).'-'.$payload['fileName'];
 
         return [
-            'uploadUrl' => 'https://example.local/storage/' . $key,
+            'uploadUrl' => 'https://example.local/storage/'.$key,
             'fileKey' => $key,
         ];
     }

@@ -10,8 +10,7 @@ class ImageController extends ApiController
 {
     public function __construct(
         private readonly ImageService $imageService,
-    ) {
-    }
+    ) {}
 
     public function upload(UploadImageRequest $request)
     {

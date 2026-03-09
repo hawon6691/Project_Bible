@@ -20,8 +20,7 @@ class AuthService
 {
     public function __construct(
         private readonly JwtService $jwtService,
-    ) {
-    }
+    ) {}
 
     public function signup(array $payload): array
     {
@@ -216,6 +215,7 @@ class AuthService
 
         if ($socialAccount) {
             $user = User::query()->findOrFail($socialAccount->user_id);
+
             return array_merge($this->issueTokenPair($user), ['isNewUser' => false]);
         }
 

@@ -12,8 +12,7 @@ class BadgeController extends ApiController
 {
     public function __construct(
         private readonly BadgeService $badgeService,
-    ) {
-    }
+    ) {}
 
     public function index()
     {

@@ -255,7 +255,7 @@ class OrderService
 
     private function generateOrderNumber(): string
     {
-        return 'ORD-' . now()->format('Ymd') . '-' . Str::upper(Str::random(6));
+        return 'ORD-'.now()->format('Ymd').'-'.Str::upper(Str::random(6));
     }
 
     private function assertAdmin(User $user): void

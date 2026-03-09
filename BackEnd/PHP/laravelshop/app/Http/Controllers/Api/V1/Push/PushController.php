@@ -12,8 +12,7 @@ class PushController extends ApiController
 {
     public function __construct(
         private readonly PushService $pushService,
-    ) {
-    }
+    ) {}
 
     public function subscriptions()
     {

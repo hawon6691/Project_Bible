@@ -14,8 +14,7 @@ class ReviewService
 {
     public function __construct(
         private readonly PointService $pointService,
-    ) {
-    }
+    ) {}
 
     public function listByProduct(int $productId): array
     {

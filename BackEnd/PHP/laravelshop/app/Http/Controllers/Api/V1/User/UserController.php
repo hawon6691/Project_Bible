@@ -14,8 +14,7 @@ class UserController extends ApiController
 {
     public function __construct(
         private readonly UserService $userService,
-    ) {
-    }
+    ) {}
 
     public function me(Request $request)
     {

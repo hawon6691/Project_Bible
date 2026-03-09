@@ -14,8 +14,7 @@ class AuthenticateApiToken
 {
     public function __construct(
         private readonly JwtService $jwtService,
-    ) {
-    }
+    ) {}
 
     public function handle(Request $request, Closure $next): Response
     {

@@ -10,8 +10,7 @@ class RecommendationController extends ApiController
 {
     public function __construct(
         private readonly RecommendationService $recommendationService,
-    ) {
-    }
+    ) {}
 
     public function personal()
     {

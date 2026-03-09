@@ -9,5 +9,9 @@ use Illuminate\Http\Request;
 class OpsDashboardController extends ApiController
 {
     public function __construct(private readonly OpsDashboardService $service) {}
-    public function summary(Request $request) { return $this->success($this->service->summary($request->user())); }
+
+    public function summary(Request $request)
+    {
+        return $this->success($this->service->summary($request->user()));
+    }
 }

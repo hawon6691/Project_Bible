@@ -79,7 +79,7 @@ class OrderPaymentApiTest extends TestCase
         $listOrders->assertOk();
         $listOrders->assertJsonPath('data.items.0.id', $orderId);
 
-        $showOrder = $this->actingAsApiUser($user)->getJson('/api/v1/orders/' . $orderId);
+        $showOrder = $this->actingAsApiUser($user)->getJson('/api/v1/orders/'.$orderId);
         $showOrder->assertOk();
         $showOrder->assertJsonPath('data.items.0.productName', 'PB Laptop');
 
@@ -87,7 +87,7 @@ class OrderPaymentApiTest extends TestCase
         $adminOrders->assertOk();
         $adminOrders->assertJsonPath('data.items.0.id', $orderId);
 
-        $adminStatusUpdate = $this->actingAsApiUser($admin)->patchJson('/api/v1/admin/orders/' . $orderId . '/status', [
+        $adminStatusUpdate = $this->actingAsApiUser($admin)->patchJson('/api/v1/admin/orders/'.$orderId.'/status', [
             'status' => 'SHIPPED',
         ]);
         $adminStatusUpdate->assertOk();
@@ -102,15 +102,15 @@ class OrderPaymentApiTest extends TestCase
         $paymentId = $createPayment->json('data.id');
         $createPayment->assertJsonPath('data.status', 'PAID');
 
-        $showPayment = $this->actingAsApiUser($user)->getJson('/api/v1/payments/' . $paymentId);
+        $showPayment = $this->actingAsApiUser($user)->getJson('/api/v1/payments/'.$paymentId);
         $showPayment->assertOk();
         $showPayment->assertJsonPath('data.orderId', $orderId);
 
-        $refundPayment = $this->actingAsApiUser($user)->postJson('/api/v1/payments/' . $paymentId . '/refund');
+        $refundPayment = $this->actingAsApiUser($user)->postJson('/api/v1/payments/'.$paymentId.'/refund');
         $refundPayment->assertOk();
         $refundPayment->assertJsonPath('data.status', 'REFUNDED');
 
-        $cancelOrder = $this->actingAsApiUser($user)->postJson('/api/v1/orders/' . $orderId . '/cancel');
+        $cancelOrder = $this->actingAsApiUser($user)->postJson('/api/v1/orders/'.$orderId.'/cancel');
         $cancelOrder->assertOk();
         $cancelOrder->assertJsonPath('data.status', 'CANCELLED');
     }
@@ -118,7 +118,7 @@ class OrderPaymentApiTest extends TestCase
     private function createUser(string $role): User
     {
         return User::query()->create([
-            'email' => uniqid('order-payment-', true) . '@example.com',
+            'email' => uniqid('order-payment-', true).'@example.com',
             'password' => Hash::make('Password123!'),
             'name' => 'Order Payment User',
             'nickname' => 'order-payment-user',
@@ -133,6 +133,6 @@ class OrderPaymentApiTest extends TestCase
     {
         $token = app(JwtService::class)->createAccessToken($user);
 
-        return $this->withHeader('Authorization', 'Bearer ' . $token);
+        return $this->withHeader('Authorization', 'Bearer '.$token);
     }
 }

@@ -62,13 +62,13 @@ class ProductApiTest extends TestCase
             'collected_at' => now(),
         ]);
 
-        $listResponse = $this->getJson('/api/v1/products?search=Laptop&categoryId=' . $category->id . '&sort=price_asc');
+        $listResponse = $this->getJson('/api/v1/products?search=Laptop&categoryId='.$category->id.'&sort=price_asc');
         $listResponse->assertOk();
         $listResponse->assertJsonPath('data.items.0.name', 'PB Laptop Pro');
         $this->assertEquals(1500000.0, $listResponse->json('data.items.0.lowestPrice'));
         $listResponse->assertJsonPath('data.pagination.totalCount', 1);
 
-        $detailResponse = $this->getJson('/api/v1/products/' . $product->id);
+        $detailResponse = $this->getJson('/api/v1/products/'.$product->id);
         $detailResponse->assertOk();
         $detailResponse->assertJsonPath('data.name', 'PB Laptop Pro');
         $detailResponse->assertJsonPath('data.category.name', '노트북');
@@ -102,7 +102,7 @@ class ProductApiTest extends TestCase
         $productId = $createResponse->json('data.id');
         $createResponse->assertJsonPath('data.name', 'PB Tablet');
 
-        $updateResponse = $this->actingAsApiUser($admin)->patchJson('/api/v1/products/' . $productId, [
+        $updateResponse = $this->actingAsApiUser($admin)->patchJson('/api/v1/products/'.$productId, [
             'name' => 'PB Tablet 2',
             'brand' => 'PB Updated',
             'status' => 'INACTIVE',
@@ -121,7 +121,7 @@ class ProductApiTest extends TestCase
         $forbiddenResponse->assertForbidden();
         $forbiddenResponse->assertJsonPath('error.code', 'FORBIDDEN');
 
-        $deleteResponse = $this->actingAsApiUser($admin)->deleteJson('/api/v1/products/' . $productId);
+        $deleteResponse = $this->actingAsApiUser($admin)->deleteJson('/api/v1/products/'.$productId);
         $deleteResponse->assertOk();
         $deleteResponse->assertJsonPath('data.message', '상품이 삭제되었습니다.');
         $this->assertDatabaseMissing('products', ['id' => $productId]);
@@ -130,7 +130,7 @@ class ProductApiTest extends TestCase
     private function createUser(string $role): User
     {
         return User::query()->create([
-            'email' => uniqid('product-', true) . '@example.com',
+            'email' => uniqid('product-', true).'@example.com',
             'password' => Hash::make('Password123!'),
             'name' => 'Product User',
             'nickname' => 'product-user',
@@ -145,6 +145,6 @@ class ProductApiTest extends TestCase
     {
         $token = app(JwtService::class)->createAccessToken($user);
 
-        return $this->withHeader('Authorization', 'Bearer ' . $token);
+        return $this->withHeader('Authorization', 'Bearer '.$token);
     }
 }

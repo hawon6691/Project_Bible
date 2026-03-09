@@ -31,7 +31,7 @@ class ActivityChatPushApiTest extends TestCase
             'status' => 'ACTIVE',
         ]);
 
-        $addView = $this->actingAsApiUser($user)->postJson('/api/v1/activities/recent-products/' . $product->id);
+        $addView = $this->actingAsApiUser($user)->postJson('/api/v1/activities/recent-products/'.$product->id);
         $addView->assertCreated();
         $addView->assertJsonPath('data.productName', 'PB Laptop Air');
 
@@ -54,7 +54,7 @@ class ActivityChatPushApiTest extends TestCase
         $searches->assertOk();
         $searches->assertJsonPath('data.items.0.keyword', '게이밍 노트북');
 
-        $deleteSearch = $this->actingAsApiUser($user)->deleteJson('/api/v1/activities/searches/' . $searchId);
+        $deleteSearch = $this->actingAsApiUser($user)->deleteJson('/api/v1/activities/searches/'.$searchId);
         $deleteSearch->assertOk();
         $deleteSearch->assertJsonPath('data.message', '검색 기록이 삭제되었습니다.');
 
@@ -76,10 +76,10 @@ class ActivityChatPushApiTest extends TestCase
         $roomId = $createRoom->json('data.id');
         $createRoom->assertJsonPath('data.members.0.userId', $owner->id);
 
-        $joinRoom = $this->actingAsApiUser($guest)->postJson('/api/v1/chat/rooms/' . $roomId . '/join');
+        $joinRoom = $this->actingAsApiUser($guest)->postJson('/api/v1/chat/rooms/'.$roomId.'/join');
         $joinRoom->assertOk();
 
-        $sendMessage = $this->actingAsApiUser($owner)->postJson('/api/v1/chat/rooms/' . $roomId . '/messages', [
+        $sendMessage = $this->actingAsApiUser($owner)->postJson('/api/v1/chat/rooms/'.$roomId.'/messages', [
             'message' => '안녕하세요. 문의드립니다.',
         ]);
         $sendMessage->assertCreated();
@@ -89,7 +89,7 @@ class ActivityChatPushApiTest extends TestCase
         $roomList->assertOk();
         $roomList->assertJsonPath('data.items.0.name', '배송 문의 채팅');
 
-        $messages = $this->actingAsApiUser($guest)->getJson('/api/v1/chat/rooms/' . $roomId . '/messages');
+        $messages = $this->actingAsApiUser($guest)->getJson('/api/v1/chat/rooms/'.$roomId.'/messages');
         $messages->assertOk();
         $messages->assertJsonPath('data.items.0.message', '안녕하세요. 문의드립니다.');
     }
@@ -133,7 +133,7 @@ class ActivityChatPushApiTest extends TestCase
     private function createUser(string $role): User
     {
         return User::query()->create([
-            'email' => uniqid('acp-', true) . '@example.com',
+            'email' => uniqid('acp-', true).'@example.com',
             'password' => Hash::make('Password123!'),
             'name' => 'Activity Chat Push User',
             'nickname' => 'acp-user',
@@ -148,6 +148,6 @@ class ActivityChatPushApiTest extends TestCase
     {
         $token = app(JwtService::class)->createAccessToken($user);
 
-        return $this->withHeader('Authorization', 'Bearer ' . $token);
+        return $this->withHeader('Authorization', 'Bearer '.$token);
     }
 }

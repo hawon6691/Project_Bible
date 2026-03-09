@@ -10,9 +10,7 @@ use Illuminate\Http\Request;
 
 class MatchingController extends ApiController
 {
-    public function __construct(private readonly MatchingService $service)
-    {
-    }
+    public function __construct(private readonly MatchingService $service) {}
 
     public function pending(Request $request)
     {

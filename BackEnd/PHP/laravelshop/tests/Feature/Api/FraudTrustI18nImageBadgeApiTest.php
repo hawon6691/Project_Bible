@@ -2,13 +2,10 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\Badge;
 use App\Models\Category;
-use App\Models\ExchangeRate;
 use App\Models\PriceEntry;
 use App\Models\Product;
 use App\Models\Seller;
-use App\Models\Translation;
 use App\Models\User;
 use App\Modules\Auth\Services\JwtService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,7 +31,7 @@ class FraudTrustI18nImageBadgeApiTest extends TestCase
         $product = Product::query()->create([
             'category_id' => $category->id,
             'name' => 'PB Tablet',
-            'slug' => 'pb-tablet-' . uniqid(),
+            'slug' => 'pb-tablet-'.uniqid(),
             'status' => 'ACTIVE',
         ]);
 
@@ -55,33 +52,33 @@ class FraudTrustI18nImageBadgeApiTest extends TestCase
             'collected_at' => now(),
         ]);
 
-        $realPrice = $this->getJson('/api/v1/products/' . $product->id . '/real-price?sellerId=' . $seller->id);
+        $realPrice = $this->getJson('/api/v1/products/'.$product->id.'/real-price?sellerId='.$seller->id);
         $realPrice->assertOk();
         $realPrice->assertJsonPath('data.totalPrice', 503000);
 
-        $scan = $this->actingAsApiUser($admin)->postJson('/api/v1/fraud/admin/products/' . $product->id . '/scan');
+        $scan = $this->actingAsApiUser($admin)->postJson('/api/v1/fraud/admin/products/'.$product->id.'/scan');
         $scan->assertOk();
         $scan->assertJsonPath('data.items.0.priceEntryId', $cheapEntry->id);
 
-        $flags = $this->actingAsApiUser($admin)->getJson('/api/v1/fraud/admin/products/' . $product->id . '/flags');
+        $flags = $this->actingAsApiUser($admin)->getJson('/api/v1/fraud/admin/products/'.$product->id.'/flags');
         $flags->assertOk();
         $flagId = $flags->json('data.0.id');
 
         $alerts = $this->actingAsApiUser($admin)->getJson('/api/v1/fraud/alerts');
         $alerts->assertOk();
 
-        $approve = $this->actingAsApiUser($admin)->patchJson('/api/v1/fraud/alerts/' . $flagId . '/approve');
+        $approve = $this->actingAsApiUser($admin)->patchJson('/api/v1/fraud/alerts/'.$flagId.'/approve');
         $approve->assertOk();
         $approve->assertJsonPath('data.message', '이상 가격 알림이 승인되었습니다.');
 
-        $trust = $this->getJson('/api/v1/trust/sellers/' . $seller->id);
+        $trust = $this->getJson('/api/v1/trust/sellers/'.$seller->id);
         $trust->assertOk();
         $trust->assertJsonPath('data.sellerName', 'PB Seller');
 
-        $history = $this->getJson('/api/v1/trust/sellers/' . $seller->id . '/history');
+        $history = $this->getJson('/api/v1/trust/sellers/'.$seller->id.'/history');
         $history->assertOk();
 
-        $recalculate = $this->actingAsApiUser($admin)->postJson('/api/v1/trust/admin/sellers/' . $seller->id . '/recalculate');
+        $recalculate = $this->actingAsApiUser($admin)->postJson('/api/v1/trust/admin/sellers/'.$seller->id.'/recalculate');
         $recalculate->assertOk();
     }
 
@@ -125,14 +122,14 @@ class FraudTrustI18nImageBadgeApiTest extends TestCase
         $upload->assertCreated();
         $imageId = $upload->json('data.id');
 
-        $variants = $this->getJson('/api/v1/images/' . $imageId . '/variants');
+        $variants = $this->getJson('/api/v1/images/'.$imageId.'/variants');
         $variants->assertOk();
         $variants->assertJsonPath('data.0.type', 'THUMBNAIL');
 
-        $deleteTranslation = $this->actingAsApiUser($admin)->deleteJson('/api/v1/i18n/admin/translations/' . $translationId);
+        $deleteTranslation = $this->actingAsApiUser($admin)->deleteJson('/api/v1/i18n/admin/translations/'.$translationId);
         $deleteTranslation->assertOk();
 
-        $deleteImage = $this->actingAsApiUser($admin)->deleteJson('/api/v1/images/' . $imageId);
+        $deleteImage = $this->actingAsApiUser($admin)->deleteJson('/api/v1/images/'.$imageId);
         $deleteImage->assertOk();
     }
 
@@ -156,7 +153,7 @@ class FraudTrustI18nImageBadgeApiTest extends TestCase
         $badges->assertOk();
         $badges->assertJsonPath('data.0.name', '리뷰 마스터');
 
-        $grant = $this->actingAsApiUser($admin)->postJson('/api/v1/admin/badges/' . $badgeId . '/grant', [
+        $grant = $this->actingAsApiUser($admin)->postJson('/api/v1/admin/badges/'.$badgeId.'/grant', [
             'userId' => $user->id,
         ]);
         $grant->assertCreated();
@@ -165,19 +162,19 @@ class FraudTrustI18nImageBadgeApiTest extends TestCase
         $me->assertOk();
         $me->assertJsonPath('data.0.badge.name', '리뷰 마스터');
 
-        $userBadges = $this->getJson('/api/v1/users/' . $user->id . '/badges');
+        $userBadges = $this->getJson('/api/v1/users/'.$user->id.'/badges');
         $userBadges->assertOk();
 
-        $updateBadge = $this->actingAsApiUser($admin)->patchJson('/api/v1/admin/badges/' . $badgeId, [
+        $updateBadge = $this->actingAsApiUser($admin)->patchJson('/api/v1/admin/badges/'.$badgeId, [
             'rarity' => 'RARE',
         ]);
         $updateBadge->assertOk();
         $updateBadge->assertJsonPath('data.rarity', 'RARE');
 
-        $revoke = $this->actingAsApiUser($admin)->deleteJson('/api/v1/admin/badges/' . $badgeId . '/revoke/' . $user->id);
+        $revoke = $this->actingAsApiUser($admin)->deleteJson('/api/v1/admin/badges/'.$badgeId.'/revoke/'.$user->id);
         $revoke->assertOk();
 
-        $deleteBadge = $this->actingAsApiUser($admin)->deleteJson('/api/v1/admin/badges/' . $badgeId);
+        $deleteBadge = $this->actingAsApiUser($admin)->deleteJson('/api/v1/admin/badges/'.$badgeId);
         $deleteBadge->assertOk();
     }
 
@@ -185,7 +182,7 @@ class FraudTrustI18nImageBadgeApiTest extends TestCase
     {
         return Category::query()->create([
             'name' => '기본',
-            'slug' => 'base-' . uniqid(),
+            'slug' => 'base-'.uniqid(),
             'depth' => 0,
             'sort_order' => 0,
             'is_visible' => true,
@@ -195,7 +192,7 @@ class FraudTrustI18nImageBadgeApiTest extends TestCase
     private function createUser(string $role): User
     {
         return User::query()->create([
-            'email' => uniqid('ftiib-', true) . '@example.com',
+            'email' => uniqid('ftiib-', true).'@example.com',
             'password' => Hash::make('Password123!'),
             'name' => 'Fraud Trust I18n Image Badge User',
             'nickname' => 'ftiib-user',
@@ -210,6 +207,6 @@ class FraudTrustI18nImageBadgeApiTest extends TestCase
     {
         $token = app(JwtService::class)->createAccessToken($user);
 
-        return $this->withHeader('Authorization', 'Bearer ' . $token);
+        return $this->withHeader('Authorization', 'Bearer '.$token);
     }
 }

@@ -9,8 +9,7 @@ class FraudController extends ApiController
 {
     public function __construct(
         private readonly FraudService $fraudService,
-    ) {
-    }
+    ) {}
 
     public function alerts()
     {

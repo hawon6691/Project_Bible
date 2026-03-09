@@ -12,8 +12,7 @@ class OrderController extends ApiController
 {
     public function __construct(
         private readonly OrderService $orderService,
-    ) {
-    }
+    ) {}
 
     public function store(CreateOrderRequest $request)
     {

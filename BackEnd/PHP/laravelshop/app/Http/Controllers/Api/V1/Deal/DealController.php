@@ -11,8 +11,7 @@ class DealController extends ApiController
 {
     public function __construct(
         private readonly DealService $dealService,
-    ) {
-    }
+    ) {}
 
     public function index()
     {

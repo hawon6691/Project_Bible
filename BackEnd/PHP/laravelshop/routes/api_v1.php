@@ -57,6 +57,3 @@ Route::prefix(ApiRoutes::API_PREFIX)
         require __DIR__.'/api_v1/search-sync.php';
         require __DIR__.'/api_v1/crawler.php';
     });
-
-
-

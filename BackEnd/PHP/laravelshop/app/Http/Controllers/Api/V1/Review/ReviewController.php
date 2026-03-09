@@ -11,8 +11,7 @@ class ReviewController extends ApiController
 {
     public function __construct(
         private readonly ReviewService $reviewService,
-    ) {
-    }
+    ) {}
 
     public function index(int $productId)
     {

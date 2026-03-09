@@ -20,8 +20,7 @@ class AuthController extends ApiController
 {
     public function __construct(
         private readonly AuthService $authService,
-    ) {
-    }
+    ) {}
 
     public function signup(SignupRequest $request)
     {

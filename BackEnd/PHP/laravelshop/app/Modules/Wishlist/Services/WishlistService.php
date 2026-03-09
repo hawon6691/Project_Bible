@@ -37,6 +37,7 @@ class WishlistService
 
         if ($existing) {
             $existing->delete();
+
             return ['wishlisted' => false];
         }
 

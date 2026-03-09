@@ -10,8 +10,7 @@ class WishlistController extends ApiController
 {
     public function __construct(
         private readonly WishlistService $wishlistService,
-    ) {
-    }
+    ) {}
 
     public function index(ListWishlistRequest $request)
     {

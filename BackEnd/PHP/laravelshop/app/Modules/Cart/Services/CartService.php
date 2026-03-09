@@ -32,6 +32,7 @@ class CartService
 
         if ($existing) {
             $existing->increment('quantity', (int) $payload['quantity']);
+
             return $this->serialize($existing->fresh(['product.category', 'seller']));
         }
 

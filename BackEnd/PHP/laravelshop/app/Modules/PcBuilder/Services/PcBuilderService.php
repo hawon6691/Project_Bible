@@ -131,7 +131,7 @@ class PcBuilderService
         }
 
         return [
-            'shareUrl' => '/api/v1/pc-builds/shared/' . $build->share_code,
+            'shareUrl' => '/api/v1/pc-builds/shared/'.$build->share_code,
             'shareCode' => $build->share_code,
         ];
     }

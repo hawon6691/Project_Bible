@@ -173,7 +173,7 @@ class CategoryService
                 ->where('slug', $slug)
                 ->exists()
         ) {
-            $slug = $base . '-' . $suffix;
+            $slug = $base.'-'.$suffix;
             $suffix++;
         }
 

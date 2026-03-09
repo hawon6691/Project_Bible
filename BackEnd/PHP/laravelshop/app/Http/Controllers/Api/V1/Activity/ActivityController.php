@@ -10,8 +10,7 @@ class ActivityController extends ApiController
 {
     public function __construct(
         private readonly ActivityService $activityService,
-    ) {
-    }
+    ) {}
 
     public function summary()
     {

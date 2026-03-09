@@ -11,8 +11,7 @@ class InquiryController extends ApiController
 {
     public function __construct(
         private readonly InquiryService $inquiryService,
-    ) {
-    }
+    ) {}
 
     public function index(int $productId)
     {

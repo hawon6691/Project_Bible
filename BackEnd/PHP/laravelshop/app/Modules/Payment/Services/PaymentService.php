@@ -84,6 +84,6 @@ class PaymentService
 
     private function generatePaymentNumber(): string
     {
-        return 'PAY-' . now()->format('Ymd') . '-' . Str::upper(Str::random(6));
+        return 'PAY-'.now()->format('Ymd').'-'.Str::upper(Str::random(6));
     }
 }

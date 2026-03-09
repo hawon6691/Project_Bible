@@ -58,7 +58,7 @@ class MatchingService
         $matched = 0;
 
         foreach ($pending as $mapping) {
-            $product = Product::query()->where('name', 'like', '%' . $mapping->source_name . '%')->first();
+            $product = Product::query()->where('name', 'like', '%'.$mapping->source_name.'%')->first();
             if ($product) {
                 $mapping->forceFill(['product_id' => $product->id, 'status' => 'APPROVED', 'reason' => 'AUTO_MATCHED'])->save();
                 $matched++;

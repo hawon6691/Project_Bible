@@ -41,11 +41,11 @@ class SpecSellerPriceApiTest extends TestCase
         $definitionResponse->assertCreated();
         $definitionId = $definitionResponse->json('data.id');
 
-        $listResponse = $this->getJson('/api/v1/specs/definitions?categoryId=' . $category->id);
+        $listResponse = $this->getJson('/api/v1/specs/definitions?categoryId='.$category->id);
         $listResponse->assertOk();
         $listResponse->assertJsonPath('data.0.name', 'CPU');
 
-        $setSpecsResponse = $this->actingAsApiUser($admin)->putJson('/api/v1/products/' . $product->id . '/specs', [
+        $setSpecsResponse = $this->actingAsApiUser($admin)->putJson('/api/v1/products/'.$product->id.'/specs', [
             'specs' => [
                 ['name' => 'CPU', 'value' => 'i7', 'sortOrder' => 1],
                 ['name' => 'RAM', 'value' => '16GB', 'sortOrder' => 2],
@@ -54,17 +54,17 @@ class SpecSellerPriceApiTest extends TestCase
         $setSpecsResponse->assertOk();
         $setSpecsResponse->assertJsonPath('data.0.name', 'CPU');
 
-        $getSpecsResponse = $this->getJson('/api/v1/products/' . $product->id . '/specs');
+        $getSpecsResponse = $this->getJson('/api/v1/products/'.$product->id.'/specs');
         $getSpecsResponse->assertOk();
         $getSpecsResponse->assertJsonPath('data.1.value', '16GB');
 
-        $updateDefinitionResponse = $this->actingAsApiUser($admin)->patchJson('/api/v1/specs/definitions/' . $definitionId, [
+        $updateDefinitionResponse = $this->actingAsApiUser($admin)->patchJson('/api/v1/specs/definitions/'.$definitionId, [
             'name' => 'Processor',
         ]);
         $updateDefinitionResponse->assertOk();
         $updateDefinitionResponse->assertJsonPath('data.name', 'Processor');
 
-        $deleteDefinitionResponse = $this->actingAsApiUser($admin)->deleteJson('/api/v1/specs/definitions/' . $definitionId);
+        $deleteDefinitionResponse = $this->actingAsApiUser($admin)->deleteJson('/api/v1/specs/definitions/'.$definitionId);
         $deleteDefinitionResponse->assertOk();
         $deleteDefinitionResponse->assertJsonPath('data.message', '스펙 정의가 삭제되었습니다.');
     }
@@ -103,7 +103,7 @@ class SpecSellerPriceApiTest extends TestCase
         $listSellers->assertOk();
         $listSellers->assertJsonPath('data.items.0.name', 'PB Mall');
 
-        $createPrice = $this->actingAsApiUser($sellerUser)->postJson('/api/v1/products/' . $product->id . '/prices', [
+        $createPrice = $this->actingAsApiUser($sellerUser)->postJson('/api/v1/products/'.$product->id.'/prices', [
             'sellerId' => $sellerId,
             'price' => 999000,
             'shippingFee' => 0,
@@ -113,15 +113,15 @@ class SpecSellerPriceApiTest extends TestCase
         $createPrice->assertCreated();
         $priceId = $createPrice->json('data.id');
 
-        $pricesResponse = $this->getJson('/api/v1/products/' . $product->id . '/prices');
+        $pricesResponse = $this->getJson('/api/v1/products/'.$product->id.'/prices');
         $pricesResponse->assertOk();
         $this->assertEquals(999000.0, $pricesResponse->json('data.lowestPrice'));
 
-        $historyResponse = $this->getJson('/api/v1/products/' . $product->id . '/price-history');
+        $historyResponse = $this->getJson('/api/v1/products/'.$product->id.'/price-history');
         $historyResponse->assertOk();
         $historyResponse->assertJsonPath('data.productId', $product->id);
 
-        $updatePrice = $this->actingAsApiUser($admin)->patchJson('/api/v1/prices/' . $priceId, [
+        $updatePrice = $this->actingAsApiUser($admin)->patchJson('/api/v1/prices/'.$priceId, [
             'price' => 979000,
             'shippingFee' => 2500,
         ]);
@@ -139,18 +139,18 @@ class SpecSellerPriceApiTest extends TestCase
         $listAlerts->assertOk();
         $listAlerts->assertJsonPath('data.0.productName', 'PB Tablet');
 
-        $deleteAlert = $this->actingAsApiUser($member)->deleteJson('/api/v1/price-alerts/' . $alertId);
+        $deleteAlert = $this->actingAsApiUser($member)->deleteJson('/api/v1/price-alerts/'.$alertId);
         $deleteAlert->assertOk();
 
-        $forbiddenDelete = $this->actingAsApiUser($member)->deleteJson('/api/v1/prices/' . $priceId);
+        $forbiddenDelete = $this->actingAsApiUser($member)->deleteJson('/api/v1/prices/'.$priceId);
         $forbiddenDelete->assertForbidden();
         $forbiddenDelete->assertJsonPath('error.code', 'FORBIDDEN');
 
-        $deletePrice = $this->actingAsApiUser($admin)->deleteJson('/api/v1/prices/' . $priceId);
+        $deletePrice = $this->actingAsApiUser($admin)->deleteJson('/api/v1/prices/'.$priceId);
         $deletePrice->assertOk();
         $deletePrice->assertJsonPath('data.message', '가격 정보가 삭제되었습니다.');
 
-        $deleteSeller = $this->actingAsApiUser($admin)->deleteJson('/api/v1/sellers/' . $sellerId);
+        $deleteSeller = $this->actingAsApiUser($admin)->deleteJson('/api/v1/sellers/'.$sellerId);
         $deleteSeller->assertOk();
         $deleteSeller->assertJsonPath('data.message', '판매처가 삭제되었습니다.');
     }
@@ -158,7 +158,7 @@ class SpecSellerPriceApiTest extends TestCase
     private function createUser(string $role): User
     {
         return User::query()->create([
-            'email' => uniqid('ssp-', true) . '@example.com',
+            'email' => uniqid('ssp-', true).'@example.com',
             'password' => Hash::make('Password123!'),
             'name' => 'SSP User',
             'nickname' => 'ssp-user',
@@ -173,6 +173,6 @@ class SpecSellerPriceApiTest extends TestCase
     {
         $token = app(JwtService::class)->createAccessToken($user);
 
-        return $this->withHeader('Authorization', 'Bearer ' . $token);
+        return $this->withHeader('Authorization', 'Bearer '.$token);
     }
 }

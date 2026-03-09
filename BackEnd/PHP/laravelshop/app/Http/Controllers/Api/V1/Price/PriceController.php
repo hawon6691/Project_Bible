@@ -13,8 +13,7 @@ class PriceController extends ApiController
 {
     public function __construct(
         private readonly PriceService $priceService,
-    ) {
-    }
+    ) {}
 
     public function listProductPrices(int $id)
     {

@@ -9,8 +9,7 @@ class TrustController extends ApiController
 {
     public function __construct(
         private readonly TrustService $trustService,
-    ) {
-    }
+    ) {}
 
     public function seller(int $sellerId)
     {

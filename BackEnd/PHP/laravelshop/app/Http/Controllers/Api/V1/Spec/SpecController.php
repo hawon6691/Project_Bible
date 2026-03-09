@@ -13,8 +13,7 @@ class SpecController extends ApiController
 {
     public function __construct(
         private readonly SpecService $specService,
-    ) {
-    }
+    ) {}
 
     public function listDefinitions(ListSpecDefinitionsRequest $request)
     {

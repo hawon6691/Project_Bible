@@ -72,7 +72,7 @@ class PointService
             $user,
             'EARN',
             500,
-            '리뷰 작성 적립 (#' . $reviewId . ')'
+            '리뷰 작성 적립 (#'.$reviewId.')'
         );
     }
 

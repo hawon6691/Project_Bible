@@ -49,6 +49,57 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "test:api": [
+            "@php artisan test tests/Feature/Api"
+        ],
+        "test:e2e": [
+            "@php artisan test tests/E2E"
+        ],
+        "test:e2e:contract": [
+            "@php artisan test tests/E2E/ContractPublicApiE2ETest.php"
+        ],
+        "test:e2e:critical": [
+            "@php artisan test tests/E2E/AuthSearchE2ETest.php tests/E2E/ContractPublicApiE2ETest.php tests/E2E/AdminPlatformE2ETest.php tests/E2E/QueueAdminE2ETest.php tests/E2E/OpsDashboardE2ETest.php"
+        ],
+        "test:e2e:ops": [
+            "@php artisan test tests/E2E/AdminPlatformE2ETest.php tests/E2E/QueueAdminE2ETest.php tests/E2E/OpsDashboardE2ETest.php tests/E2E/ObservabilityE2ETest.php"
+        ],
+        "test:e2e:dependency-failure": [
+            "@php artisan test tests/E2E/OpsDashboardDependencyFailuresE2ETest.php"
+        ],
+        "test:e2e:admin-boundary": [
+            "@php artisan test tests/E2E/AdminAuthorizationBoundaryE2ETest.php"
+        ],
+        "test:e2e:rate-limit": [
+            "@php artisan test tests/E2E/RateLimitRegressionE2ETest.php"
+        ],
+        "test:e2e:critical:stability": [
+            "@php -r \"is_dir('test-results') || mkdir('test-results', 0777, true);\"",
+            "@php artisan test tests/E2E/AuthSearchE2ETest.php tests/E2E/ContractPublicApiE2ETest.php tests/E2E/AdminPlatformE2ETest.php tests/E2E/QueueAdminE2ETest.php tests/E2E/OpsDashboardE2ETest.php --log-junit test-results/critical-run-1.xml",
+            "@php artisan test tests/E2E/AuthSearchE2ETest.php tests/E2E/ContractPublicApiE2ETest.php tests/E2E/AdminPlatformE2ETest.php tests/E2E/QueueAdminE2ETest.php tests/E2E/OpsDashboardE2ETest.php --log-junit test-results/critical-run-2.xml",
+            "@php tests/scripts/analyze-stability.php"
+        ],
+        "test:security:regression": [
+            "@php artisan test tests/E2E/SecurityRegressionE2ETest.php"
+        ],
+        "test:migration:validate": [
+            "@php tests/scripts/validate-migrations.php"
+        ],
+        "test:migration:roundtrip": [
+            "@php tests/scripts/migration-roundtrip.php"
+        ],
+        "test:smoke:live": [
+            "@php tests/scripts/live-smoke.php"
+        ],
+        "test:stability:analyze": [
+            "@php tests/scripts/analyze-stability.php"
+        ],
+        "test:release:gate": [
+            "@php artisan route:list",
+            "@php vendor/bin/pint --test",
+            "@php artisan test",
+            "@php tests/scripts/validate-migrations.php"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

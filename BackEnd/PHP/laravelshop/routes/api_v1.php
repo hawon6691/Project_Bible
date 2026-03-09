@@ -47,6 +47,16 @@ Route::prefix(ApiRoutes::API_PREFIX)
         require __DIR__.'/api_v1/auto.php';
         require __DIR__.'/api_v1/auctions.php';
         require __DIR__.'/api_v1/compare.php';
+        require __DIR__.'/api_v1/admin-settings.php';
+        require __DIR__.'/api_v1/resilience.php';
+        require __DIR__.'/api_v1/error-codes.php';
+        require __DIR__.'/api_v1/queue-admin.php';
+        require __DIR__.'/api_v1/ops-dashboard.php';
+        require __DIR__.'/api_v1/observability.php';
+        require __DIR__.'/api_v1/query.php';
+        require __DIR__.'/api_v1/search-sync.php';
+        require __DIR__.'/api_v1/crawler.php';
     });
+
 
 

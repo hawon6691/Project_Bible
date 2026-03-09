@@ -58,13 +58,14 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->string('endpoint', 1000);
+            $table->string('endpoint_hash', 64);
             $table->string('p256dh_key', 255);
             $table->string('auth_key', 255);
             $table->string('expiration_time', 50)->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->unique(['user_id', 'endpoint']);
+            $table->unique(['user_id', 'endpoint_hash']);
         });
 
         Schema::create('push_preferences', function (Blueprint $table) {

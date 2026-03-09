@@ -31,4 +31,9 @@ Route::prefix(ApiRoutes::API_PREFIX)
         require __DIR__.'/api_v1/deals.php';
         require __DIR__.'/api_v1/recommendations.php';
         require __DIR__.'/api_v1/rankings.php';
+        require __DIR__.'/api_v1/fraud.php';
+        require __DIR__.'/api_v1/trust.php';
+        require __DIR__.'/api_v1/i18n.php';
+        require __DIR__.'/api_v1/images.php';
+        require __DIR__.'/api_v1/badges.php';
     });

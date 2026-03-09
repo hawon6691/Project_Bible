@@ -42,5 +42,11 @@ Route::prefix(ApiRoutes::API_PREFIX)
         require __DIR__.'/api_v1/media.php';
         require __DIR__.'/api_v1/news.php';
         require __DIR__.'/api_v1/matching.php';
+        require __DIR__.'/api_v1/analytics.php';
+        require __DIR__.'/api_v1/used-market.php';
+        require __DIR__.'/api_v1/auto.php';
+        require __DIR__.'/api_v1/auctions.php';
+        require __DIR__.'/api_v1/compare.php';
     });
+
 

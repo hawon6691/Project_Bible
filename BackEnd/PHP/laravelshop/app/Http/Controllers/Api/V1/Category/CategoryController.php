@@ -12,8 +12,7 @@ class CategoryController extends ApiController
 {
     public function __construct(
         private readonly CategoryService $categoryService,
-    ) {
-    }
+    ) {}
 
     public function index()
     {

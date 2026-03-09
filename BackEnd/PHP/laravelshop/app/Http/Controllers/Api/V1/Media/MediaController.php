@@ -10,9 +10,7 @@ use Illuminate\Http\Request;
 
 class MediaController extends ApiController
 {
-    public function __construct(private readonly MediaService $service)
-    {
-    }
+    public function __construct(private readonly MediaService $service) {}
 
     public function upload(UploadMediaRequest $request)
     {

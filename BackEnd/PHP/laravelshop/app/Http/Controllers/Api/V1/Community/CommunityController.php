@@ -12,8 +12,7 @@ class CommunityController extends ApiController
 {
     public function __construct(
         private readonly CommunityService $communityService,
-    ) {
-    }
+    ) {}
 
     public function boards()
     {

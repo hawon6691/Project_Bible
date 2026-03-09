@@ -10,8 +10,7 @@ class PaymentController extends ApiController
 {
     public function __construct(
         private readonly PaymentService $paymentService,
-    ) {
-    }
+    ) {}
 
     public function store(CreatePaymentRequest $request)
     {

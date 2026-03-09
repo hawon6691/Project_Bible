@@ -108,7 +108,7 @@ class SupportService
 
     private function makeTicketNumber(): string
     {
-        return 'SUP-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(6));
+        return 'SUP-'.now()->format('YmdHis').'-'.Str::upper(Str::random(6));
     }
 
     private function serializeTicket(SupportTicket $ticket): array

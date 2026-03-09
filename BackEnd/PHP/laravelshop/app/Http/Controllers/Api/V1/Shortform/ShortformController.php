@@ -10,9 +10,7 @@ use Illuminate\Http\Request;
 
 class ShortformController extends ApiController
 {
-    public function __construct(private readonly ShortformService $service)
-    {
-    }
+    public function __construct(private readonly ShortformService $service) {}
 
     public function store(StoreShortformRequest $request)
     {

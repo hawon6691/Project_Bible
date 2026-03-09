@@ -2,10 +2,10 @@
 
 namespace App\Modules\OpsDashboard\Services;
 
+use App\Models\User;
+use App\Modules\Crawler\Services\CrawlerService;
 use App\Modules\QueueAdmin\Services\QueueAdminService;
 use App\Modules\SearchSync\Services\SearchSyncService;
-use App\Modules\Crawler\Services\CrawlerService;
-use App\Models\User;
 
 class OpsDashboardService
 {
@@ -13,8 +13,7 @@ class OpsDashboardService
         private readonly QueueAdminService $queueAdminService,
         private readonly SearchSyncService $searchSyncService,
         private readonly CrawlerService $crawlerService,
-    ) {
-    }
+    ) {}
 
     public function summary(User $user): array
     {

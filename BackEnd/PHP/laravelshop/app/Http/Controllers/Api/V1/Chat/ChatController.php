@@ -11,8 +11,7 @@ class ChatController extends ApiController
 {
     public function __construct(
         private readonly ChatService $chatService,
-    ) {
-    }
+    ) {}
 
     public function rooms()
     {

@@ -59,7 +59,7 @@ class UserApiTest extends TestCase
         $imageUrl = $uploadResponse->json('data.imageUrl');
         $this->assertIsString($imageUrl);
         $this->assertNotEmpty($imageUrl);
-        Storage::disk('public')->assertExists('profile-images/' . basename($imageUrl));
+        Storage::disk('public')->assertExists('profile-images/'.basename($imageUrl));
 
         $deleteImageResponse = $this->actingAsApiUser($user->fresh())->deleteJson('/api/v1/users/me/profile-image');
         $deleteImageResponse->assertOk();
@@ -81,7 +81,7 @@ class UserApiTest extends TestCase
             'role' => 'USER',
         ]);
 
-        $profileResponse = $this->getJson('/api/v1/users/' . $publicUser->id . '/profile');
+        $profileResponse = $this->getJson('/api/v1/users/'.$publicUser->id.'/profile');
         $profileResponse->assertOk();
         $profileResponse->assertJsonPath('data.nickname', 'public-user');
         $profileResponse->assertJsonMissingPath('data.email');
@@ -109,7 +109,7 @@ class UserApiTest extends TestCase
         $listResponse->assertJsonPath('data.pagination.total', 1);
         $listResponse->assertJsonPath('data.items.0.email', 'member-a@example.com');
 
-        $statusResponse = $this->actingAsApiUser($admin)->patchJson('/api/v1/users/' . $memberA->id . '/status', [
+        $statusResponse = $this->actingAsApiUser($admin)->patchJson('/api/v1/users/'.$memberA->id.'/status', [
             'status' => 'BLOCKED',
         ]);
 
@@ -125,7 +125,7 @@ class UserApiTest extends TestCase
     private function createUser(array $overrides = []): User
     {
         return User::query()->create(array_merge([
-            'email' => 'user-' . uniqid() . '@example.com',
+            'email' => 'user-'.uniqid().'@example.com',
             'password' => Hash::make('Password123!'),
             'name' => 'PBShop User',
             'nickname' => 'pbshop-user',
@@ -140,7 +140,7 @@ class UserApiTest extends TestCase
     {
         $token = app(JwtService::class)->createAccessToken($user);
 
-        return $this->withHeader('Authorization', 'Bearer ' . $token);
+        return $this->withHeader('Authorization', 'Bearer '.$token);
     }
 
     private function makePngUpload(): UploadedFile

@@ -13,8 +13,7 @@ class ProductController extends ApiController
 {
     public function __construct(
         private readonly ProductService $productService,
-    ) {
-    }
+    ) {}
 
     public function index(ListProductsRequest $request)
     {

@@ -11,8 +11,7 @@ class I18nController extends ApiController
 {
     public function __construct(
         private readonly I18nService $i18nService,
-    ) {
-    }
+    ) {}
 
     public function translations()
     {

@@ -8,9 +8,7 @@ use Illuminate\Http\Request;
 
 class FriendController extends ApiController
 {
-    public function __construct(private readonly FriendService $service)
-    {
-    }
+    public function __construct(private readonly FriendService $service) {}
 
     public function request(Request $request, int $userId)
     {

@@ -37,14 +37,14 @@ class CartAddressApiTest extends TestCase
         $listResponse->assertOk();
         $listResponse->assertJsonPath('data.0.label', '집');
 
-        $updateResponse = $this->actingAsApiUser($user)->patchJson('/api/v1/addresses/' . $addressId, [
+        $updateResponse = $this->actingAsApiUser($user)->patchJson('/api/v1/addresses/'.$addressId, [
             'label' => '회사',
             'isDefault' => true,
         ]);
         $updateResponse->assertOk();
         $updateResponse->assertJsonPath('data.label', '회사');
 
-        $deleteResponse = $this->actingAsApiUser($user)->deleteJson('/api/v1/addresses/' . $addressId);
+        $deleteResponse = $this->actingAsApiUser($user)->deleteJson('/api/v1/addresses/'.$addressId);
         $deleteResponse->assertOk();
         $deleteResponse->assertJsonPath('data.message', '배송지가 삭제되었습니다.');
     }
@@ -95,13 +95,13 @@ class CartAddressApiTest extends TestCase
         $listResponse->assertOk();
         $listResponse->assertJsonPath('data.0.productName', 'PB Laptop');
 
-        $updateResponse = $this->actingAsApiUser($user)->patchJson('/api/v1/cart/' . $itemId, [
+        $updateResponse = $this->actingAsApiUser($user)->patchJson('/api/v1/cart/'.$itemId, [
             'quantity' => 5,
         ]);
         $updateResponse->assertOk();
         $updateResponse->assertJsonPath('data.quantity', 5);
 
-        $deleteResponse = $this->actingAsApiUser($user)->deleteJson('/api/v1/cart/' . $itemId);
+        $deleteResponse = $this->actingAsApiUser($user)->deleteJson('/api/v1/cart/'.$itemId);
         $deleteResponse->assertOk();
         $deleteResponse->assertJsonPath('data.message', '장바구니 항목이 삭제되었습니다.');
 
@@ -119,7 +119,7 @@ class CartAddressApiTest extends TestCase
     private function createUser(string $role): User
     {
         return User::query()->create([
-            'email' => uniqid('cart-address-', true) . '@example.com',
+            'email' => uniqid('cart-address-', true).'@example.com',
             'password' => Hash::make('Password123!'),
             'name' => 'Cart Address User',
             'nickname' => 'cart-address-user',
@@ -134,6 +134,6 @@ class CartAddressApiTest extends TestCase
     {
         $token = app(JwtService::class)->createAccessToken($user);
 
-        return $this->withHeader('Authorization', 'Bearer ' . $token);
+        return $this->withHeader('Authorization', 'Bearer '.$token);
     }
 }

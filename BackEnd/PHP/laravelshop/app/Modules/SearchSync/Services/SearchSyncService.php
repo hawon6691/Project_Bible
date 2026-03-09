@@ -12,6 +12,7 @@ class SearchSyncService
     public function summary(User $user): array
     {
         $this->assertAdmin($user);
+
         return [
             'total' => SearchIndexOutbox::query()->count(),
             'pending' => SearchIndexOutbox::query()->where('status', 'PENDING')->count(),
@@ -27,6 +28,7 @@ class SearchSyncService
         foreach ($items as $item) {
             $item->forceFill(['status' => 'PENDING', 'retry_count' => $item->retry_count + 1])->save();
         }
+
         return ['requeuedCount' => $items->count()];
     }
 

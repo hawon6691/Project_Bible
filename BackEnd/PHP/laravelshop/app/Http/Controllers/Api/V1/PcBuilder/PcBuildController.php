@@ -12,9 +12,7 @@ use Illuminate\Http\Request;
 
 class PcBuildController extends ApiController
 {
-    public function __construct(private readonly PcBuilderService $service)
-    {
-    }
+    public function __construct(private readonly PcBuilderService $service) {}
 
     public function index(Request $request)
     {

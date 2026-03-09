@@ -11,9 +11,7 @@ use Illuminate\Http\Request;
 
 class NewsController extends ApiController
 {
-    public function __construct(private readonly NewsService $service)
-    {
-    }
+    public function __construct(private readonly NewsService $service) {}
 
     public function index(Request $request)
     {

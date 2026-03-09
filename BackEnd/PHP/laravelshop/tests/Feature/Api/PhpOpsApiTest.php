@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\CrawlerJob;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\SearchIndexOutbox;
@@ -30,13 +29,13 @@ class PhpOpsApiTest extends TestCase
     public function test_queue_query_searchsync_and_crawler_flow(): void
     {
         $admin = $this->createUser('ADMIN');
-        $category = Category::query()->create(['name' => 'Ops', 'slug' => 'ops-' . uniqid(), 'depth' => 0, 'sort_order' => 0, 'is_visible' => true]);
-        $product = Product::query()->create(['category_id' => $category->id, 'name' => 'PB Ops Product', 'slug' => 'pb-ops-' . uniqid(), 'status' => 'ACTIVE']);
+        $category = Category::query()->create(['name' => 'Ops', 'slug' => 'ops-'.uniqid(), 'depth' => 0, 'sort_order' => 0, 'is_visible' => true]);
+        $product = Product::query()->create(['category_id' => $category->id, 'name' => 'PB Ops Product', 'slug' => 'pb-ops-'.uniqid(), 'status' => 'ACTIVE']);
         SearchIndexOutbox::query()->create(['entity_type' => 'PRODUCT', 'entity_id' => $product->id, 'status' => 'FAILED']);
 
         $this->actingAsApiUser($admin)->getJson('/api/v1/admin/queues/supported')->assertOk()->assertJsonPath('data.items.0', 'default');
-        $this->actingAsApiUser($admin)->postJson('/api/v1/admin/query/products/' . $product->id . '/sync')->assertOk()->assertJsonPath('data.productId', $product->id);
-        $this->actingAsApiUser($admin)->getJson('/api/v1/query/products/' . $product->id)->assertOk()->assertJsonPath('data.id', $product->id);
+        $this->actingAsApiUser($admin)->postJson('/api/v1/admin/query/products/'.$product->id.'/sync')->assertOk()->assertJsonPath('data.productId', $product->id);
+        $this->actingAsApiUser($admin)->getJson('/api/v1/query/products/'.$product->id)->assertOk()->assertJsonPath('data.id', $product->id);
         $this->actingAsApiUser($admin)->getJson('/api/v1/search/admin/index/outbox/summary')->assertOk()->assertJsonPath('data.failed', 1);
         $this->actingAsApiUser($admin)->postJson('/api/v1/search/admin/index/outbox/requeue-failed?limit=5')->assertOk()->assertJsonPath('data.requeuedCount', 1);
 
@@ -48,7 +47,7 @@ class PhpOpsApiTest extends TestCase
         ]);
         $job->assertCreated();
         $jobId = $job->json('data.id');
-        $this->actingAsApiUser($admin)->postJson('/api/v1/crawler/admin/jobs/' . $jobId . '/run')->assertOk()->assertJsonStructure(['data' => ['runId']]);
+        $this->actingAsApiUser($admin)->postJson('/api/v1/crawler/admin/jobs/'.$jobId.'/run')->assertOk()->assertJsonStructure(['data' => ['runId']]);
         $this->actingAsApiUser($admin)->getJson('/api/v1/crawler/admin/monitoring')->assertOk()->assertJsonPath('data.jobCount', 1);
     }
 
@@ -65,7 +64,7 @@ class PhpOpsApiTest extends TestCase
     private function createUser(string $role): User
     {
         return User::query()->create([
-            'email' => uniqid('ops-', true) . '@example.com',
+            'email' => uniqid('ops-', true).'@example.com',
             'password' => Hash::make('Password123!'),
             'name' => 'PB Ops User',
             'nickname' => uniqid('ops-', false),
@@ -79,6 +78,7 @@ class PhpOpsApiTest extends TestCase
     private function actingAsApiUser(User $user): self
     {
         $token = app(JwtService::class)->createAccessToken($user);
-        return $this->withHeader('Authorization', 'Bearer ' . $token);
+
+        return $this->withHeader('Authorization', 'Bearer '.$token);
     }
 }

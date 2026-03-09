@@ -11,8 +11,7 @@ class PointController extends ApiController
 {
     public function __construct(
         private readonly PointService $pointService,
-    ) {
-    }
+    ) {}
 
     public function balance()
     {

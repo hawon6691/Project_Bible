@@ -11,8 +11,7 @@ class AddressController extends ApiController
 {
     public function __construct(
         private readonly AddressService $addressService,
-    ) {
-    }
+    ) {}
 
     public function index()
     {

@@ -8,9 +8,7 @@ use Illuminate\Http\Request;
 
 class UsedMarketController extends ApiController
 {
-    public function __construct(private readonly UsedMarketService $service)
-    {
-    }
+    public function __construct(private readonly UsedMarketService $service) {}
 
     public function productPrice(int $id)
     {

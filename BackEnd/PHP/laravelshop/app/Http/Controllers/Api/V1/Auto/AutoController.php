@@ -9,9 +9,7 @@ use Illuminate\Http\Request;
 
 class AutoController extends ApiController
 {
-    public function __construct(private readonly AutoService $service)
-    {
-    }
+    public function __construct(private readonly AutoService $service) {}
 
     public function models(Request $request)
     {

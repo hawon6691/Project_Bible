@@ -9,8 +9,7 @@ class PredictionController extends ApiController
 {
     public function __construct(
         private readonly PredictionService $predictionService,
-    ) {
-    }
+    ) {}
 
     public function priceTrend(int $productId)
     {

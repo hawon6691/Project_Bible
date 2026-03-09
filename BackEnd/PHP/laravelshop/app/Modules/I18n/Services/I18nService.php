@@ -58,6 +58,7 @@ class I18nService
             throw new BusinessException('번역을 찾을 수 없습니다.', 'TRANSLATION_NOT_FOUND', Response::HTTP_NOT_FOUND);
         }
         $translation->delete();
+
         return ['message' => '번역이 삭제되었습니다.'];
     }
 

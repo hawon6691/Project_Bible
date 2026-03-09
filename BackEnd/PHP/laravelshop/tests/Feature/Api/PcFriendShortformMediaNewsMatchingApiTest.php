@@ -31,7 +31,7 @@ class PcFriendShortformMediaNewsMatchingApiTest extends TestCase
         $createBuild->assertCreated();
         $buildId = $createBuild->json('data.id');
 
-        $addPart = $this->actingAsApiUser($user)->postJson('/api/v1/pc-builds/' . $buildId . '/parts', [
+        $addPart = $this->actingAsApiUser($user)->postJson('/api/v1/pc-builds/'.$buildId.'/parts', [
             'partType' => 'CPU',
             'productId' => $product->id,
             'quantity' => 1,
@@ -39,11 +39,11 @@ class PcFriendShortformMediaNewsMatchingApiTest extends TestCase
         $addPart->assertCreated();
         $addPart->assertJsonPath('data.parts.0.product.name', 'PB CPU');
 
-        $share = $this->actingAsApiUser($user)->getJson('/api/v1/pc-builds/' . $buildId . '/share');
+        $share = $this->actingAsApiUser($user)->getJson('/api/v1/pc-builds/'.$buildId.'/share');
         $share->assertOk();
         $shareCode = $share->json('data.shareCode');
 
-        $shared = $this->getJson('/api/v1/pc-builds/shared/' . $shareCode);
+        $shared = $this->getJson('/api/v1/pc-builds/shared/'.$shareCode);
         $shared->assertOk();
         $shared->assertJsonPath('data.name', '내 게이밍 PC');
 
@@ -56,11 +56,11 @@ class PcFriendShortformMediaNewsMatchingApiTest extends TestCase
         ]);
         $rule->assertCreated();
 
-        $friendRequest = $this->actingAsApiUser($user)->postJson('/api/v1/friends/request/' . $friend->id);
+        $friendRequest = $this->actingAsApiUser($user)->postJson('/api/v1/friends/request/'.$friend->id);
         $friendRequest->assertCreated();
 
         $friendshipId = Friendship::query()->value('id');
-        $accept = $this->actingAsApiUser($friend)->patchJson('/api/v1/friends/request/' . $friendshipId . '/accept');
+        $accept = $this->actingAsApiUser($friend)->patchJson('/api/v1/friends/request/'.$friendshipId.'/accept');
         $accept->assertOk();
 
         $friends = $this->actingAsApiUser($user)->getJson('/api/v1/friends');
@@ -84,11 +84,11 @@ class PcFriendShortformMediaNewsMatchingApiTest extends TestCase
         $shortform->assertCreated();
         $shortformId = $shortform->json('data.id');
 
-        $like = $this->actingAsApiUser($admin)->postJson('/api/v1/shortforms/' . $shortformId . '/like');
+        $like = $this->actingAsApiUser($admin)->postJson('/api/v1/shortforms/'.$shortformId.'/like');
         $like->assertOk();
         $like->assertJsonPath('data.liked', true);
 
-        $comment = $this->actingAsApiUser($admin)->postJson('/api/v1/shortforms/' . $shortformId . '/comments', [
+        $comment = $this->actingAsApiUser($admin)->postJson('/api/v1/shortforms/'.$shortformId.'/comments', [
             'content' => '좋은 영상입니다.',
         ]);
         $comment->assertCreated();
@@ -106,7 +106,7 @@ class PcFriendShortformMediaNewsMatchingApiTest extends TestCase
         $upload->assertCreated();
         $mediaId = $upload->json('data.0.id');
 
-        $metadata = $this->getJson('/api/v1/media/' . $mediaId . '/metadata');
+        $metadata = $this->getJson('/api/v1/media/'.$mediaId.'/metadata');
         $metadata->assertOk();
         $metadata->assertJsonPath('data.mime', 'application/pdf');
 
@@ -127,7 +127,7 @@ class PcFriendShortformMediaNewsMatchingApiTest extends TestCase
         $news->assertCreated();
         $newsId = $news->json('data.id');
 
-        $newsDetail = $this->getJson('/api/v1/news/' . $newsId);
+        $newsDetail = $this->getJson('/api/v1/news/'.$newsId);
         $newsDetail->assertOk();
         $newsDetail->assertJsonPath('data.products.0.name', 'PB Camera');
 
@@ -140,7 +140,7 @@ class PcFriendShortformMediaNewsMatchingApiTest extends TestCase
         $pending->assertOk();
         $mappingId = $pending->json('data.items.0.id');
 
-        $approve = $this->actingAsApiUser($admin)->patchJson('/api/v1/matching/' . $mappingId . '/approve', [
+        $approve = $this->actingAsApiUser($admin)->patchJson('/api/v1/matching/'.$mappingId.'/approve', [
             'productId' => $product->id,
         ]);
         $approve->assertOk();
@@ -166,7 +166,7 @@ class PcFriendShortformMediaNewsMatchingApiTest extends TestCase
         return Product::query()->create([
             'category_id' => $categoryId,
             'name' => $name,
-            'slug' => $slug . '-' . uniqid(),
+            'slug' => $slug.'-'.uniqid(),
             'status' => 'ACTIVE',
         ]);
     }
@@ -174,7 +174,7 @@ class PcFriendShortformMediaNewsMatchingApiTest extends TestCase
     private function createUser(string $role): User
     {
         return User::query()->create([
-            'email' => uniqid('pfsnm-', true) . '@example.com',
+            'email' => uniqid('pfsnm-', true).'@example.com',
             'password' => Hash::make('Password123!'),
             'name' => 'PB User',
             'nickname' => uniqid('pb-', false),
@@ -189,6 +189,6 @@ class PcFriendShortformMediaNewsMatchingApiTest extends TestCase
     {
         $token = app(JwtService::class)->createAccessToken($user);
 
-        return $this->withHeader('Authorization', 'Bearer ' . $token);
+        return $this->withHeader('Authorization', 'Bearer '.$token);
     }
 }

@@ -46,7 +46,7 @@ class PredictionDealRecommendationRankingApiTest extends TestCase
             'collected_at' => now()->subDay(),
         ]);
 
-        $prediction = $this->getJson('/api/v1/predictions/products/' . $product->id . '/price-trend?days=7');
+        $prediction = $this->getJson('/api/v1/predictions/products/'.$product->id.'/price-trend?days=7');
         $prediction->assertOk();
         $prediction->assertJsonPath('data.productName', 'PB UltraBook');
 
@@ -68,13 +68,13 @@ class PredictionDealRecommendationRankingApiTest extends TestCase
         $listDeals->assertOk();
         $listDeals->assertJsonPath('data.0.title', '봄맞이 특가');
 
-        $updateDeal = $this->actingAsApiUser($admin)->patchJson('/api/v1/deals/admin/' . $dealId, [
+        $updateDeal = $this->actingAsApiUser($admin)->patchJson('/api/v1/deals/admin/'.$dealId, [
             'stock' => 15,
         ]);
         $updateDeal->assertOk();
         $updateDeal->assertJsonPath('data.stock', 15);
 
-        $deleteDeal = $this->actingAsApiUser($admin)->deleteJson('/api/v1/deals/admin/' . $dealId);
+        $deleteDeal = $this->actingAsApiUser($admin)->deleteJson('/api/v1/deals/admin/'.$dealId);
         $deleteDeal->assertOk();
         $deleteDeal->assertJsonPath('data.message', '특가가 삭제되었습니다.');
     }
@@ -117,7 +117,7 @@ class PredictionDealRecommendationRankingApiTest extends TestCase
         $adminList = $this->actingAsApiUser($admin)->getJson('/api/v1/admin/recommendations');
         $adminList->assertOk();
 
-        $this->actingAsApiUser($user)->postJson('/api/v1/activities/recent-products/' . $productA->id)->assertCreated();
+        $this->actingAsApiUser($user)->postJson('/api/v1/activities/recent-products/'.$productA->id)->assertCreated();
         $this->actingAsApiUser($user)->postJson('/api/v1/activities/searches', ['keyword' => '모니터'])->assertCreated();
         $this->actingAsApiUser($user)->postJson('/api/v1/activities/searches', ['keyword' => '모니터'])->assertCreated();
 
@@ -133,7 +133,7 @@ class PredictionDealRecommendationRankingApiTest extends TestCase
         $recalculate->assertOk();
         $recalculate->assertJsonStructure(['data' => ['updatedCount']]);
 
-        $deleteRecommendation = $this->actingAsApiUser($admin)->deleteJson('/api/v1/admin/recommendations/' . $recommendationId);
+        $deleteRecommendation = $this->actingAsApiUser($admin)->deleteJson('/api/v1/admin/recommendations/'.$recommendationId);
         $deleteRecommendation->assertOk();
         $deleteRecommendation->assertJsonPath('data.message', '추천이 삭제되었습니다.');
     }
@@ -154,7 +154,7 @@ class PredictionDealRecommendationRankingApiTest extends TestCase
         return Product::query()->create([
             'category_id' => $categoryId,
             'name' => $name,
-            'slug' => $slug . '-' . uniqid(),
+            'slug' => $slug.'-'.uniqid(),
             'status' => 'ACTIVE',
             'review_count' => 5,
         ]);
@@ -163,7 +163,7 @@ class PredictionDealRecommendationRankingApiTest extends TestCase
     private function createUser(string $role): User
     {
         return User::query()->create([
-            'email' => uniqid('pdrr-', true) . '@example.com',
+            'email' => uniqid('pdrr-', true).'@example.com',
             'password' => Hash::make('Password123!'),
             'name' => 'Prediction Deal Recommendation Ranking User',
             'nickname' => 'pdrr-user',
@@ -178,6 +178,6 @@ class PredictionDealRecommendationRankingApiTest extends TestCase
     {
         $token = app(JwtService::class)->createAccessToken($user);
 
-        return $this->withHeader('Authorization', 'Bearer ' . $token);
+        return $this->withHeader('Authorization', 'Bearer '.$token);
     }
 }

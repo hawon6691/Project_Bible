@@ -19,24 +19,28 @@ class ResilienceService
     public function list(User $user): array
     {
         $this->assertAdmin($user);
+
         return ['items' => $this->items()];
     }
 
     public function policies(User $user): array
     {
         $this->assertAdmin($user);
+
         return ['items' => [['name' => 'crawler', 'options' => ['threshold' => 5], 'stats' => ['opened' => 1]]]];
     }
 
     public function show(User $user, string $name): array
     {
         $this->assertAdmin($user);
+
         return collect($this->items())->firstWhere('name', $name) ?? ['name' => $name, 'state' => 'CLOSED', 'failureCount' => 0];
     }
 
     public function reset(User $user, string $name): array
     {
         $this->assertAdmin($user);
+
         return ['message' => 'Circuit Breaker가 초기화되었습니다.', 'name' => $name];
     }
 

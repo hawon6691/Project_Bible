@@ -9,8 +9,7 @@ class RankingController extends ApiController
 {
     public function __construct(
         private readonly RankingService $rankingService,
-    ) {
-    }
+    ) {}
 
     public function products()
     {

@@ -9,9 +9,7 @@ use Illuminate\Http\Request;
 
 class CompareController extends ApiController
 {
-    public function __construct(private readonly CompareService $service)
-    {
-    }
+    public function __construct(private readonly CompareService $service) {}
 
     public function add(AddCompareItemRequest $request)
     {

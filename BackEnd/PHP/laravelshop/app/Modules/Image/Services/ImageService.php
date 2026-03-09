@@ -33,7 +33,7 @@ class ImageService
         ];
 
         foreach ($variants as $variant) {
-            $variantPath = $path . '.' . strtolower($variant['type']) . '.webp';
+            $variantPath = $path.'.'.strtolower($variant['type']).'.webp';
             Storage::disk('public')->put($variantPath, 'variant');
             ImageVariant::query()->create([
                 'image_asset_id' => $asset->id,
@@ -53,6 +53,7 @@ class ImageService
     public function variants(int $assetId): array
     {
         $asset = $this->findAsset($assetId);
+
         return $asset->variants->map(fn (ImageVariant $variant): array => [
             'id' => $variant->id,
             'type' => $variant->type,
@@ -75,6 +76,7 @@ class ImageService
             Storage::disk('public')->delete($variant->path);
         }
         $asset->delete();
+
         return ['message' => '이미지가 삭제되었습니다.'];
     }
 
@@ -84,6 +86,7 @@ class ImageService
         if (! $asset) {
             throw new BusinessException('이미지를 찾을 수 없습니다.', 'IMAGE_NOT_FOUND', Response::HTTP_NOT_FOUND);
         }
+
         return $asset;
     }
 

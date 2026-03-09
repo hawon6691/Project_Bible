@@ -3,7 +3,6 @@
 namespace App\Modules\Prediction\Services;
 
 use App\Common\Exceptions\BusinessException;
-use App\Models\PriceEntry;
 use App\Models\Product;
 use Symfony\Component\HttpFoundation\Response;
 

@@ -12,8 +12,7 @@ class SellerController extends ApiController
 {
     public function __construct(
         private readonly SellerService $sellerService,
-    ) {
-    }
+    ) {}
 
     public function index(ListSellersRequest $request)
     {

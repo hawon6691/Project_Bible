@@ -12,6 +12,7 @@ class AdminSettingsService
     public function extensions(User $user): array
     {
         $this->assertAdmin($user);
+
         return ['extensions' => $this->get('extensions', ['jpg', 'png', 'mp4', 'mp3'])];
     }
 
@@ -19,12 +20,14 @@ class AdminSettingsService
     {
         $this->assertAdmin($user);
         $this->put('extensions', $payload['extensions']);
+
         return ['extensions' => $payload['extensions']];
     }
 
     public function uploadLimits(User $user): array
     {
         $this->assertAdmin($user);
+
         return $this->get('upload_limits', ['image' => 5, 'video' => 100, 'audio' => 20]);
     }
 
@@ -32,12 +35,14 @@ class AdminSettingsService
     {
         $this->assertAdmin($user);
         $this->put('upload_limits', $payload);
+
         return $payload;
     }
 
     public function reviewPolicy(User $user): array
     {
         $this->assertAdmin($user);
+
         return $this->get('review_policy', ['maxImageCount' => 10, 'pointAmount' => 500]);
     }
 
@@ -45,12 +50,14 @@ class AdminSettingsService
     {
         $this->assertAdmin($user);
         $this->put('review_policy', $payload);
+
         return $payload;
     }
 
     private function get(string $key, array $default): array
     {
         $setting = SystemSetting::query()->where('setting_key', $key)->first();
+
         return is_array($setting?->setting_value) ? $setting->setting_value : $default;
     }
 

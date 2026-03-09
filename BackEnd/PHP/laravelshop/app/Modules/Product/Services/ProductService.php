@@ -27,7 +27,7 @@ class ProductService
             ->withMin('priceEntries as lowest_price', 'price')
             ->withCount('priceEntries as seller_count')
             ->when(! empty($filters['categoryId']), fn (Builder $q) => $q->where('category_id', $filters['categoryId']))
-            ->when(! empty($filters['search']), fn (Builder $q) => $q->where('name', 'like', '%' . trim((string) $filters['search']) . '%'))
+            ->when(! empty($filters['search']), fn (Builder $q) => $q->where('name', 'like', '%'.trim((string) $filters['search']).'%'))
             ->when(isset($filters['minPrice']), function (Builder $q) use ($filters): void {
                 $q->whereHas('priceEntries', fn (Builder $sub) => $sub->where('price', '>=', $filters['minPrice']));
             })
@@ -237,7 +237,7 @@ class ProductService
                 ->where('slug', $slug)
                 ->exists()
         ) {
-            $slug = $base . '-' . $suffix;
+            $slug = $base.'-'.$suffix;
             $suffix++;
         }
 

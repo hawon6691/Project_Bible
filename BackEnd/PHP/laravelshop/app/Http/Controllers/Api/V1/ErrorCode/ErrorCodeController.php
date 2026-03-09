@@ -8,6 +8,14 @@ use App\Modules\ErrorCode\Services\ErrorCodeService;
 class ErrorCodeController extends ApiController
 {
     public function __construct(private readonly ErrorCodeService $service) {}
-    public function index() { return $this->success($this->service->list()); }
-    public function show(string $key) { return $this->success($this->service->show($key)); }
+
+    public function index()
+    {
+        return $this->success($this->service->list());
+    }
+
+    public function show(string $key)
+    {
+        return $this->success($this->service->show($key));
+    }
 }

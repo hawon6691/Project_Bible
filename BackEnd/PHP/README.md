@@ -43,7 +43,7 @@ npm ci
 npm run dev
 ```
 
-- 기본 UI: `http://localhost:3001`
+- 기본 UI: `http://localhost:3000`
 
 ## 4. 주요 검증 명령
 
@@ -77,3 +77,4 @@ php -S 127.0.0.1:3310 tests/performance/mock-perf-server.php
 - 구현 상태: `Document/PHP/03_implementation-status.md`
 - 완료 리포트: `Document/PHP/04_completion-report.md`
 - 최종 게이트: `Document/PHP/05_pre-release-final-gate.md`
+

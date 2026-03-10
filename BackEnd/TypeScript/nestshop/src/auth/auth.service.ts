@@ -348,7 +348,7 @@ export class AuthService {
     const resolvedRedirect =
       redirectUri ??
       this.configService.get<string>('SOCIAL_REDIRECT_URI') ??
-      `http://localhost:3000/api/v1/auth/${provider}/callback`;
+      `http://localhost:8000/api/v1/auth/${provider}/callback`;
 
     // 실제 인가 URL은 provider별 SDK/전략으로 대체 가능하며, 현재는 API 계약을 우선 제공한다.
     const authorizationUrl =
@@ -662,3 +662,4 @@ export class AuthService {
     throw new BusinessException('VALIDATION_FAILED', HttpStatus.CONFLICT, '닉네임 생성에 실패했습니다.');
   }
 }
+

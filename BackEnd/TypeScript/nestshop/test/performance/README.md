@@ -11,19 +11,19 @@
 
 ```bash
 # smoke
-BASE_URL=http://localhost:3000/api/v1 npm run test:perf:smoke
+BASE_URL=http://localhost:8000/api/v1 npm run test:perf:smoke
 
 # search/ranking
-BASE_URL=http://localhost:3000/api/v1 npm run test:perf:search-ranking
+BASE_URL=http://localhost:8000/api/v1 npm run test:perf:search-ranking
 
 # price compare/history
-BASE_URL=http://localhost:3000/api/v1 PRODUCT_ID_MIN=1 PRODUCT_ID_MAX=100 npm run test:perf:price
+BASE_URL=http://localhost:8000/api/v1 PRODUCT_ID_MIN=1 PRODUCT_ID_MAX=100 npm run test:perf:price
 
 # soak
-BASE_URL=http://localhost:3000/api/v1 SOAK_DURATION=10m npm run test:perf:soak
+BASE_URL=http://localhost:8000/api/v1 SOAK_DURATION=10m npm run test:perf:soak
 
 # spike
-BASE_URL=http://localhost:3000/api/v1 npm run test:perf:spike
+BASE_URL=http://localhost:8000/api/v1 npm run test:perf:spike
 
 # assert summary (example)
 npm run test:perf:assert -- test-results/perf-soak-summary.json soak
@@ -37,3 +37,4 @@ npm run test:perf:assert -- test-results/perf-soak-summary.json soak
 - `soak.perf.js`
 - `spike-search.perf.js`
 - `assert-summary.js`
+

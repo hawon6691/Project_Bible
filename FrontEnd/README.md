@@ -2,12 +2,12 @@
 
 ## 목적
 - 백엔드 구현 언어와 무관하게 동작하도록 API 계약(`success/data/meta`) 기준으로 작성된 프론트엔드입니다.
-- 기본 개발 서버 포트는 `3001`입니다.
+- 기본 개발 서버 포트는 `3000`입니다.
 
 ## 실행
 1. `npm install`
 2. `.env.example`을 `.env`로 복사
-3. 필요 시 `VITE_API_BASE_URL` 수정 (기본값: `http://localhost:3000/api/v1`)
+3. 필요 시 `VITE_API_BASE_URL` 수정 (기본값: `http://localhost:8000/api/v1`)
 4. `npm run dev`
 
 ## 주요 페이지
@@ -32,3 +32,4 @@
 ## 참고
 - 상세 페이지의 장바구니 추가는 `sellerId`가 필요해서 입력 필드를 제공했습니다.
 - 백엔드에서 상품별 seller 선택 API를 추가하면 입력 없이 자동화 가능합니다.
+

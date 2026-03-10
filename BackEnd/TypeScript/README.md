@@ -30,8 +30,8 @@ npm run migration:run
 npm start
 ```
 
-- 기본 API: `http://localhost:3000/api/v1`
-- Swagger: `http://localhost:3000/docs`
+- 기본 API: `http://localhost:8000/api/v1`
+- Swagger: `http://localhost:8000/docs`
 
 ### 3.3 프론트엔드 실행 (선택)
 
@@ -41,7 +41,7 @@ npm ci
 npm run dev
 ```
 
-- 기본 UI: `http://localhost:3001`
+- 기본 UI: `http://localhost:3000`
 
 ## 4. 주요 검증 명령
 
@@ -56,4 +56,5 @@ npm run test:e2e:critical
 - 운영 런북: `Document/TypeScript/02_operations-runbook.md`
 - 릴리스 체크리스트: `Document/TypeScript/03_release-checklist.md`
 - 완료 리포트: `Document/TypeScript/04_completion-report.md`
+
 

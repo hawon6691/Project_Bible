@@ -381,7 +381,5 @@ final class CommerceApiPaths
         security: [['bearerAuth' => []]],
         responses: [new OA\Response(response: 201, description: 'Granted', content: new OA\JsonContent(ref: '#/components/schemas/ApiSuccessEnvelope'))]
     )]
-    public function paths(): void
-    {
-    }
+    public function paths(): void {}
 }

@@ -357,7 +357,5 @@ final class CommunityMediaApiPaths
         parameters: [new OA\Parameter(name: 'userId', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
         responses: [new OA\Response(response: 200, description: 'Unblocked', content: new OA\JsonContent(ref: '#/components/schemas/ApiSuccessEnvelope'))]
     )]
-    public function paths(): void
-    {
-    }
+    public function paths(): void {}
 }

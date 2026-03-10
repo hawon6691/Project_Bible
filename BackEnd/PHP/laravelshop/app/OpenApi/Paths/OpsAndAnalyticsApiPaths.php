@@ -141,7 +141,5 @@ final class OpsAndAnalyticsApiPaths
     #[OA\Post(path: '/api/v1/admin/pc-compatibility-rules', tags: ['PcBuilder'], summary: '관리자 호환성 규칙 생성', security: [['bearerAuth' => []]], responses: [new OA\Response(response: 201, description: 'Created', content: new OA\JsonContent(ref: '#/components/schemas/ApiSuccessEnvelope'))])]
     #[OA\Patch(path: '/api/v1/admin/pc-compatibility-rules/{id}', tags: ['PcBuilder'], summary: '관리자 호환성 규칙 수정', security: [['bearerAuth' => []]], parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))], responses: [new OA\Response(response: 200, description: 'Updated', content: new OA\JsonContent(ref: '#/components/schemas/ApiSuccessEnvelope'))])]
     #[OA\Delete(path: '/api/v1/admin/pc-compatibility-rules/{id}', tags: ['PcBuilder'], summary: '관리자 호환성 규칙 삭제', security: [['bearerAuth' => []]], parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))], responses: [new OA\Response(response: 200, description: 'Deleted', content: new OA\JsonContent(ref: '#/components/schemas/ApiSuccessEnvelope'))])]
-    public function paths(): void
-    {
-    }
+    public function paths(): void {}
 }

@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1\Push;
 
-use OpenApi\Attributes as OA;
-
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Push\Requests\RegisterPushSubscriptionRequest;
 use App\Modules\Push\Requests\UnregisterPushSubscriptionRequest;
 use App\Modules\Push\Requests\UpdatePushPreferenceRequest;
 use App\Modules\Push\Services\PushService;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Push')]
 class PushController extends ApiController

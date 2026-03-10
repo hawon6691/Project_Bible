@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1\Inquiry;
 
-use OpenApi\Attributes as OA;
-
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Inquiry\Requests\AnswerInquiryRequest;
 use App\Modules\Inquiry\Requests\StoreInquiryRequest;
 use App\Modules\Inquiry\Services\InquiryService;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Inquiry')]
 class InquiryController extends ApiController

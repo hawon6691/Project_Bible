@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1\Badge;
 
-use OpenApi\Attributes as OA;
-
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Badge\Requests\CreateBadgeRequest;
 use App\Modules\Badge\Requests\GrantBadgeRequest;
 use App\Modules\Badge\Requests\UpdateBadgeRequest;
 use App\Modules\Badge\Services\BadgeService;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Badge')]
 class BadgeController extends ApiController

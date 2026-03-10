@@ -40,7 +40,7 @@ use OpenApi\Attributes as OA;
             description: '엔드포인트별 실제 응답 데이터',
             oneOf: [
                 new OA\Schema(type: 'object', additionalProperties: true),
-                new OA\Schema(type: 'array', items: new OA\Items()),
+                new OA\Schema(type: 'array', items: new OA\Items),
                 new OA\Schema(type: 'string'),
                 new OA\Schema(type: 'integer'),
                 new OA\Schema(type: 'number'),
@@ -61,6 +61,4 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'meta', ref: '#/components/schemas/ApiMeta', nullable: true),
     ]
 )]
-final class ApiResponseSchemas
-{
-}
+final class ApiResponseSchemas {}

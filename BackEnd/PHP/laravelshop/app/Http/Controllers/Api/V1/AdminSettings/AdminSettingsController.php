@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1\AdminSettings;
 
-use OpenApi\Attributes as OA;
-
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\AdminSettings\Requests\UpdateExtensionsRequest;
 use App\Modules\AdminSettings\Requests\UpdateReviewPolicyRequest;
 use App\Modules\AdminSettings\Requests\UpdateUploadLimitsRequest;
 use App\Modules\AdminSettings\Services\AdminSettingsService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'AdminSettings')]
 class AdminSettingsController extends ApiController

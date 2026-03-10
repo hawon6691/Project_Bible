@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1\Image;
 
-use OpenApi\Attributes as OA;
-
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Image\Requests\UploadImageRequest;
 use App\Modules\Image\Services\ImageService;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Image')]
 class ImageController extends ApiController

@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1\Address;
 
-use OpenApi\Attributes as OA;
-
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Address\Requests\StoreAddressRequest;
 use App\Modules\Address\Requests\UpdateAddressRequest;
 use App\Modules\Address\Services\AddressService;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Address')]
 class AddressController extends ApiController

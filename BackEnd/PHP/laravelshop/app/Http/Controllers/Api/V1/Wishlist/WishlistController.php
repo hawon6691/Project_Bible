@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1\Wishlist;
 
-use OpenApi\Attributes as OA;
-
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Wishlist\Requests\ListWishlistRequest;
 use App\Modules\Wishlist\Services\WishlistService;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Wishlist')]
 class WishlistController extends ApiController

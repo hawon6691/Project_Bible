@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1\Friend;
 
-use OpenApi\Attributes as OA;
-
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Friend\Services\FriendService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Friend')]
 class FriendController extends ApiController

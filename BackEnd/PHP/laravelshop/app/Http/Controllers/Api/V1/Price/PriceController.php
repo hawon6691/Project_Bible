@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1\Price;
 
-use OpenApi\Attributes as OA;
-
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Price\Requests\CreatePriceAlertRequest;
 use App\Modules\Price\Requests\PriceHistoryRequest;
 use App\Modules\Price\Requests\StorePriceEntryRequest;
 use App\Modules\Price\Requests\UpdatePriceEntryRequest;
 use App\Modules\Price\Services\PriceService;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Price')]
 class PriceController extends ApiController

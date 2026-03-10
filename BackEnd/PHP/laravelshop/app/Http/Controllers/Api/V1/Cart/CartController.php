@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1\Cart;
 
-use OpenApi\Attributes as OA;
-
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Cart\Requests\StoreCartItemRequest;
 use App\Modules\Cart\Requests\UpdateCartItemRequest;
 use App\Modules\Cart\Services\CartService;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Cart')]
 class CartController extends ApiController

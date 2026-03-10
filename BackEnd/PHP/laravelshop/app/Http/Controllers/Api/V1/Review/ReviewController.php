@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1\Review;
 
-use OpenApi\Attributes as OA;
-
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Review\Requests\StoreReviewRequest;
 use App\Modules\Review\Requests\UpdateReviewRequest;
 use App\Modules\Review\Services\ReviewService;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Review')]
 class ReviewController extends ApiController

@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1\Recommendation;
 
-use OpenApi\Attributes as OA;
-
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Recommendation\Requests\StoreRecommendationRequest;
 use App\Modules\Recommendation\Services\RecommendationService;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Recommendation')]
 class RecommendationController extends ApiController

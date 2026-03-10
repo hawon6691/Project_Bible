@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1\UsedMarket;
 
-use OpenApi\Attributes as OA;
-
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\UsedMarket\Services\UsedMarketService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'UsedMarket')]
 class UsedMarketController extends ApiController

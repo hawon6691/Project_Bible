@@ -32,6 +32,9 @@
 - [x] `php artisan test`
 - [x] `vendor/bin/pint`
 - [x] GitHub Actions workflow 추가
+- [x] `php artisan l5-swagger:generate`
+- [x] `storage/api-docs/api-docs.json` 생성 확인
+- [x] `storage/api-docs/api-docs.yaml` 생성 확인
 
 ### 운영 체크
 
@@ -52,5 +55,6 @@
 - 운영 API 구현 완료
 - 테스트 및 스타일 기준 확보
 - CI 등록 완료
+- Swagger / OpenAPI 생성 가능
 
 따라서 PHP 트랙은 `기준 구현 완료` 상태로 판단한다.

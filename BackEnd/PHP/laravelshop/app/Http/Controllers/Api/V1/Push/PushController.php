@@ -7,7 +7,9 @@ use App\Modules\Push\Requests\RegisterPushSubscriptionRequest;
 use App\Modules\Push\Requests\UnregisterPushSubscriptionRequest;
 use App\Modules\Push\Requests\UpdatePushPreferenceRequest;
 use App\Modules\Push\Services\PushService;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Push')]
 class PushController extends ApiController
 {
     public function __construct(

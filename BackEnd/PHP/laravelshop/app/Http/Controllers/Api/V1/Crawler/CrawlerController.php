@@ -8,7 +8,9 @@ use App\Modules\Crawler\Requests\TriggerCrawlerRequest;
 use App\Modules\Crawler\Requests\UpdateCrawlerJobRequest;
 use App\Modules\Crawler\Services\CrawlerService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Crawler')]
 class CrawlerController extends ApiController
 {
     public function __construct(private readonly CrawlerService $service) {}

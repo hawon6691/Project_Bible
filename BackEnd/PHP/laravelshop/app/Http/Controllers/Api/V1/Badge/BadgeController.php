@@ -7,7 +7,9 @@ use App\Modules\Badge\Requests\CreateBadgeRequest;
 use App\Modules\Badge\Requests\GrantBadgeRequest;
 use App\Modules\Badge\Requests\UpdateBadgeRequest;
 use App\Modules\Badge\Services\BadgeService;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Badge')]
 class BadgeController extends ApiController
 {
     public function __construct(

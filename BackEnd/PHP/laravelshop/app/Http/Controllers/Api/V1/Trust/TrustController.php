@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1\Trust;
 
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Trust\Services\TrustService;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Trust')]
 class TrustController extends ApiController
 {
     public function __construct(

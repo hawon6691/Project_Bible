@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1\Fraud;
 
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Fraud\Services\FraudService;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Fraud')]
 class FraudController extends ApiController
 {
     public function __construct(

@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\V1\Resilience;
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Resilience\Services\ResilienceService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Resilience')]
 class ResilienceController extends ApiController
 {
     public function __construct(private readonly ResilienceService $service) {}

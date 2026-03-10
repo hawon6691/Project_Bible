@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\V1\SearchSync;
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\SearchSync\Services\SearchSyncService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'SearchSync')]
 class SearchSyncController extends ApiController
 {
     public function __construct(private readonly SearchSyncService $service) {}

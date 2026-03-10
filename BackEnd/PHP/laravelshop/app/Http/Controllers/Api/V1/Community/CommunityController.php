@@ -7,7 +7,9 @@ use App\Modules\Community\Requests\StoreCommentRequest;
 use App\Modules\Community\Requests\StorePostRequest;
 use App\Modules\Community\Requests\UpdatePostRequest;
 use App\Modules\Community\Services\CommunityService;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Community')]
 class CommunityController extends ApiController
 {
     public function __construct(

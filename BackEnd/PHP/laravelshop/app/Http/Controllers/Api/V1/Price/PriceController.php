@@ -8,7 +8,9 @@ use App\Modules\Price\Requests\PriceHistoryRequest;
 use App\Modules\Price\Requests\StorePriceEntryRequest;
 use App\Modules\Price\Requests\UpdatePriceEntryRequest;
 use App\Modules\Price\Services\PriceService;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Price')]
 class PriceController extends ApiController
 {
     public function __construct(

@@ -7,7 +7,9 @@ use App\Modules\Media\Requests\CreatePresignedUrlRequest;
 use App\Modules\Media\Requests\UploadMediaRequest;
 use App\Modules\Media\Services\MediaService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Media')]
 class MediaController extends ApiController
 {
     public function __construct(private readonly MediaService $service) {}

@@ -7,7 +7,9 @@ use App\Modules\Seller\Requests\ListSellersRequest;
 use App\Modules\Seller\Requests\StoreSellerRequest;
 use App\Modules\Seller\Requests\UpdateSellerRequest;
 use App\Modules\Seller\Services\SellerService;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Seller')]
 class SellerController extends ApiController
 {
     public function __construct(

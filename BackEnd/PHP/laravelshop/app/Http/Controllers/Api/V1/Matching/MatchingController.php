@@ -7,7 +7,9 @@ use App\Modules\Matching\Requests\ApproveMappingRequest;
 use App\Modules\Matching\Requests\RejectMappingRequest;
 use App\Modules\Matching\Services\MatchingService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Matching')]
 class MatchingController extends ApiController
 {
     public function __construct(private readonly MatchingService $service) {}

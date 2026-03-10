@@ -7,7 +7,9 @@ use App\Modules\Support\Requests\ReplySupportTicketRequest;
 use App\Modules\Support\Requests\StoreSupportTicketRequest;
 use App\Modules\Support\Requests\UpdateSupportTicketStatusRequest;
 use App\Modules\Support\Services\SupportService;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Support')]
 class SupportController extends ApiController
 {
     public function __construct(

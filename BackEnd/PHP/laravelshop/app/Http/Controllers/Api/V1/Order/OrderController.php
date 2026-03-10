@@ -7,7 +7,9 @@ use App\Modules\Order\Requests\CreateOrderRequest;
 use App\Modules\Order\Requests\ListOrdersRequest;
 use App\Modules\Order\Requests\UpdateOrderStatusRequest;
 use App\Modules\Order\Services\OrderService;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Order')]
 class OrderController extends ApiController
 {
     public function __construct(

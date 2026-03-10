@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\V1\Observability;
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Observability\Services\ObservabilityService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Observability')]
 class ObservabilityController extends ApiController
 {
     public function __construct(private readonly ObservabilityService $service) {}

@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\V1\Payment;
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Payment\Requests\CreatePaymentRequest;
 use App\Modules\Payment\Services\PaymentService;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Payment')]
 class PaymentController extends ApiController
 {
     public function __construct(

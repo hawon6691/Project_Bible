@@ -8,7 +8,9 @@ use App\Modules\News\Requests\StoreNewsRequest;
 use App\Modules\News\Requests\UpdateNewsRequest;
 use App\Modules\News\Services\NewsService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'News')]
 class NewsController extends ApiController
 {
     public function __construct(private readonly NewsService $service) {}

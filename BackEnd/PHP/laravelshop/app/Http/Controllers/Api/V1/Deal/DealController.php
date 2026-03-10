@@ -6,7 +6,9 @@ use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Deal\Requests\StoreDealRequest;
 use App\Modules\Deal\Requests\UpdateDealRequest;
 use App\Modules\Deal\Services\DealService;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Deal')]
 class DealController extends ApiController
 {
     public function __construct(

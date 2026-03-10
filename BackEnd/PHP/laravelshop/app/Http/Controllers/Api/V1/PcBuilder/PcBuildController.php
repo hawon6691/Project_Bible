@@ -9,7 +9,9 @@ use App\Modules\PcBuilder\Requests\StorePcBuildRequest;
 use App\Modules\PcBuilder\Requests\UpdatePcBuildRequest;
 use App\Modules\PcBuilder\Services\PcBuilderService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'PcBuilder')]
 class PcBuildController extends ApiController
 {
     public function __construct(private readonly PcBuilderService $service) {}

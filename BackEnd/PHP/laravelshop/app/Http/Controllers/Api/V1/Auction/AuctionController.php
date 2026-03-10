@@ -8,7 +8,9 @@ use App\Modules\Auction\Requests\StoreAuctionRequest;
 use App\Modules\Auction\Requests\UpdateAuctionBidRequest;
 use App\Modules\Auction\Services\AuctionService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Auction')]
 class AuctionController extends ApiController
 {
     public function __construct(private readonly AuctionService $service) {}

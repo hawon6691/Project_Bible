@@ -8,7 +8,9 @@ use App\Modules\AdminSettings\Requests\UpdateReviewPolicyRequest;
 use App\Modules\AdminSettings\Requests\UpdateUploadLimitsRequest;
 use App\Modules\AdminSettings\Services\AdminSettingsService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'AdminSettings')]
 class AdminSettingsController extends ApiController
 {
     public function __construct(private readonly AdminSettingsService $service) {}

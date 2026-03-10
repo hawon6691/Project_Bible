@@ -11,7 +11,7 @@ return [
     'api' => [
         'prefix' => env('API_PREFIX', 'v1'),
         'base_path' => '/api/'.env('API_PREFIX', 'v1'),
-        'frontend_url' => env('FRONTEND_URL', 'http://localhost:3001'),
+        'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
         'response_contract' => [
             'success' => true,
             'data' => [],
@@ -50,3 +50,4 @@ return [
         'session_driver' => env('SESSION_DRIVER', 'database'),
     ],
 ];
+

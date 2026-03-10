@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1\Spec;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Spec\Requests\ListSpecDefinitionsRequest;
 use App\Modules\Spec\Requests\SetProductSpecsRequest;
@@ -9,6 +11,7 @@ use App\Modules\Spec\Requests\StoreSpecDefinitionRequest;
 use App\Modules\Spec\Requests\UpdateSpecDefinitionRequest;
 use App\Modules\Spec\Services\SpecService;
 
+#[OA\Tag(name: 'Spec')]
 class SpecController extends ApiController
 {
     public function __construct(

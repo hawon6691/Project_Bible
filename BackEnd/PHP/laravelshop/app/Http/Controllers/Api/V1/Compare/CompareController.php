@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1\Compare;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Compare\Requests\AddCompareItemRequest;
 use App\Modules\Compare\Services\CompareService;
 use Illuminate\Http\Request;
 
+#[OA\Tag(name: 'Compare')]
 class CompareController extends ApiController
 {
     public function __construct(private readonly CompareService $service) {}

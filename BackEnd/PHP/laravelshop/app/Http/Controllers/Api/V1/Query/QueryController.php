@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1\Query;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Query\Services\QueryService;
 use Illuminate\Http\Request;
 
+#[OA\Tag(name: 'Query')]
 class QueryController extends ApiController
 {
     public function __construct(private readonly QueryService $service) {}

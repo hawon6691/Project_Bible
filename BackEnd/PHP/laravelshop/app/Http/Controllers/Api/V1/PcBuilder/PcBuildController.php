@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1\PcBuilder;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\PcBuilder\Requests\StoreCompatibilityRuleRequest;
 use App\Modules\PcBuilder\Requests\StorePcBuildPartRequest;
@@ -10,6 +12,7 @@ use App\Modules\PcBuilder\Requests\UpdatePcBuildRequest;
 use App\Modules\PcBuilder\Services\PcBuilderService;
 use Illuminate\Http\Request;
 
+#[OA\Tag(name: 'PcBuilder')]
 class PcBuildController extends ApiController
 {
     public function __construct(private readonly PcBuilderService $service) {}

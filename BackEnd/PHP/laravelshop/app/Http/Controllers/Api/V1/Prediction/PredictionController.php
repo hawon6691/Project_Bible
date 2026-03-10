@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1\Prediction;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Prediction\Services\PredictionService;
 
+#[OA\Tag(name: 'Prediction')]
 class PredictionController extends ApiController
 {
     public function __construct(

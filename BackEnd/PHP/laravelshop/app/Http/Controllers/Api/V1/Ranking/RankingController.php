@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1\Ranking;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Ranking\Services\RankingService;
 
+#[OA\Tag(name: 'Ranking')]
 class RankingController extends ApiController
 {
     public function __construct(

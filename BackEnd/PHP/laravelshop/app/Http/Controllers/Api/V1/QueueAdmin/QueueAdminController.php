@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1\QueueAdmin;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\QueueAdmin\Services\QueueAdminService;
 use Illuminate\Http\Request;
 
+#[OA\Tag(name: 'QueueAdmin')]
 class QueueAdminController extends ApiController
 {
     public function __construct(private readonly QueueAdminService $service) {}

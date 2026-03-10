@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1\I18n;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\I18n\Requests\UpsertExchangeRateRequest;
 use App\Modules\I18n\Requests\UpsertTranslationRequest;
 use App\Modules\I18n\Services\I18nService;
 
+#[OA\Tag(name: 'I18n')]
 class I18nController extends ApiController
 {
     public function __construct(

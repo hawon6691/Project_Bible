@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Api\V1\Support;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Support\Requests\ReplySupportTicketRequest;
 use App\Modules\Support\Requests\StoreSupportTicketRequest;
 use App\Modules\Support\Requests\UpdateSupportTicketStatusRequest;
 use App\Modules\Support\Services\SupportService;
 
+#[OA\Tag(name: 'Support')]
 class SupportController extends ApiController
 {
     public function __construct(

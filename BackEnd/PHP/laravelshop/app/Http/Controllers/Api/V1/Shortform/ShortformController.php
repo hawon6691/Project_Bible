@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Api\V1\Shortform;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Shortform\Requests\StoreShortformCommentRequest;
 use App\Modules\Shortform\Requests\StoreShortformRequest;
 use App\Modules\Shortform\Services\ShortformService;
 use Illuminate\Http\Request;
 
+#[OA\Tag(name: 'Shortform')]
 class ShortformController extends ApiController
 {
     public function __construct(private readonly ShortformService $service) {}

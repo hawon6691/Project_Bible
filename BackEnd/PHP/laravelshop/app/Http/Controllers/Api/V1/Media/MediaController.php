@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Api\V1\Media;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Media\Requests\CreatePresignedUrlRequest;
 use App\Modules\Media\Requests\UploadMediaRequest;
 use App\Modules\Media\Services\MediaService;
 use Illuminate\Http\Request;
 
+#[OA\Tag(name: 'Media')]
 class MediaController extends ApiController
 {
     public function __construct(private readonly MediaService $service) {}

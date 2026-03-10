@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Api\V1\Community;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Community\Requests\StoreCommentRequest;
 use App\Modules\Community\Requests\StorePostRequest;
 use App\Modules\Community\Requests\UpdatePostRequest;
 use App\Modules\Community\Services\CommunityService;
 
+#[OA\Tag(name: 'Community')]
 class CommunityController extends ApiController
 {
     public function __construct(

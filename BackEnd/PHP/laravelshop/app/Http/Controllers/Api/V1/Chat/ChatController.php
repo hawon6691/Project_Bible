@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1\Chat;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Chat\Requests\CreateChatRoomRequest;
 use App\Modules\Chat\Requests\SendChatMessageRequest;
 use App\Modules\Chat\Services\ChatService;
 
+#[OA\Tag(name: 'Chat')]
 class ChatController extends ApiController
 {
     public function __construct(

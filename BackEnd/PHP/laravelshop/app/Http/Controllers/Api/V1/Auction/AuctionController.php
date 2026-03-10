@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1\Auction;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Auction\Requests\StoreAuctionBidRequest;
 use App\Modules\Auction\Requests\StoreAuctionRequest;
@@ -9,6 +11,7 @@ use App\Modules\Auction\Requests\UpdateAuctionBidRequest;
 use App\Modules\Auction\Services\AuctionService;
 use Illuminate\Http\Request;
 
+#[OA\Tag(name: 'Auction')]
 class AuctionController extends ApiController
 {
     public function __construct(private readonly AuctionService $service) {}

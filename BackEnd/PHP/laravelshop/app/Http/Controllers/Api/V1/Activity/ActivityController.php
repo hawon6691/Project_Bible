@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1\Activity;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Activity\Requests\CreateSearchHistoryRequest;
 use App\Modules\Activity\Services\ActivityService;
 
+#[OA\Tag(name: 'Activity')]
 class ActivityController extends ApiController
 {
     public function __construct(

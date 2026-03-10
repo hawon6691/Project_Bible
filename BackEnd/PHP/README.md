@@ -34,6 +34,9 @@ php artisan serve --host=127.0.0.1 --port=8000
 ```
 
 - 기본 API: `http://localhost:8000/api/v1`
+- Scribe 문서: `http://localhost:8000/docs/api`
+- Swagger UI: `http://localhost:8000/docs/swagger`
+- OpenAPI 문서: `http://localhost:8000/docs/api.openapi`
 
 ### 3.3 프론트엔드 실행 (선택)
 

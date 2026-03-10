@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1\Crawler;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Crawler\Requests\StoreCrawlerJobRequest;
 use App\Modules\Crawler\Requests\TriggerCrawlerRequest;
@@ -9,6 +11,7 @@ use App\Modules\Crawler\Requests\UpdateCrawlerJobRequest;
 use App\Modules\Crawler\Services\CrawlerService;
 use Illuminate\Http\Request;
 
+#[OA\Tag(name: 'Crawler')]
 class CrawlerController extends ApiController
 {
     public function __construct(private readonly CrawlerService $service) {}

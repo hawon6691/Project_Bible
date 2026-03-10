@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1\Point;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Point\Requests\AdminGrantPointRequest;
 use App\Modules\Point\Requests\ListPointTransactionsRequest;
 use App\Modules\Point\Services\PointService;
 
+#[OA\Tag(name: 'Point')]
 class PointController extends ApiController
 {
     public function __construct(

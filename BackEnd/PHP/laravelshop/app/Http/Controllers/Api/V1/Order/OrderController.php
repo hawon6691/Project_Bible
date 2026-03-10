@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Api\V1\Order;
 
+use OpenApi\Attributes as OA;
+
 use App\Http\Controllers\Api\V1\ApiController;
 use App\Modules\Order\Requests\CreateOrderRequest;
 use App\Modules\Order\Requests\ListOrdersRequest;
 use App\Modules\Order\Requests\UpdateOrderStatusRequest;
 use App\Modules\Order\Services\OrderService;
 
+#[OA\Tag(name: 'Order')]
 class OrderController extends ApiController
 {
     public function __construct(

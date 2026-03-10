@@ -50,4 +50,3 @@ return [
         'session_driver' => env('SESSION_DRIVER', 'database'),
     ],
 ];
-

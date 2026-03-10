@@ -1,0 +1,89 @@
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    nickname VARCHAR(100) NOT NULL,
+    role VARCHAR(50) NOT NULL DEFAULT 'USER',
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
+    email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    profile_image_url VARCHAR(500),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS categories (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    parent_id BIGINT NULL,
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+    depth INT NOT NULL DEFAULT 0,
+    sort_order INT NOT NULL DEFAULT 0,
+    is_visible BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_categories_parent FOREIGN KEY (parent_id) REFERENCES categories (id)
+);
+
+CREATE TABLE IF NOT EXISTS sellers (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    code VARCHAR(100) NOT NULL UNIQUE,
+    homepage_url VARCHAR(500),
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS products (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    category_id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+    brand VARCHAR(100),
+    description TEXT,
+    thumbnail_url VARCHAR(500),
+    review_count INT NOT NULL DEFAULT 0,
+    rating_avg DECIMAL(4, 2) NOT NULL DEFAULT 0,
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories (id)
+);
+
+CREATE TABLE IF NOT EXISTS product_specs (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    product_id BIGINT NOT NULL,
+    spec_key VARCHAR(100) NOT NULL,
+    spec_value VARCHAR(500) NOT NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_product_specs_product FOREIGN KEY (product_id) REFERENCES products (id),
+    CONSTRAINT uk_product_specs_product_key UNIQUE (product_id, spec_key)
+);
+
+CREATE TABLE IF NOT EXISTS price_entries (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    product_id BIGINT NOT NULL,
+    seller_id BIGINT NOT NULL,
+    price DECIMAL(15, 2) NOT NULL,
+    original_price DECIMAL(15, 2),
+    shipping_fee DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    stock_status VARCHAR(50) NOT NULL DEFAULT 'IN_STOCK',
+    purchase_url VARCHAR(500),
+    checked_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_price_entries_product FOREIGN KEY (product_id) REFERENCES products (id),
+    CONSTRAINT fk_price_entries_seller FOREIGN KEY (seller_id) REFERENCES sellers (id)
+);
+
+CREATE TABLE IF NOT EXISTS system_settings (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    setting_group VARCHAR(100) NOT NULL,
+    setting_key VARCHAR(100) NOT NULL,
+    setting_value TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_system_settings_group_key UNIQUE (setting_group, setting_key)
+);

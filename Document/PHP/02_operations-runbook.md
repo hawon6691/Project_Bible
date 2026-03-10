@@ -103,7 +103,29 @@ GitHub Actions:
 5. `vendor/bin/pint --test`
 6. `php artisan test`
 
-## 11. 장애 대응 체크
+## 11. Swagger / OpenAPI 생성
+
+Swagger 문서 생성 명령:
+
+```bash
+php artisan l5-swagger:generate
+```
+
+생성 산출물:
+
+```text
+BackEnd/PHP/laravelshop/storage/api-docs/api-docs.json
+BackEnd/PHP/laravelshop/storage/api-docs/api-docs.yaml
+```
+
+문서 접근 경로:
+
+```text
+/docs/swagger
+/docs/openapi
+```
+
+## 12. 장애 대응 체크
 
 ### DB 연결 실패
 
@@ -126,7 +148,14 @@ GitHub Actions:
 - 테스트 시드/팩토리 사용 여부 확인
 - 권한 미들웨어, 인증 토큰 처리 확인
 
-## 12. 운영 원칙
+### swagger generate 실패
+
+- `config/l5-swagger.php`의 OpenAPI 버전 기본값 확인
+- `config/scribe.php`의 패키지 참조 설정 확인
+- `php artisan package:discover` 재실행
+- `php C:\ProgramData\ComposerSetup\bin\composer install`로 문서 패키지 복구
+
+## 13. 운영 원칙
 
 - API 계약은 `Document/02_api-specification.md`를 우선 기준으로 삼는다.
 - 스키마는 `Document/03_erd.md`와 실제 migration을 함께 관리한다.

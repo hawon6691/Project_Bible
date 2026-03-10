@@ -19,6 +19,7 @@
 - 공통 예외 처리
 - 공통 미들웨어
 - GitHub Actions CI
+- Swagger / OpenAPI 생성 체계
 
 ### 도메인 API
 
@@ -82,6 +83,9 @@
 - `php artisan test`
 - `vendor/bin/pint`
 - GitHub Actions용 `php-laravel-ci.yml` 추가
+- `php artisan l5-swagger:generate`
+- `storage/api-docs/api-docs.json` 생성 확인
+- `storage/api-docs/api-docs.yaml` 생성 확인
 
 ## 4. 현재 상태
 
@@ -92,6 +96,7 @@
 | 전체 회귀 테스트 | 완료 |
 | 코드 스타일 정리 | 완료 |
 | CI 워크플로 | 완료 |
+| Swagger / OpenAPI | 완료 |
 
 ## 5. 남은 성격의 작업
 
@@ -110,3 +115,6 @@
 - `feat-325` ~ `feat-353` 도메인/운영 API 구현
 - `test-355` 전체 회귀 검증
 - `test-357` PHP CI workflow
+- `feat-367` Swagger / Scribe 문서 체계
+- `feat-369` 남은 Swagger path 문서 보강
+- `feat-371` Swagger 생성 복구

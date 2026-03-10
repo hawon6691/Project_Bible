@@ -8,6 +8,22 @@ use function Knuckles\Scribe\Config\removeStrategies;
 
 // Only the most common configs are shown. See the https://scribe.knuckles.wtf/laravel/reference/config for all.
 
+$authIn = enum_exists(AuthIn::class) ? AuthIn::BEARER->value : 'bearer';
+$metadataStrategies = class_exists(Defaults::class) ? Defaults::METADATA_STRATEGIES : [];
+$headersStrategies = class_exists(Defaults::class) ? Defaults::HEADERS_STRATEGIES : [];
+$urlParameterStrategies = class_exists(Defaults::class) ? Defaults::URL_PARAMETERS_STRATEGIES : [];
+$queryParameterStrategies = class_exists(Defaults::class) ? Defaults::QUERY_PARAMETERS_STRATEGIES : [];
+$bodyParameterStrategies = class_exists(Defaults::class) ? Defaults::BODY_PARAMETERS_STRATEGIES : [];
+$responseStrategies = class_exists(Defaults::class) ? Defaults::RESPONSES_STRATEGIES : [];
+$responseFieldStrategies = class_exists(Defaults::class) ? Defaults::RESPONSE_FIELDS_STRATEGIES : [];
+
+if (function_exists('\Knuckles\Scribe\Config\removeStrategies') && class_exists(Strategies\Responses\ResponseCalls::class)) {
+    $responseStrategies = removeStrategies(
+        $responseStrategies,
+        [Strategies\Responses\ResponseCalls::class],
+    );
+}
+
 return [
     // The HTML <title> for the generated documentation.
     'title' => config('app.name').' PHP API Docs',
@@ -111,7 +127,7 @@ return [
         'default' => false,
 
         // Where is the auth value meant to be sent in a request?
-        'in' => AuthIn::BEARER->value,
+        'in' => $authIn,
 
         // The name of the auth parameter (e.g. token, key, apiKey) or header (e.g. Authorization, Api-Key).
         'name' => 'Authorization',
@@ -213,30 +229,27 @@ return [
     // Use removeStrategies() to remove an included strategy.
     'strategies' => [
         'metadata' => [
-            ...Defaults::METADATA_STRATEGIES,
+            ...$metadataStrategies,
         ],
         'headers' => [
-            ...Defaults::HEADERS_STRATEGIES,
-            Strategies\StaticData::withSettings(data: [
+            ...$headersStrategies,
+            ...(class_exists(Strategies\StaticData::class) ? [Strategies\StaticData::withSettings(data: [
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
-            ]),
+            ])] : []),
         ],
         'urlParameters' => [
-            ...Defaults::URL_PARAMETERS_STRATEGIES,
+            ...$urlParameterStrategies,
         ],
         'queryParameters' => [
-            ...Defaults::QUERY_PARAMETERS_STRATEGIES,
+            ...$queryParameterStrategies,
         ],
         'bodyParameters' => [
-            ...Defaults::BODY_PARAMETERS_STRATEGIES,
+            ...$bodyParameterStrategies,
         ],
-        'responses' => removeStrategies(
-            Defaults::RESPONSES_STRATEGIES,
-            [Strategies\Responses\ResponseCalls::class],
-        ),
+        'responses' => $responseStrategies,
         'responseFields' => [
-            ...Defaults::RESPONSE_FIELDS_STRATEGIES,
+            ...$responseFieldStrategies,
         ],
     ],
 

@@ -24,4 +24,6 @@ public interface PriceEntryRepository extends JpaRepository<PriceEntry, Long> {
             order by pe.checkedAt asc, pe.price asc
             """)
     List<PriceEntry> findHistoryByProductIdSince(@Param("productId") Long productId, @Param("from") OffsetDateTime from);
+
+    Optional<PriceEntry> findByProductIdAndSellerId(Long productId, Long sellerId);
 }

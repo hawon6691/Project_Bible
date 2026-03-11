@@ -9,12 +9,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.pbshop.springshop.support.ApiIntegrationTestSupport;
+import com.pbshop.springshop.support.ApiIntegrationSupport;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class SystemControllerTest extends ApiIntegrationTestSupport {
+class SystemControllerTest extends ApiIntegrationSupport {
 
     @Test
     void healthEndpointReturnsApiEnvelope() throws Exception {

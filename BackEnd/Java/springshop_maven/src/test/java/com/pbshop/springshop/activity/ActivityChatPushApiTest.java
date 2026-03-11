@@ -1,8 +1,7 @@
-package com.pbshop.springshop.community;
+package com.pbshop.springshop.activity;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -10,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
@@ -22,7 +20,6 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import com.pbshop.springshop.category.Category;
 import com.pbshop.springshop.category.CategoryRepository;
-import com.pbshop.springshop.inquiry.ProductInquiryRepository;
 import com.pbshop.springshop.product.PriceEntry;
 import com.pbshop.springshop.product.PriceEntryRepository;
 import com.pbshop.springshop.product.Product;
@@ -30,13 +27,12 @@ import com.pbshop.springshop.product.ProductRepository;
 import com.pbshop.springshop.product.Seller;
 import com.pbshop.springshop.product.SellerRepository;
 import com.pbshop.springshop.support.ApiIntegrationSupport;
-import com.pbshop.springshop.support.SupportTicketRepository;
 import com.pbshop.springshop.user.User;
 import com.pbshop.springshop.user.UserRepository;
 
 @ActiveProfiles("test")
 @Transactional
-class CommunityInquirySupportApiTest extends ApiIntegrationSupport {
+class ActivityChatPushApiTest extends ApiIntegrationSupport {
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -46,9 +42,6 @@ class CommunityInquirySupportApiTest extends ApiIntegrationSupport {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private BoardRepository boardRepository;
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -62,199 +55,163 @@ class CommunityInquirySupportApiTest extends ApiIntegrationSupport {
     @Autowired
     private PriceEntryRepository priceEntryRepository;
 
-    @Autowired
-    private ProductInquiryRepository productInquiryRepository;
-
-    @Autowired
-    private SupportTicketRepository supportTicketRepository;
-
     @Test
-    void userCanCreateAndManageCommunityPostFlow() throws Exception {
+    void activityFlowSupportsRecentProductsAndSearchHistory() throws Exception {
         String userToken = createUserAndLogin("USER");
-        Board board = createBoard("자유게시판", "free-board");
+        Category category = createCategory("키보드", "keyboard");
+        Product product = createProduct(category, "PB 키보드", "pb-keyboard");
+        Seller seller = createSeller("PB 스토어", "pb-store");
+        createPriceEntry(product, seller, new BigDecimal("89000"));
 
-        MvcResult createPostResult = mockMvc.perform(post("/api/v1/boards/" + board.getId() + "/posts")
+        mockMvc.perform(post("/api/v1/activities/recent-products/" + product.getId())
+                        .header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.productId").value(product.getId()));
+
+        mockMvc.perform(post("/api/v1/activities/searches")
                         .header("Authorization", "Bearer " + userToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "title": "첫 게시글",
-                                  "content": "커뮤니티 API 테스트"
+                                  "keyword": "기계식 키보드"
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.boardId").value(board.getId()))
+                .andExpect(jsonPath("$.data.keyword").value("기계식 키보드"));
+
+        mockMvc.perform(get("/api/v1/activities")
+                        .header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.recentProductCount").value(1))
+                .andExpect(jsonPath("$.data.searchCount").value(1));
+
+        MvcResult searches = mockMvc.perform(get("/api/v1/activities/searches")
+                        .header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].keyword").value("기계식 키보드"))
                 .andReturn();
 
-        long postId = objectMapper.readTree(createPostResult.getResponse().getContentAsString())
-                .path("data")
-                .path("id")
-                .asLong();
+        long searchId = objectMapper.readTree(searches.getResponse().getContentAsString()).path("data").get(0).path("id").asLong();
 
-        mockMvc.perform(get("/api/v1/boards/" + board.getId() + "/posts"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.items[0].id").value(postId));
-
-        mockMvc.perform(post("/api/v1/posts/" + postId + "/like")
+        mockMvc.perform(delete("/api/v1/activities/searches/" + searchId)
                         .header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.liked").value(true))
-                .andExpect(jsonPath("$.data.likeCount").value(1));
+                .andExpect(jsonPath("$.data.message").value("검색 기록이 삭제되었습니다."));
 
-        MvcResult commentResult = mockMvc.perform(post("/api/v1/posts/" + postId + "/comments")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "content": "첫 댓글"
-                                }
-                                """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.postId").value(postId))
-                .andReturn();
-
-        long commentId = objectMapper.readTree(commentResult.getResponse().getContentAsString())
-                .path("data")
-                .path("id")
-                .asLong();
-
-        mockMvc.perform(get("/api/v1/posts/" + postId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value(postId))
-                .andExpect(jsonPath("$.data.comments[0].id").value(commentId));
-
-        mockMvc.perform(delete("/api/v1/comments/" + commentId)
+        mockMvc.perform(delete("/api/v1/activities/searches")
                         .header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.message").value("댓글이 삭제되었습니다."));
-
-        mockMvc.perform(delete("/api/v1/posts/" + postId)
-                        .header("Authorization", "Bearer " + userToken))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.message").value("게시글이 삭제되었습니다."));
+                .andExpect(jsonPath("$.data.message").value("검색 기록이 모두 삭제되었습니다."));
     }
 
     @Test
-    void inquiryFlowSupportsSecretMaskingAndSellerAnswer() throws Exception {
-        String userToken = createUserAndLogin("USER");
-        String sellerToken = createUserAndLogin("SELLER");
-        Category category = createCategory("노트북", "laptop");
-        Product product = createProduct(category, "PB 노트북", "pb-laptop");
-        Seller seller = createSeller("PB셀러", "pb-seller");
-        createPriceEntry(product, seller, new BigDecimal("1299000"));
-
-        MvcResult inquiryResult = mockMvc.perform(post("/api/v1/products/" + product.getId() + "/inquiries")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "title": "재고 문의",
-                                  "content": "오늘 출고 가능한가요?",
-                                  "isSecret": true
-                                }
-                                """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.title").value("재고 문의"))
-                .andReturn();
-
-        long inquiryId = objectMapper.readTree(inquiryResult.getResponse().getContentAsString())
-                .path("data")
-                .path("id")
-                .asLong();
-
-        mockMvc.perform(get("/api/v1/products/" + product.getId() + "/inquiries"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].content").value("비밀 문의입니다."));
-
-        mockMvc.perform(post("/api/v1/inquiries/" + inquiryId + "/answer")
-                        .header("Authorization", "Bearer " + sellerToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "answer": "오늘 바로 출고 가능합니다."
-                                }
-                                """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.status").value("ANSWERED"))
-                .andExpect(jsonPath("$.data.answer").value("오늘 바로 출고 가능합니다."));
-
-        mockMvc.perform(get("/api/v1/inquiries/me")
-                        .header("Authorization", "Bearer " + userToken))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].id").value(inquiryId))
-                .andExpect(jsonPath("$.data[0].content").value("오늘 출고 가능한가요?"));
-
-        mockMvc.perform(delete("/api/v1/inquiries/" + inquiryId)
-                        .header("Authorization", "Bearer " + userToken))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.message").value("문의가 삭제되었습니다."));
-    }
-
-    @Test
-    void supportFlowSupportsUserTicketAndAdminManagement() throws Exception {
+    void chatFlowSupportsRoomCreationJoinAndMessages() throws Exception {
         String userToken = createUserAndLogin("USER");
         String adminToken = createUserAndLogin("ADMIN");
+        User adminUser = findUserByRole("ADMIN");
 
-        MvcResult ticketResult = mockMvc.perform(post("/api/v1/support/tickets")
+        MvcResult roomResult = mockMvc.perform(post("/api/v1/chat/rooms")
                         .header("Authorization", "Bearer " + userToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "category": "배송",
-                                  "title": "배송 상태 확인",
-                                  "content": "주문 건 배송 상태를 알고 싶습니다."
+                                  "title": "1:1 상담",
+                                  "participantUserIds": [%d]
                                 }
-                                """))
+                                """.formatted(adminUser.getId())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.status").value("OPEN"))
+                .andExpect(jsonPath("$.data.roomType").value("DIRECT"))
                 .andReturn();
 
-        long ticketId = objectMapper.readTree(ticketResult.getResponse().getContentAsString())
-                .path("data")
-                .path("id")
-                .asLong();
+        long roomId = objectMapper.readTree(roomResult.getResponse().getContentAsString()).path("data").path("id").asLong();
 
-        mockMvc.perform(post("/api/v1/support/tickets/" + ticketId + "/reply")
-                        .header("Authorization", "Bearer " + adminToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "content": "배송팀에 확인 후 안내드리겠습니다."
-                                }
-                                """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.adminReply").value(true));
-
-        mockMvc.perform(get("/api/v1/support/tickets/" + ticketId)
-                        .header("Authorization", "Bearer " + userToken))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value(ticketId))
-                .andExpect(jsonPath("$.data.replies[0].adminReply").value(true));
-
-        mockMvc.perform(get("/api/v1/admin/support/tickets")
+        mockMvc.perform(post("/api/v1/chat/rooms/" + roomId + "/join")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.items[0].id").value(ticketId));
+                .andExpect(jsonPath("$.data.joined").value(true));
 
-        mockMvc.perform(patch("/api/v1/admin/support/tickets/" + ticketId + "/status")
-                        .header("Authorization", "Bearer " + adminToken)
+        mockMvc.perform(post("/api/v1/chat/rooms/" + roomId + "/messages")
+                        .header("Authorization", "Bearer " + userToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "status": "RESOLVED"
+                                  "content": "문의드립니다."
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.status").value("RESOLVED"));
+                .andExpect(jsonPath("$.data.roomId").value(roomId));
+
+        mockMvc.perform(get("/api/v1/chat/rooms")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].id").value(roomId));
+
+        mockMvc.perform(get("/api/v1/chat/rooms/" + roomId + "/messages")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].content").value("문의드립니다."));
     }
 
-    private Board createBoard(String name, String slug) {
-        Board board = new Board();
-        board.setName(name);
-        board.setSlug(slug);
-        board.setDescription(name + " 설명");
-        board.setActive(true);
-        return boardRepository.save(board);
+    @Test
+    void pushFlowSupportsSubscriptionAndPreferenceUpdate() throws Exception {
+        String userToken = createUserAndLogin("USER");
+
+        mockMvc.perform(post("/api/v1/push/subscriptions")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "endpoint": "https://push.pbshop.local/subscription/1",
+                                  "p256dh": "p256dh-value",
+                                  "auth": "auth-value",
+                                  "vapidPublicKey": "vapid-key"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("ACTIVE"));
+
+        mockMvc.perform(get("/api/v1/push/subscriptions")
+                        .header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].endpoint").value("https://push.pbshop.local/subscription/1"));
+
+        mockMvc.perform(get("/api/v1/push/preferences")
+                        .header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.marketingEnabled").value(true));
+
+        mockMvc.perform(post("/api/v1/push/preferences")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "marketingEnabled": false,
+                                  "orderEnabled": true,
+                                  "chatEnabled": false,
+                                  "dealEnabled": true
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.marketingEnabled").value(false))
+                .andExpect(jsonPath("$.data.chatEnabled").value(false));
+
+        mockMvc.perform(post("/api/v1/push/subscriptions/unsubscribe")
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "endpoint": "https://push.pbshop.local/subscription/1"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("INACTIVE"));
+    }
+
+    private User findUserByRole(String role) {
+        return userRepository.findAll().stream()
+                .filter(user -> role.equalsIgnoreCase(user.getRole()))
+                .findFirst()
+                .orElseThrow();
     }
 
     private Category createCategory(String name, String slug) {
@@ -273,7 +230,7 @@ class CommunityInquirySupportApiTest extends ApiIntegrationSupport {
         product.setName(name);
         product.setSlug(slug);
         product.setBrand("PB");
-        product.setDescription("커뮤니티 테스트 상품");
+        product.setDescription("활동 테스트 상품");
         product.setThumbnailUrl("https://cdn.pbshop.local/" + slug + ".png");
         product.setReviewCount(0);
         product.setRatingAvg(BigDecimal.ZERO);
@@ -309,7 +266,7 @@ class CommunityInquirySupportApiTest extends ApiIntegrationSupport {
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode("Password123!"));
         user.setName(role.toLowerCase() + "-user");
-        user.setPhone("01055556666");
+        user.setPhone("01012349876");
         user.setRole(role);
         user.setStatus("ACTIVE");
         user.setEmailVerified(true);

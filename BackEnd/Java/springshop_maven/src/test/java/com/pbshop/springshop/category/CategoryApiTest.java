@@ -18,13 +18,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MvcResult;
 
-import com.pbshop.springshop.support.ApiIntegrationTestSupport;
+import com.pbshop.springshop.support.ApiIntegrationSupport;
 import com.pbshop.springshop.user.User;
 import com.pbshop.springshop.user.UserRepository;
 
 @ActiveProfiles("test")
 @Transactional
-class CategoryApiTest extends ApiIntegrationTestSupport {
+class CategoryApiTest extends ApiIntegrationSupport {
 
     @Autowired
     private ObjectMapper objectMapper;

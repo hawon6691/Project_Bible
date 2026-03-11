@@ -30,13 +30,13 @@ import com.pbshop.springshop.product.Product;
 import com.pbshop.springshop.product.ProductRepository;
 import com.pbshop.springshop.product.Seller;
 import com.pbshop.springshop.product.SellerRepository;
-import com.pbshop.springshop.support.ApiIntegrationTestSupport;
+import com.pbshop.springshop.support.ApiIntegrationSupport;
 import com.pbshop.springshop.user.User;
 import com.pbshop.springshop.user.UserRepository;
 
 @ActiveProfiles("test")
 @Transactional
-class OrderPaymentApiTest extends ApiIntegrationTestSupport {
+class OrderPaymentApiTest extends ApiIntegrationSupport {
 
     @Autowired
     private ObjectMapper objectMapper;

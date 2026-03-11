@@ -60,6 +60,7 @@ public class SecurityConfig {
                 )
                 .permitAll()
                 .requestMatchers(HttpMethod.GET,
+                    "/api/v1/users/*/profile",
                     "/api/v1/auth/login/*",
                     "/api/v1/auth/callback/*"
                 )

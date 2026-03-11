@@ -1,5 +1,6 @@
 package com.pbshop.springshop.user;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 import jakarta.persistence.Column;
@@ -43,6 +44,9 @@ public class User {
 
     @Column(name = "bio")
     private String bio;
+
+    @Column(name = "point_balance", nullable = false, precision = 15, scale = 2)
+    private BigDecimal pointBalance = BigDecimal.ZERO;
 
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -124,5 +128,13 @@ public class User {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public BigDecimal getPointBalance() {
+        return pointBalance;
+    }
+
+    public void setPointBalance(BigDecimal pointBalance) {
+        this.pointBalance = pointBalance;
     }
 }

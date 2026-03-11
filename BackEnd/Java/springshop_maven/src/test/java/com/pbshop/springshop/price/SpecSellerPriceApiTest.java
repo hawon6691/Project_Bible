@@ -33,13 +33,13 @@ import com.pbshop.springshop.product.Seller;
 import com.pbshop.springshop.product.SellerRepository;
 import com.pbshop.springshop.spec.SpecDefinition;
 import com.pbshop.springshop.spec.SpecDefinitionRepository;
-import com.pbshop.springshop.support.ApiIntegrationTestSupport;
+import com.pbshop.springshop.support.ApiIntegrationSupport;
 import com.pbshop.springshop.user.User;
 import com.pbshop.springshop.user.UserRepository;
 
 @ActiveProfiles("test")
 @Transactional
-class SpecSellerPriceApiTest extends ApiIntegrationTestSupport {
+class SpecSellerPriceApiTest extends ApiIntegrationSupport {
 
     @Autowired
     private ObjectMapper objectMapper;

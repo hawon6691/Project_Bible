@@ -21,13 +21,13 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import com.pbshop.springshop.category.Category;
 import com.pbshop.springshop.category.CategoryRepository;
-import com.pbshop.springshop.support.ApiIntegrationTestSupport;
+import com.pbshop.springshop.support.ApiIntegrationSupport;
 import com.pbshop.springshop.user.User;
 import com.pbshop.springshop.user.UserRepository;
 
 @ActiveProfiles("test")
 @Transactional
-class ProductApiTest extends ApiIntegrationTestSupport {
+class ProductApiTest extends ApiIntegrationSupport {
 
     @Autowired
     private ObjectMapper objectMapper;

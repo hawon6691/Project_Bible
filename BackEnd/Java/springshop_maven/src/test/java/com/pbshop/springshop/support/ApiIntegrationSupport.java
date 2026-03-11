@@ -7,7 +7,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public abstract class ApiIntegrationTestSupport {
+public abstract class ApiIntegrationSupport {
 
     @Autowired
     protected MockMvc mockMvc;

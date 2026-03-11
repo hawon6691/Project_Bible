@@ -22,11 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pbshop.springshop.common.exception.BusinessException;
 import com.pbshop.springshop.common.exception.ErrorCode;
-import com.pbshop.springshop.support.ApiIntegrationTestSupport;
+import com.pbshop.springshop.support.ApiIntegrationSupport;
 
 @Import(ApiContractSupportTest.TestController.class)
 @ActiveProfiles("test")
-class ApiContractSupportTest extends ApiIntegrationTestSupport {
+class ApiContractSupportTest extends ApiIntegrationSupport {
 
     @Test
     void unauthorizedRequestsUseApiEnvelope() throws Exception {

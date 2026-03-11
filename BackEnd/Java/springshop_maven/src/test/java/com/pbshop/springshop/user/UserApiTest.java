@@ -22,11 +22,11 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import com.pbshop.springshop.auth.AuthVerificationCode;
 import com.pbshop.springshop.auth.AuthVerificationCodeRepository;
-import com.pbshop.springshop.support.ApiIntegrationTestSupport;
+import com.pbshop.springshop.support.ApiIntegrationSupport;
 
 @ActiveProfiles("test")
 @Transactional
-class UserApiTest extends ApiIntegrationTestSupport {
+class UserApiTest extends ApiIntegrationSupport {
 
     @Autowired
     private ObjectMapper objectMapper;

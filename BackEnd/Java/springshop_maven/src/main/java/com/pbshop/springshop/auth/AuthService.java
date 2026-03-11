@@ -130,6 +130,10 @@ public class AuthService {
             throw new BusinessException(ErrorCode.FORBIDDEN, "이메일 인증이 필요합니다.");
         }
 
+        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "활성 상태의 계정만 로그인할 수 있습니다.");
+        }
+
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다.");
         }
@@ -157,6 +161,10 @@ public class AuthService {
 
         User user = userRepository.findById(refreshToken.getUserId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다."));
+
+        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "활성 상태의 계정만 토큰을 재발급할 수 있습니다.");
+        }
 
         return issueTokenPair(user, false);
     }

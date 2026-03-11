@@ -112,4 +112,8 @@ public class PriceEntry {
     public void setPurchaseUrl(String purchaseUrl) {
         this.purchaseUrl = purchaseUrl;
     }
+
+    public OffsetDateTime getCheckedAt() {
+        return checkedAt;
+    }
 }

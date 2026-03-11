@@ -22,11 +22,11 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import com.pbshop.springshop.auth.AuthVerificationCode;
 import com.pbshop.springshop.auth.AuthVerificationCodeRepository;
-import com.pbshop.springshop.system.SystemControllerTestSupport;
+import com.pbshop.springshop.support.ApiIntegrationTestSupport;
 
 @ActiveProfiles("test")
 @Transactional
-class UserApiTest extends SystemControllerTestSupport {
+class UserApiTest extends ApiIntegrationTestSupport {
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -239,3 +239,4 @@ class UserApiTest extends SystemControllerTestSupport {
         return json.path("data").path("email").asText();
     }
 }
+

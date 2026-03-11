@@ -7,13 +7,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.ActiveProfiles;
+
+import com.pbshop.springshop.support.ApiIntegrationTestSupport;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class SystemControllerTest extends SystemControllerTestSupport {
+class SystemControllerTest extends ApiIntegrationTestSupport {
 
     @Test
     void healthEndpointReturnsApiEnvelope() throws Exception {
@@ -23,3 +24,4 @@ class SystemControllerTest extends SystemControllerTestSupport {
             .andExpect(jsonPath("$.data.status").value("UP"));
     }
 }
+

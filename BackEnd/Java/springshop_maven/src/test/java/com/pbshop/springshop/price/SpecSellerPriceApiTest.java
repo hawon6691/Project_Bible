@@ -33,13 +33,13 @@ import com.pbshop.springshop.product.Seller;
 import com.pbshop.springshop.product.SellerRepository;
 import com.pbshop.springshop.spec.SpecDefinition;
 import com.pbshop.springshop.spec.SpecDefinitionRepository;
-import com.pbshop.springshop.system.SystemControllerTestSupport;
+import com.pbshop.springshop.support.ApiIntegrationTestSupport;
 import com.pbshop.springshop.user.User;
 import com.pbshop.springshop.user.UserRepository;
 
 @ActiveProfiles("test")
 @Transactional
-class SpecSellerPriceApiTest extends SystemControllerTestSupport {
+class SpecSellerPriceApiTest extends ApiIntegrationTestSupport {
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -367,3 +367,4 @@ class SpecSellerPriceApiTest extends SystemControllerTestSupport {
                 .asText();
     }
 }
+

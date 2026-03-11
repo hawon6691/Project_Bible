@@ -21,13 +21,13 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import com.pbshop.springshop.category.Category;
 import com.pbshop.springshop.category.CategoryRepository;
-import com.pbshop.springshop.system.SystemControllerTestSupport;
+import com.pbshop.springshop.support.ApiIntegrationTestSupport;
 import com.pbshop.springshop.user.User;
 import com.pbshop.springshop.user.UserRepository;
 
 @ActiveProfiles("test")
 @Transactional
-class ProductApiTest extends SystemControllerTestSupport {
+class ProductApiTest extends ApiIntegrationTestSupport {
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -241,3 +241,4 @@ class ProductApiTest extends SystemControllerTestSupport {
                 .asText();
     }
 }
+

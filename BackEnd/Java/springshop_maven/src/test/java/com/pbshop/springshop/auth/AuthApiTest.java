@@ -18,12 +18,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MvcResult;
 
-import com.pbshop.springshop.system.SystemControllerTestSupport;
+import com.pbshop.springshop.support.ApiIntegrationTestSupport;
 import com.pbshop.springshop.user.UserRepository;
 
 @ActiveProfiles("test")
 @Transactional
-class AuthApiTest extends SystemControllerTestSupport {
+class AuthApiTest extends ApiIntegrationTestSupport {
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -247,3 +247,4 @@ class AuthApiTest extends SystemControllerTestSupport {
                 .andExpect(jsonPath("$.error.code").value("AUTH_401"));
     }
 }
+

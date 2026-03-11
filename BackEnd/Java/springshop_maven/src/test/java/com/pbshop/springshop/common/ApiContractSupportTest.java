@@ -22,11 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pbshop.springshop.common.exception.BusinessException;
 import com.pbshop.springshop.common.exception.ErrorCode;
-import com.pbshop.springshop.system.SystemControllerTestSupport;
+import com.pbshop.springshop.support.ApiIntegrationTestSupport;
 
 @Import(ApiContractSupportTest.TestController.class)
 @ActiveProfiles("test")
-class ApiContractSupportTest extends SystemControllerTestSupport {
+class ApiContractSupportTest extends ApiIntegrationTestSupport {
 
     @Test
     void unauthorizedRequestsUseApiEnvelope() throws Exception {
@@ -83,3 +83,4 @@ class ApiContractSupportTest extends SystemControllerTestSupport {
     record ValidationRequest(@NotBlank(message = "name is required") String name) {
     }
 }
+

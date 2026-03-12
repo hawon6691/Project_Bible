@@ -24,7 +24,7 @@ class FlywayMigrationTest {
     @Test
     void appliesInitialMigrationAndCreatesCoreTables() {
         assertThat(flyway.info().current()).isNotNull();
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("9");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("10");
 
         List<String> tables = jdbcTemplate.queryForList(
                 "SELECT table_name FROM information_schema.tables WHERE table_schema = 'PUBLIC'",
@@ -68,7 +68,9 @@ class FlywayMigrationTest {
                         "CHAT_ROOM_MEMBERS",
                         "CHAT_MESSAGES",
                         "PUSH_SUBSCRIPTIONS",
-                        "PUSH_PREFERENCES"
+                        "PUSH_PREFERENCES",
+                        "DEALS",
+                        "RECOMMENDATIONS"
                 );
     }
 }

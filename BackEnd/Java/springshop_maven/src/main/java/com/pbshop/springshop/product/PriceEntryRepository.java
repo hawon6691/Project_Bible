@@ -15,6 +15,9 @@ public interface PriceEntryRepository extends JpaRepository<PriceEntry, Long> {
     List<PriceEntry> findByProductIdOrderByPriceAsc(Long productId);
 
     @EntityGraph(attributePaths = {"seller", "product"})
+    List<PriceEntry> findByProductIdOrderByCheckedAtDesc(Long productId);
+
+    @EntityGraph(attributePaths = {"seller", "product"})
     Optional<PriceEntry> findDetailById(Long id);
 
     @Query("""

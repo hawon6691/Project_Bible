@@ -10,19 +10,6 @@
 
 ### 1.1 언어별 기술 스택
 
-> 현재 기준 구현(Reference Implementation)은 `TypeScript + NestJS + PostgreSQL`이며, 아래 나머지 언어 스택은 동일 요구사항/명세를 기준으로 순차 구현할 예정인 후보 스택이다.
-
-| 언어       | 구현 상태 | 프레임워크/런타임 | ORM/데이터 접근        | 데이터베이스               | 실시간 통신 | 큐/비동기    | 인증/보안      | 검색/스토리지/기타                           |
-| ---------- | --------- | ----------------- | ---------------------- | -------------------------- | ----------- | ------------ | -------------- | -------------------------------------------- |
-| TypeScript | 기준 구현 | NestJS            | TypeORM                | PostgreSQL                 | WebSocket   | Bull Queue   | JWT, Passport  | Redis, Elasticsearch, Nodemailer, FFmpeg, S3 |
-| PHP        | 예정 스택 | Laravel           | Eloquent ORM           | PostgreSQL, MySQL, MariaDB | WebSocket   | Queue        | JWT, OAuth 2.0 | Redis, Elasticsearch, Mail, Storage          |
-| JavaScript | 예정 스택 | Express           | Sequelize, Prisma      | PostgreSQL, MySQL          | Socket.IO   | Queue        | JWT, OAuth 2.0 | Redis, Elasticsearch, Mail, Storage          |
-| Java       | 예정 스택 | Spring Boot       | Spring Data JPA        | PostgreSQL, MySQL          | WebSocket   | Batch, Queue | JWT, OAuth 2.0 | Redis, Elasticsearch, Mail, Storage          |
-| Python     | 예정 스택 | Django, FastAPI   | Django ORM, SQLAlchemy | PostgreSQL, MySQL          | WebSocket   | Queue        | JWT, OAuth 2.0 | Redis, Elasticsearch, Mail, Storage          |
-| Kotlin     | 예정 스택 | Spring Boot       | Spring Data JPA        | PostgreSQL, MySQL          | WebSocket   | Batch, Queue | JWT, OAuth 2.0 | Redis, Elasticsearch, Mail, Storage          |
-
----
-
 ## 2. 사용자 역할 (Roles)
 
 | 역할   | 설명                                                                |
@@ -598,7 +585,7 @@
 - Health Check: DB, Redis, Elasticsearch 상태 모니터링 엔드포인트 (/health)
 - 비디오 트랜스코딩: FFmpeg 연동 Bull Queue 백그라운드 처리
 
-### 4.6 API 응답 형식
+### 4.10 API 응답 형식
 
 ```json
 // 성공
@@ -672,28 +659,3 @@ CONFIRMED (구매확정) → 포인트 적립 (결제금액 × 1%)
 
 ---
 
-## 7. TypeScript / PostgreSQL 기준 구현 정합 메모 (2026-03-06)
-
-- 현재 `TypeScript + NestJS + PostgreSQL` 구현은 본 요구사항 문서를 기반으로 작성되었으며, 쇼핑몰 핵심 도메인(`Auth`, `User`, `Category`, `Product`, `Spec`, `Seller`, `Price`, `Cart`, `Order`, `Payment`, `Review`, `Wishlist`, `Point`, `Community`, `Inquiry`, `Support`, `FAQ`, `Activity`, `Chat`, `Push`)은 문서 범위를 벗어나지 않습니다.
-- 다만 실제 구현은 초기 요구사항보다 운영/복구/관측 영역이 확장되어 아래 항목이 추가되었습니다.
-  - `Query` 읽기 모델
-  - `SearchSync` 인덱스 Outbox
-  - `Resilience / Circuit Breaker`
-  - `Error Code Catalog`
-  - `Queue Admin`
-  - `Ops Dashboard`
-  - `Observability Dashboard`
-- 실시간 채팅은 현재 기준 `HTTP API + Socket.IO`를 함께 구현했습니다.
-  - 구현 이벤트: `joinRoom`, `sendMessage`, `newMessage`
-  - 요구사항에 있던 `채팅방 종료`, `읽음 처리`, `타이핑 표시`는 향후 고도화 항목으로 유지합니다.
-- 랭킹 기능은 현재 기준 아래 3개가 구현되었습니다.
-  - 인기 상품 랭킹
-  - 인기 검색어 랭킹
-  - 관리자 인기 점수 재계산
-  - 요구사항의 `가격 하락 랭킹`, `시장 점유율 차트`는 향후 확장 항목으로 유지합니다.
-- 브라우저 푸시는 현재 기준 아래 기능이 구현되었습니다.
-  - 푸시 구독 등록/해제
-  - 내 활성 구독 목록 조회
-  - 알림 설정 조회/변경
-  - 문서상 `푸시 알림 내역`, `관리자 수동 발송`, `발송 통계`는 향후 확장 항목으로 유지합니다.
-- PostgreSQL 기준 원천은 점차 `수기 SQL 문서`보다 `TypeORM Entity + Migration` 쪽으로 확장되었습니다. 실제 테이블명/구조 확인 시 `BackEnd/TypeScript/nestshop/src/**/entities` 및 `src/database/migrations`를 함께 참조해야 합니다.

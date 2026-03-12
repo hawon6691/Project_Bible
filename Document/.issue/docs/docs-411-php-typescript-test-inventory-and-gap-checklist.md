@@ -23,7 +23,7 @@ branch: "docs/#411/php-typescript-test-inventory-and-gap-checklist"
 
 ## 📋 작업 항목
 
-- [x] `Document/05_test-code-list.md` 작성
+- [x] `Document/05_test-specification.md` 작성
 - [x] TypeScript 실제 테스트 파일 기준 이름 정리
 - [x] PHP 실제 테스트 파일 기준 이름 정리
 - [x] 확장자를 제외한 통합 테스트 이름 기준 수립
@@ -36,11 +36,11 @@ branch: "docs/#411/php-typescript-test-inventory-and-gap-checklist"
 
 ## ✅ 산출물
 
-- `Document/05_test-code-list.md`
+- `Document/05_test-specification.md`
 - `Document/06_php-typescript-test-gap-checklist.md`
 
 ## 메모
 
-- `05_test-code-list.md`는 실제 테스트 코드 인벤토리 문서다.
+- `05_test-specification.md`는 언어 공통 테스트 명세 문서다.
 - `06_php-typescript-test-gap-checklist.md`는 이후 구현 순서를 위한 실행 체크리스트 문서다.
 - 다음 단계에서는 이 문서를 기준으로 PHP와 TypeScript 테스트 보강 이슈를 분리할 수 있다.

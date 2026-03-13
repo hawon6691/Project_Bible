@@ -1,6 +1,7 @@
 package com.pbshop.springshop.system;
 
 import com.pbshop.springshop.common.api.ApiResponse;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,11 +17,10 @@ public class SystemController {
 
     @GetMapping("/health")
     public ApiResponse<Map<String, Object>> health() {
-        return ApiResponse.success(
-            Map.of(
-                "status", "UP",
-                "application", applicationName
-            )
-        );
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("status", "UP");
+        payload.put("application", applicationName);
+        payload.put("language", "java");
+        return ApiResponse.success(payload);
     }
 }

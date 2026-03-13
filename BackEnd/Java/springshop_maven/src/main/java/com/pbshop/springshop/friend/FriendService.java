@@ -165,23 +165,23 @@ public class FriendService {
     }
 
     private Map<String, Object> toRequestResponse(Friendship friendship) {
-        return Map.of(
-                "id", friendship.getId(),
-                "requesterId", friendship.getRequester().getId(),
-                "addresseeId", friendship.getAddressee().getId(),
-                "status", friendship.getStatus(),
-                "createdAt", friendship.getCreatedAt() == null ? null : friendship.getCreatedAt().toString()
-        );
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("id", friendship.getId());
+        response.put("requesterId", friendship.getRequester().getId());
+        response.put("addresseeId", friendship.getAddressee().getId());
+        response.put("status", friendship.getStatus());
+        response.put("createdAt", friendship.getCreatedAt() == null ? null : friendship.getCreatedAt().toString());
+        return response;
     }
 
     private Map<String, Object> toActivityResponse(FriendActivity activity) {
-        return Map.of(
-                "id", activity.getId(),
-                "userId", activity.getUser().getId(),
-                "type", activity.getType(),
-                "message", activity.getMessage(),
-                "createdAt", activity.getCreatedAt() == null ? null : activity.getCreatedAt().toString()
-        );
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("id", activity.getId());
+        response.put("userId", activity.getUser().getId());
+        response.put("type", activity.getType());
+        response.put("message", activity.getMessage());
+        response.put("createdAt", activity.getCreatedAt() == null ? null : activity.getCreatedAt().toString());
+        return response;
     }
 
     private Map<String, Object> pagination(int total) {

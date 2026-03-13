@@ -24,7 +24,7 @@ class FlywayMigrationTest {
     @Test
     void appliesInitialMigrationAndCreatesCoreTables() {
         assertThat(flyway.info().current()).isNotNull();
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("12");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("13");
 
         List<String> tables = jdbcTemplate.queryForList(
                 "SELECT table_name FROM information_schema.tables WHERE table_schema = 'PUBLIC'",
@@ -93,7 +93,15 @@ class FlywayMigrationTest {
                         "NEWS_CATEGORIES",
                         "NEWS",
                         "NEWS_PRODUCTS",
-                        "PRODUCT_MAPPINGS"
+                        "PRODUCT_MAPPINGS",
+                        "USED_MARKET_PRICES",
+                        "AUTO_MODELS",
+                        "AUTO_TRIMS",
+                        "AUTO_OPTIONS",
+                        "AUTO_LEASE_OFFERS",
+                        "AUCTIONS",
+                        "AUCTION_BIDS",
+                        "COMPARE_ITEMS"
                 );
     }
 }

@@ -56,12 +56,29 @@ public class SecurityConfig {
                     "/api/v1/auth/refresh",
                     "/api/v1/auth/password-reset/request",
                     "/api/v1/auth/password-reset/verify",
-                    "/api/v1/auth/password-reset/confirm"
+                    "/api/v1/auth/password-reset/confirm",
+                    "/api/v1/auto/estimate",
+                    "/api/v1/compare/add"
+                )
+                .permitAll()
+                .requestMatchers(HttpMethod.DELETE,
+                    "/api/v1/compare/*"
                 )
                 .permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/api/v1/categories",
                     "/api/v1/categories/*",
+                    "/api/v1/analytics/products/*/lowest-ever",
+                    "/api/v1/analytics/products/*/unit-price",
+                    "/api/v1/used-market/products/*/price",
+                    "/api/v1/used-market/categories/*/prices",
+                    "/api/v1/auto/models",
+                    "/api/v1/auto/models/*/trims",
+                    "/api/v1/auto/models/*/lease-offers",
+                    "/api/v1/auctions",
+                    "/api/v1/auctions/*",
+                    "/api/v1/compare",
+                    "/api/v1/compare/detail",
                     "/api/v1/deals",
                     "/api/v1/deals/*",
                     "/api/v1/products/*/real-price",
@@ -77,6 +94,7 @@ public class SecurityConfig {
                     "/api/v1/pc-builds/*",
                     "/api/v1/pc-builds/shared/*",
                     "/api/v1/pc-builds/popular",
+                    "/api/v1/media/presigned-url",
                     "/api/v1/media/stream/*",
                     "/api/v1/media/*/metadata",
                     "/api/v1/news",

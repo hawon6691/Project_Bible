@@ -1,5 +1,6 @@
 package com.pbshop.springshop.media;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -52,7 +53,12 @@ public class MediaService {
     @Transactional(readOnly = true)
     public Map<String, Object> metadata(Long id) {
         MediaAsset asset = requireAsset(id);
-        return Map.of("mime", asset.getMimeType(), "size", asset.getSize(), "duration", null, "resolution", null);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("mime", asset.getMimeType());
+        response.put("size", asset.getSize());
+        response.put("duration", null);
+        response.put("resolution", null);
+        return response;
     }
     public Map<String, Object> delete(AuthenticatedUserPrincipal principal, Long id) {
         User user = requireCurrentUser(principal);
@@ -67,6 +73,15 @@ public class MediaService {
         return userRepository.findById(principal.userId()).orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다."));
     }
     private Map<String, Object> toResponse(MediaAsset asset) {
-        return Map.of("id", asset.getId(), "ownerType", asset.getOwnerType(), "ownerId", asset.getOwnerId(), "fileName", asset.getFileName(), "fileUrl", asset.getFileUrl(), "mimeType", asset.getMimeType(), "size", asset.getSize(), "createdAt", asset.getCreatedAt() == null ? null : asset.getCreatedAt().toString());
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("id", asset.getId());
+        response.put("ownerType", asset.getOwnerType());
+        response.put("ownerId", asset.getOwnerId());
+        response.put("fileName", asset.getFileName());
+        response.put("fileUrl", asset.getFileUrl());
+        response.put("mimeType", asset.getMimeType());
+        response.put("size", asset.getSize());
+        response.put("createdAt", asset.getCreatedAt() == null ? null : asset.getCreatedAt().toString());
+        return response;
     }
 }

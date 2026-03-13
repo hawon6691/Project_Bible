@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 import com.pbshop.springshop.common.api.ApiResponse;
 
@@ -35,6 +36,16 @@ public class ApiExceptionHandler {
                         ErrorCode.VALIDATION_ERROR.code(),
                         ErrorCode.VALIDATION_ERROR.message(),
                         details
+                ));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodNotSupported(HttpRequestMethodNotSupportedException exception) {
+        return ResponseEntity.status(405)
+                .body(ApiResponse.failure(
+                        "COMMON_405",
+                        "허용되지 않은 요청 메서드입니다.",
+                        Map.of("method", exception.getMethod())
                 ));
     }
 

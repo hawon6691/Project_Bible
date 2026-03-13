@@ -66,6 +66,10 @@ public class SecurityConfig {
                 )
                 .permitAll()
                 .requestMatchers(HttpMethod.GET,
+                    "/api/v1/errors/codes",
+                    "/api/v1/errors/codes/*",
+                    "/api/v1/query/products",
+                    "/api/v1/query/products/*",
                     "/api/v1/categories",
                     "/api/v1/categories/*",
                     "/api/v1/analytics/products/*/lowest-ever",

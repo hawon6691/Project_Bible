@@ -62,7 +62,10 @@ public class ShortformService {
     @Transactional(readOnly = true)
     public Map<String, Object> feed() {
         List<Map<String, Object>> items = shortformRepository.findAllByOrderByIdDesc().stream().map(this::toResponse).toList();
-        return Map.of("items", items, "nextCursor", null);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("items", items);
+        response.put("nextCursor", null);
+        return response;
     }
     @Transactional(readOnly = true)
     public Map<String, Object> show(Long id) {
@@ -125,7 +128,14 @@ public class ShortformService {
         }).toList();
     }
     @Transactional(readOnly = true)
-    public Map<String, Object> transcodeStatus(Long id) { Shortform shortform = requireShortform(id); return Map.of("status", shortform.getTranscodeStatus(), "errorMessage", null, "transcodedAt", shortform.getUpdatedAt() == null ? null : shortform.getUpdatedAt().toString()); }
+    public Map<String, Object> transcodeStatus(Long id) {
+        Shortform shortform = requireShortform(id);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("status", shortform.getTranscodeStatus());
+        response.put("errorMessage", null);
+        response.put("transcodedAt", shortform.getUpdatedAt() == null ? null : shortform.getUpdatedAt().toString());
+        return response;
+    }
     public Map<String, Object> retry(AuthenticatedUserPrincipal principal, Long id) { Shortform shortform = requireOwnedShortform(principal, id); shortform.setTranscodeStatus("QUEUED"); return Map.of("message", "트랜스코딩 재시도가 등록되었습니다.", "queued", true); }
     public Map<String, Object> delete(AuthenticatedUserPrincipal principal, Long id) { Shortform shortform = requireOwnedShortform(principal, id); shortformProductRepository.deleteByShortformId(id); shortformRepository.delete(shortform); return Map.of("message", "숏폼이 삭제되었습니다."); }
     @Transactional(readOnly = true)
@@ -149,5 +159,13 @@ public class ShortformService {
         response.put("updatedAt", shortform.getUpdatedAt() == null ? null : shortform.getUpdatedAt().toString());
         return response;
     }
-    private Map<String, Object> toComment(ShortformComment comment) { return Map.of("id", comment.getId(), "shortformId", comment.getShortform().getId(), "userId", comment.getUser().getId(), "content", comment.getContent(), "createdAt", comment.getCreatedAt() == null ? null : comment.getCreatedAt().toString()); }
+    private Map<String, Object> toComment(ShortformComment comment) {
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("id", comment.getId());
+        item.put("shortformId", comment.getShortform().getId());
+        item.put("userId", comment.getUser().getId());
+        item.put("content", comment.getContent());
+        item.put("createdAt", comment.getCreatedAt() == null ? null : comment.getCreatedAt().toString());
+        return item;
+    }
 }

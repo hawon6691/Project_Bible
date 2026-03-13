@@ -162,7 +162,17 @@ public class PcBuilderService {
         if (!"ADMIN".equalsIgnoreCase(principal.role())) { throw new BusinessException(ErrorCode.FORBIDDEN, "관리자 권한이 필요합니다."); }
     }
     private Map<String, Object> page(List<Map<String, Object>> items) { return Map.of("items", items, "pagination", Map.of("page", 1, "limit", items.isEmpty() ? 20 : items.size(), "total", items.size(), "totalPages", items.isEmpty() ? 0 : 1)); }
-    private Map<String, Object> toSummary(PcBuild build) { return Map.of("id", build.getId(), "name", build.getName(), "description", build.getDescription() == null ? "" : build.getDescription(), "shareCode", build.getShareCode() == null ? "" : build.getShareCode(), "viewCount", build.getViewCount(), "createdAt", build.getCreatedAt() == null ? null : build.getCreatedAt().toString(), "updatedAt", build.getUpdatedAt() == null ? null : build.getUpdatedAt().toString()); }
+    private Map<String, Object> toSummary(PcBuild build) {
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("id", build.getId());
+        item.put("name", build.getName());
+        item.put("description", build.getDescription() == null ? "" : build.getDescription());
+        item.put("shareCode", build.getShareCode() == null ? "" : build.getShareCode());
+        item.put("viewCount", build.getViewCount());
+        item.put("createdAt", build.getCreatedAt() == null ? null : build.getCreatedAt().toString());
+        item.put("updatedAt", build.getUpdatedAt() == null ? null : build.getUpdatedAt().toString());
+        return item;
+    }
     private Map<String, Object> toDetail(PcBuild build) {
         List<Map<String, Object>> parts = pcBuildPartRepository.findByPcBuildIdOrderByIdAsc(build.getId()).stream().map(part -> {
             Map<String, Object> product = new LinkedHashMap<>();
@@ -182,7 +192,14 @@ public class PcBuilderService {
         return response;
     }
     private Map<String, Object> toRule(PcCompatibilityRule rule) {
-        return Map.of("id", rule.getId(), "name", rule.getName(), "sourcePartType", rule.getSourcePartType(), "targetPartType", rule.getTargetPartType(), "ruleType", rule.getRuleType(), "ruleValue", readJson(rule.getRuleValueJson()));
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("id", rule.getId());
+        item.put("name", rule.getName());
+        item.put("sourcePartType", rule.getSourcePartType());
+        item.put("targetPartType", rule.getTargetPartType());
+        item.put("ruleType", rule.getRuleType());
+        item.put("ruleValue", readJson(rule.getRuleValueJson()));
+        return item;
     }
     private String writeJson(Map<String, Object> map) { try { return map == null ? null : objectMapper.writeValueAsString(map); } catch (JsonProcessingException e) { throw new BusinessException(ErrorCode.INTERNAL_ERROR, "호환성 규칙 저장에 실패했습니다."); } }
     private Map<String, Object> readJson(String value) { try { return value == null || value.isBlank() ? Map.of() : objectMapper.readValue(value, new TypeReference<Map<String, Object>>() {}); } catch (JsonProcessingException e) { throw new BusinessException(ErrorCode.INTERNAL_ERROR, "호환성 규칙을 읽을 수 없습니다."); } }

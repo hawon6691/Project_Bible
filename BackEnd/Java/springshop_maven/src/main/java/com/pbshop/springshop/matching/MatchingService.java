@@ -1,5 +1,6 @@
 package com.pbshop.springshop.matching;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -80,15 +81,15 @@ public class MatchingService {
     }
 
     private Map<String, Object> toResponse(ProductMapping mapping) {
-        return Map.of(
-                "id", mapping.getId(),
-                "sourceName", mapping.getSourceName(),
-                "productId", mapping.getProduct() == null ? null : mapping.getProduct().getId(),
-                "status", mapping.getStatus(),
-                "reason", mapping.getReason() == null ? "" : mapping.getReason(),
-                "createdAt", mapping.getCreatedAt() == null ? null : mapping.getCreatedAt().toString(),
-                "updatedAt", mapping.getUpdatedAt() == null ? null : mapping.getUpdatedAt().toString()
-        );
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("id", mapping.getId());
+        item.put("sourceName", mapping.getSourceName());
+        item.put("productId", mapping.getProduct() == null ? null : mapping.getProduct().getId());
+        item.put("status", mapping.getStatus());
+        item.put("reason", mapping.getReason() == null ? "" : mapping.getReason());
+        item.put("createdAt", mapping.getCreatedAt() == null ? null : mapping.getCreatedAt().toString());
+        item.put("updatedAt", mapping.getUpdatedAt() == null ? null : mapping.getUpdatedAt().toString());
+        return item;
     }
 
     private void requireAdmin(AuthenticatedUserPrincipal principal) {

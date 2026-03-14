@@ -22,7 +22,7 @@ Project_Bible/
 ├─ BackEnd/
 │  ├─ TypeScript/nestshop_typeorm
 │  ├─ Java/springshop
-│  ├─ JavaScript/expressshop
+│  ├─ JavaScript/expressshop_prismaorm
 │  ├─ Python/djangoshop
 │  ├─ Kotlin/ktorshop
 │  └─ PHP/laravelshop

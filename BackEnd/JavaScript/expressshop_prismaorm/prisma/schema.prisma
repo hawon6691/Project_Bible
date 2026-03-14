@@ -39,6 +39,22 @@ enum ShippingType {
   @@map("shipping_type")
 }
 
+enum SpecInputType {
+  TEXT
+  NUMBER
+  SELECT
+
+  @@map("spec_input_type")
+}
+
+enum SpecDataType {
+  NUMBER
+  STRING
+  BOOLEAN
+
+  @@map("spec_data_type")
+}
+
 model User {
   id                   Int                @id @default(autoincrement())
   email                String             @unique @db.VarChar(255)
@@ -159,11 +175,11 @@ model SpecDefinition {
   id           Int           @id @default(autoincrement())
   categoryId   Int           @map("category_id")
   name         String        @db.VarChar(50)
-  type         String        @db.VarChar(20)
+  type         SpecInputType
   options      Json?
   unit         String?       @db.VarChar(20)
   isComparable Boolean       @default(true) @map("is_comparable")
-  dataType     String        @default("STRING") @map("data_type") @db.VarChar(20)
+  dataType     SpecDataType  @default(STRING) @map("data_type")
   sortOrder    Int           @default(0) @map("sort_order")
   createdAt    DateTime      @default(now()) @map("created_at")
   category     Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)

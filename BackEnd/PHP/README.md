@@ -1,10 +1,10 @@
 # PHP Bible
 
-`laravelshop` 실행/검증 매뉴얼입니다.
+`laravelshop_eloquentorm` 실행/검증 매뉴얼입니다.
 
 ## 1. 경로
 
-- 백엔드 앱: `BackEnd/PHP/laravelshop`
+- 백엔드 앱: `BackEnd/PHP/laravelshop_eloquentorm`
 - 공용 인프라: `Database/docker/docker-compose.yml`
 - PHP 문서: `Document/PHP/`
 
@@ -25,7 +25,7 @@ docker compose -f Database/docker/docker-compose.yml up -d
 ### 3.2 백엔드 실행
 
 ```bash
-cd BackEnd/PHP/laravelshop
+cd BackEnd/PHP/laravelshop_eloquentorm
 composer install
 cp .env.example .env
 php artisan key:generate
@@ -51,7 +51,7 @@ npm run dev
 ## 4. 주요 검증 명령
 
 ```bash
-cd BackEnd/PHP/laravelshop
+cd BackEnd/PHP/laravelshop_eloquentorm
 vendor/bin/pint --test
 php artisan test
 php artisan test tests/E2E
@@ -60,7 +60,7 @@ php artisan test tests/E2E
 ## 5. CI / 수동 검증 대응 명령
 
 ```bash
-cd BackEnd/PHP/laravelshop
+cd BackEnd/PHP/laravelshop_eloquentorm
 php tests/scripts/validate-migrations.php
 MIGRATION_ROUNDTRIP_ALLOW=true php tests/scripts/migration-roundtrip.php
 php tests/scripts/live-smoke.php

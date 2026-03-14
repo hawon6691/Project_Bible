@@ -1,16 +1,16 @@
-name: PBShop PHP Laravel CI
+name: PBShop PHP Eloquent ORM CI
 
 on:
   pull_request:
     branches: [main, develop]
     paths:
-      - 'BackEnd/PHP/laravelshop/**'
-      - '.github/workflows/php-laravel-ci.yml'
+      - 'BackEnd/PHP/laravelshop_eloquentorm_eloquentorm/**'
+      - '.github/workflows/php-eloquentorm-ci.yml'
   push:
     branches: [main, develop]
     paths:
-      - 'BackEnd/PHP/laravelshop/**'
-      - '.github/workflows/php-laravel-ci.yml'
+      - 'BackEnd/PHP/laravelshop_eloquentorm_eloquentorm/**'
+      - '.github/workflows/php-eloquentorm-ci.yml'
   workflow_dispatch:
     inputs:
       target_ref:
@@ -100,7 +100,7 @@ on:
         type: string
 
 concurrency:
-  group: php-laravel-ci-${{ github.ref }}
+  group: php-eloquentorm-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -149,7 +149,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -165,8 +165,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-composer-
 
@@ -193,7 +193,7 @@ jobs:
     needs: quality
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -209,8 +209,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-composer-
 
@@ -233,7 +233,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: php-api-regression-report
-          path: BackEnd/PHP/laravelshop/test-results/api-regression-report.xml
+          path: BackEnd/PHP/laravelshop_eloquentorm/test-results/api-regression-report.xml
           if-no-files-found: warn
 
   db-integration:
@@ -257,7 +257,7 @@ jobs:
           - 3306:3306
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     env:
       APP_ENV: testing
       DB_CONNECTION: mysql
@@ -281,8 +281,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-mysql-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-mysql-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-mysql-composer-
 
@@ -308,7 +308,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: php-db-integration-report
-          path: BackEnd/PHP/laravelshop/test-results/db-integration-report.xml
+          path: BackEnd/PHP/laravelshop_eloquentorm/test-results/db-integration-report.xml
           if-no-files-found: warn
 
   release-gate:
@@ -332,7 +332,7 @@ jobs:
           - 3306:3306
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     env:
       APP_ENV: testing
       DB_CONNECTION: mysql
@@ -358,8 +358,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-release-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-release-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-release-composer-
 
@@ -386,8 +386,8 @@ jobs:
         with:
           name: php-release-gate-report
           path: |
-            BackEnd/PHP/laravelshop/test-results/route-list.txt
-            BackEnd/PHP/laravelshop/test-results/release-gate-tests.xml
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/route-list.txt
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/release-gate-tests.xml
           if-no-files-found: warn
 
       - name: Write Release Gate Summary
@@ -407,7 +407,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -425,8 +425,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-composer-
 
@@ -449,7 +449,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: php-api-regression-manual-report
-          path: BackEnd/PHP/laravelshop/test-results/api-regression-report.xml
+          path: BackEnd/PHP/laravelshop_eloquentorm/test-results/api-regression-report.xml
           if-no-files-found: warn
 
   db-integration-manual:
@@ -473,7 +473,7 @@ jobs:
           - 3306:3306
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     env:
       APP_ENV: testing
       DB_CONNECTION: mysql
@@ -499,8 +499,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-mysql-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-mysql-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-mysql-composer-
 
@@ -524,7 +524,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: php-db-integration-manual-report
-          path: BackEnd/PHP/laravelshop/test-results/db-integration-report.xml
+          path: BackEnd/PHP/laravelshop_eloquentorm/test-results/db-integration-report.xml
           if-no-files-found: warn
 
   route-snapshot-manual:
@@ -533,7 +533,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -551,8 +551,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-composer-
 
@@ -574,7 +574,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: php-route-snapshot
-          path: BackEnd/PHP/laravelshop/test-results/route-list.txt
+          path: BackEnd/PHP/laravelshop_eloquentorm/test-results/route-list.txt
           if-no-files-found: warn
 
   perf-smoke-manual:
@@ -583,7 +583,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -601,8 +601,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-composer-
 
@@ -631,7 +631,7 @@ jobs:
         run: |
           docker run --rm --network host \
             -e BASE_URL=http://127.0.0.1:3310 \
-            -v "${{ github.workspace }}/BackEnd/PHP/laravelshop:/work" \
+            -v "${{ github.workspace }}/BackEnd/PHP/laravelshop_eloquentorm:/work" \
             -w /work \
             grafana/k6:0.49.0 run \
             --summary-export /work/test-results/perf-smoke-summary.json \
@@ -644,8 +644,8 @@ jobs:
         with:
           name: php-perf-smoke-artifacts
           path: |
-            BackEnd/PHP/laravelshop/test-results/perf-smoke-summary.json
-            BackEnd/PHP/laravelshop/test-results/perf-smoke-server.log
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/perf-smoke-summary.json
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/perf-smoke-server.log
           if-no-files-found: warn
 
   stability-check-manual:
@@ -654,7 +654,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -672,8 +672,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-composer-
 
@@ -696,9 +696,9 @@ jobs:
         with:
           name: php-stability-reports
           path: |
-            BackEnd/PHP/laravelshop/test-results/critical-run-1.xml
-            BackEnd/PHP/laravelshop/test-results/critical-run-2.xml
-            BackEnd/PHP/laravelshop/test-results/critical-stability-report.json
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/critical-run-1.xml
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/critical-run-2.xml
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/critical-stability-report.json
           if-no-files-found: warn
 
   security-regression-manual:
@@ -707,7 +707,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -725,8 +725,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-composer-
 
@@ -749,7 +749,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: php-security-regression-reports
-          path: BackEnd/PHP/laravelshop/test-results/security-regression.xml
+          path: BackEnd/PHP/laravelshop_eloquentorm/test-results/security-regression.xml
           if-no-files-found: warn
 
   migration-roundtrip-manual:
@@ -773,7 +773,7 @@ jobs:
           - 3306:3306
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     env:
       APP_ENV: testing
       DB_CONNECTION: mysql
@@ -799,8 +799,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-mysql-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-mysql-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-mysql-composer-
 
@@ -824,8 +824,8 @@ jobs:
         with:
           name: php-migration-roundtrip-report
           path: |
-            BackEnd/PHP/laravelshop/test-results/migration-roundtrip.xml
-            BackEnd/PHP/laravelshop/test-results/migration-roundtrip-report.json
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/migration-roundtrip.xml
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/migration-roundtrip-report.json
           if-no-files-found: warn
 
   admin-boundary-manual:
@@ -834,7 +834,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -852,8 +852,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-composer-
 
@@ -876,7 +876,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: php-admin-boundary-reports
-          path: BackEnd/PHP/laravelshop/test-results/admin-boundary.xml
+          path: BackEnd/PHP/laravelshop_eloquentorm/test-results/admin-boundary.xml
           if-no-files-found: warn
 
   rate-limit-regression-manual:
@@ -885,7 +885,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -903,8 +903,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-composer-
 
@@ -951,8 +951,8 @@ jobs:
         with:
           name: php-rate-limit-regression-artifacts
           path: |
-            BackEnd/PHP/laravelshop/test-results/rate-limit-summary.txt
-            BackEnd/PHP/laravelshop/test-results/rate-limit-server.log
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/rate-limit-summary.txt
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/rate-limit-server.log
           if-no-files-found: warn
 
   dependency-failure-manual:
@@ -961,7 +961,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -979,8 +979,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-mysql-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-mysql-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-mysql-composer-
 
@@ -1017,7 +1017,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: php-dependency-failure-artifact
-          path: BackEnd/PHP/laravelshop/test-results/dependency-failure-output.txt
+          path: BackEnd/PHP/laravelshop_eloquentorm/test-results/dependency-failure-output.txt
           if-no-files-found: warn
 
   contract-e2e-manual:
@@ -1026,7 +1026,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -1044,8 +1044,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-composer-
 
@@ -1084,11 +1084,11 @@ jobs:
         with:
           name: php-contract-e2e-artifacts
           path: |
-            BackEnd/PHP/laravelshop/test-results/contract-health.json
-            BackEnd/PHP/laravelshop/test-results/contract-categories.json
-            BackEnd/PHP/laravelshop/test-results/contract-products.json
-            BackEnd/PHP/laravelshop/test-results/contract-summary.txt
-            BackEnd/PHP/laravelshop/test-results/contract-e2e-server.log
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/contract-health.json
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/contract-categories.json
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/contract-products.json
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/contract-summary.txt
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/contract-e2e-server.log
           if-no-files-found: warn
 
   perf-extended-manual:
@@ -1097,7 +1097,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -1115,8 +1115,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-composer-
 
@@ -1146,7 +1146,7 @@ jobs:
           docker run --rm --network host \
             -e BASE_URL=http://127.0.0.1:3310 \
             -e SOAK_DURATION=2m \
-            -v "${{ github.workspace }}/BackEnd/PHP/laravelshop:/work" \
+            -v "${{ github.workspace }}/BackEnd/PHP/laravelshop_eloquentorm:/work" \
             -w /work \
             grafana/k6:0.49.0 run \
             --summary-export /work/test-results/perf-soak-summary.json \
@@ -1154,7 +1154,7 @@ jobs:
           php tests/performance/assert-summary.php test-results/perf-soak-summary.json soak
           docker run --rm --network host \
             -e BASE_URL=http://127.0.0.1:3310 \
-            -v "${{ github.workspace }}/BackEnd/PHP/laravelshop:/work" \
+            -v "${{ github.workspace }}/BackEnd/PHP/laravelshop_eloquentorm:/work" \
             -w /work \
             grafana/k6:0.49.0 run \
             --summary-export /work/test-results/perf-spike-summary.json \
@@ -1167,9 +1167,9 @@ jobs:
         with:
           name: php-perf-extended-artifacts
           path: |
-            BackEnd/PHP/laravelshop/test-results/perf-soak-summary.json
-            BackEnd/PHP/laravelshop/test-results/perf-spike-summary.json
-            BackEnd/PHP/laravelshop/test-results/perf-extended-server.log
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/perf-soak-summary.json
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/perf-spike-summary.json
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/perf-extended-server.log
           if-no-files-found: warn
 
   migration-validation-manual:
@@ -1193,7 +1193,7 @@ jobs:
           - 3306:3306
     defaults:
       run:
-        working-directory: BackEnd/PHP/laravelshop
+        working-directory: BackEnd/PHP/laravelshop_eloquentorm
     env:
       APP_ENV: testing
       DB_CONNECTION: mysql
@@ -1219,8 +1219,8 @@ jobs:
       - name: Cache Composer Dependencies
         uses: actions/cache@v4
         with:
-          path: BackEnd/PHP/laravelshop/vendor
-          key: ${{ runner.os }}-php-8.3-mysql-composer-${{ hashFiles('BackEnd/PHP/laravelshop/composer.lock') }}
+          path: BackEnd/PHP/laravelshop_eloquentorm/vendor
+          key: ${{ runner.os }}-php-8.3-mysql-composer-${{ hashFiles('BackEnd/PHP/laravelshop_eloquentorm/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-8.3-mysql-composer-
 
@@ -1246,9 +1246,9 @@ jobs:
         with:
           name: php-migration-validation-artifacts
           path: |
-            BackEnd/PHP/laravelshop/test-results/migration-validation.json
-            BackEnd/PHP/laravelshop/test-results/migration-status.txt
-            BackEnd/PHP/laravelshop/test-results/migration-pretend.txt
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/migration-validation.json
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/migration-status.txt
+            BackEnd/PHP/laravelshop_eloquentorm/test-results/migration-pretend.txt
           if-no-files-found: warn
 
   live-smoke-manual:
@@ -1275,8 +1275,8 @@ jobs:
           LIVE_SMOKE_PREFIX: /api/v1
           LIVE_SMOKE_AUTH: ${{ secrets.LIVE_SMOKE_AUTH }}
         run: |
-          mkdir -p BackEnd/PHP/laravelshop/test-results
-          cd BackEnd/PHP/laravelshop
+          mkdir -p BackEnd/PHP/laravelshop_eloquentorm/test-results
+          cd BackEnd/PHP/laravelshop_eloquentorm
           php tests/scripts/live-smoke.php
 
       - name: Upload Live Smoke Artifact
@@ -1284,6 +1284,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: php-live-smoke-artifact
-          path: BackEnd/PHP/laravelshop/test-results/live-smoke-report.json
+          path: BackEnd/PHP/laravelshop_eloquentorm/test-results/live-smoke-report.json
           if-no-files-found: warn
 

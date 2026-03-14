@@ -2,7 +2,7 @@
 
 ## 1. 요약
 
-`PBShop`의 PHP 구현체인 `laravelshop`은 문서 기준 범위의 공개 API와 운영 API 구현을 완료했다. 현재 구현은 Laravel 기반 API 서버로 동작하며, 테스트와 스타일 검증까지 포함한 기준 상태를 확보했다.
+`PBShop`의 PHP 구현체인 `laravelshop_eloquentorm`은 문서 기준 범위의 공개 API와 운영 API 구현을 완료했다. 현재 구현은 Laravel 기반 API 서버로 동작하며, 테스트와 스타일 검증까지 포함한 기준 상태를 확보했다.
 
 ## 2. 완료 범위
 

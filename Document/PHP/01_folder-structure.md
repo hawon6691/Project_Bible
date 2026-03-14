@@ -2,12 +2,12 @@
 
 ## 1. 개요
 
-`BackEnd/PHP/laravelshop`은 `PBShop`의 PHP 기준 구현체이며, Laravel을 기반으로 API 중심 구조로 정리한다.
+`BackEnd/PHP/laravelshop_eloquentorm`은 `PBShop`의 PHP 기준 구현체이며, Laravel을 기반으로 API 중심 구조로 정리한다.
 
 ## 2. 최상위 디렉터리
 
 ```text
-BackEnd/PHP/laravelshop
+BackEnd/PHP/laravelshop_eloquentorm
 ├─ app
 ├─ bootstrap
 ├─ config

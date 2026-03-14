@@ -20,7 +20,7 @@
 ```text
 Project_Bible/
 ├─ BackEnd/
-│  ├─ TypeScript/nestshop
+│  ├─ TypeScript/nestshop_typeorm
 │  ├─ Java/springshop
 │  ├─ JavaScript/expressshop
 │  ├─ Python/djangoshop

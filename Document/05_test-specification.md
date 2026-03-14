@@ -9,7 +9,7 @@
 
 - TypeScript
   - 프레임워크: `NestJS`
-  - 테스트 기준 경로: `BackEnd/TypeScript/nestshop/test`
+  - 테스트 기준 경로: `BackEnd/TypeScript/nestshop_typeorm/test`
 - PHP
   - 프레임워크: `Laravel`
   - 테스트 기준 경로: `BackEnd/PHP/laravelshop/tests`

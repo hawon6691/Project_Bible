@@ -1,5 +1,5 @@
 {
-  "name": "nestshop",
+  "name": "nestshop_typeorm",
   "version": "0.0.1",
   "description": "Danawa-style price comparison shopping mall API",
   "author": "",

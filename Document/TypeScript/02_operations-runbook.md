@@ -1,6 +1,6 @@
 # 쇼핑몰 프로젝트 운영 런북
 
-> 대상: `BackEnd/TypeScript/nestshop` 백엔드 운영 및 장애 대응
+> 대상: `BackEnd/TypeScript/nestshop_typeorm` 백엔드 운영 및 장애 대응
 > 기준일: 2026-02-23
 
 ---
@@ -55,7 +55,7 @@ Ops Dashboard 경보 임계치 환경변수:
 개발/검증 기준 명령:
 
 ```bash
-cd BackEnd/TypeScript/nestshop
+cd BackEnd/TypeScript/nestshop_typeorm
 npm ci
 npm run build
 npm run start:prod
@@ -187,10 +187,10 @@ BASE_URL=http://127.0.0.1:3310 npm run test:perf:smoke
 CI 아티팩트 확인 경로:
 
 - `e2e-critical-report` 아티팩트
-  - `BackEnd/TypeScript/nestshop/test-results/e2e-critical-report.json`
+  - `BackEnd/TypeScript/nestshop_typeorm/test-results/e2e-critical-report.json`
 - `perf-smoke-artifacts` 아티팩트
-  - `BackEnd/TypeScript/nestshop/test-results/perf-smoke-summary.json`
-  - `BackEnd/TypeScript/nestshop/perf-server.log`
+  - `BackEnd/TypeScript/nestshop_typeorm/test-results/perf-smoke-summary.json`
+  - `BackEnd/TypeScript/nestshop_typeorm/perf-server.log`
 
 Ops Dashboard 임계치 회귀 테스트:
 

@@ -1785,8 +1785,8 @@ categories (1) ──── (N) auctions
 
 ### 7.4 스키마 참조 우선순위
 
-1. `BackEnd/TypeScript/nestshop/src/**/entities/*.entity.ts`
-2. `BackEnd/TypeScript/nestshop/src/database/migrations/*`
+1. `BackEnd/TypeScript/nestshop_typeorm/src/**/entities/*.entity.ts`
+2. `BackEnd/TypeScript/nestshop_typeorm/src/database/migrations/*`
 3. 본 ERD 문서
 
 > 참고: `Database/postgresql/postgres_table.sql`은 초기 73개 테이블 기준 부트스트랩 스크립트이며, 이후 추가된 읽기모델/운영용 테이블 전체를 완전히 반영하지 않을 수 있습니다.

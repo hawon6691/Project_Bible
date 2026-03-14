@@ -5,12 +5,12 @@ on:
     branches: [main, develop]
     paths:
       - 'BackEnd/TypeScript/nestshop/**'
-      - '.github/workflows/nestshop-ci.yml'
+      - '.github/workflows/typescript-nest-ci.yml'
   push:
     branches: [main, develop]
     paths:
       - 'BackEnd/TypeScript/nestshop/**'
-      - '.github/workflows/nestshop-ci.yml'
+      - '.github/workflows/typescript-nest-ci.yml'
   workflow_dispatch:
     inputs:
       target_ref:
@@ -90,7 +90,7 @@ on:
         type: string
 
 concurrency:
-  group: nestshop-ci-${{ github.ref }}
+  group: typescript-nest-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

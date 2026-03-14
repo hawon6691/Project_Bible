@@ -5,7 +5,10 @@ import dotenv from "dotenv";
 import { createAuthRoutes } from "./routes/auth-routes.js";
 import { createCatalogRoutes } from "./routes/catalog-routes.js";
 import { createCommerceRoutes } from "./routes/commerce-routes.js";
+import { createCommunityRoutes } from "./routes/community-routes.js";
+import { createEngagementRoutes } from "./routes/engagement-routes.js";
 import { createHealthRoutes } from "./routes/health-routes.js";
+import { createSupportRoutes } from "./routes/support-routes.js";
 import { createUserRoutes } from "./routes/user-routes.js";
 import { HttpError } from "./utils/http-error.js";
 import { failure } from "./utils/response.js";
@@ -25,6 +28,9 @@ export function createApp() {
   app.use(createUserRoutes(apiPrefix));
   app.use(createCatalogRoutes(apiPrefix));
   app.use(createCommerceRoutes(apiPrefix));
+  app.use(createEngagementRoutes(apiPrefix));
+  app.use(createCommunityRoutes(apiPrefix));
+  app.use(createSupportRoutes(apiPrefix));
 
   app.use((_req, res) => {
     res.status(404).json(failure("NOT_FOUND", "Route not found"));

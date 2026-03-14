@@ -160,12 +160,12 @@ jobs:
       - name: Start application for OpenAPI export
         shell: bash
         run: |
-          ./mvnw -B -Dspring.profiles.active=ci -DskipTests spring-boot:run > /tmp/java-maven-swagger.log 2>&1 &
+          ./mvnw -B -DskipTests -Dspring-boot.run.profiles=ci spring-boot:run > /tmp/java-maven-swagger.log 2>&1 &
           echo $! > /tmp/java-maven-swagger.pid
 
           ready=0
           for _ in $(seq 1 90); do
-            if curl -fsS http://127.0.0.1:8080/docs/openapi -o openapi.json; then
+            if curl -fsS http://127.0.0.1:8000/docs/openapi -o openapi.json; then
               ready=1
               break
             fi
@@ -178,7 +178,7 @@ jobs:
             exit 1
           fi
 
-          curl -fsS http://127.0.0.1:8080/docs/swagger -o /tmp/swagger-ui.html
+          curl -fsS http://127.0.0.1:8000/docs/swagger -o /tmp/swagger-ui.html
 
       - name: Upload Swagger artifacts
         uses: actions/upload-artifact@v4

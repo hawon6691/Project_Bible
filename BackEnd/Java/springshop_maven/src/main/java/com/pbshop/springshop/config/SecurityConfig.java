@@ -45,7 +45,13 @@ public class SecurityConfig {
                     "/api/v1/health",
                     "/actuator/health",
                     "/actuator/info",
-                    "/actuator/prometheus"
+                    "/actuator/prometheus",
+                    "/docs/openapi",
+                    "/docs/openapi/**",
+                    "/docs/swagger",
+                    "/docs/swagger/**",
+                    "/docs/swagger-ui/**",
+                    "/swagger-ui/**"
                 )
                 .permitAll()
                 .requestMatchers(HttpMethod.POST,

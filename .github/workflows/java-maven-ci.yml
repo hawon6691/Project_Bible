@@ -1,0 +1,350 @@
+name: PBShop Java Maven CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'BackEnd/Java/springshop_maven/**'
+      - '.github/workflows/java-maven-ci.yml'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'BackEnd/Java/springshop_maven/**'
+      - '.github/workflows/java-maven-ci.yml'
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: 'Branch or tag to run manual jobs on (ex: main, develop, release/v1)'
+        required: true
+        default: 'main'
+        type: string
+      run_release_gate:
+        description: 'Run full Java Maven release gate (test + e2e + swagger export)'
+        required: true
+        default: true
+        type: boolean
+      run_migration_validation:
+        description: 'Run Flyway migration validation on H2'
+        required: true
+        default: false
+        type: boolean
+      run_contract_e2e:
+        description: 'Run public contract and Swagger E2E tests only'
+        required: true
+        default: false
+        type: boolean
+      run_live_smoke:
+        description: 'Run live smoke against external Java Maven API base URL'
+        required: true
+        default: false
+        type: boolean
+      live_smoke_base_url:
+        description: 'External API base URL for live smoke (required when run_live_smoke=true)'
+        required: false
+        default: ''
+        type: string
+
+concurrency:
+  group: java-maven-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-dispatch-inputs:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Manual Inputs
+        run: |
+          if [[ "${{ inputs.run_release_gate }}" != "true" && "${{ inputs.run_migration_validation }}" != "true" && "${{ inputs.run_contract_e2e }}" != "true" && "${{ inputs.run_live_smoke }}" != "true" ]]; then
+            echo "At least one manual job must be enabled." >&2
+            exit 1
+          fi
+
+          if [[ "${{ inputs.run_live_smoke }}" == "true" && -z "${{ inputs.live_smoke_base_url }}" ]]; then
+            echo "live_smoke_base_url is required when run_live_smoke=true." >&2
+            exit 1
+          fi
+
+      - name: Write Validation Summary
+        if: always()
+        run: |
+          echo "## Java Maven Manual Dispatch Validation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Target ref: \`${{ inputs.target_ref }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_release_gate: \`${{ inputs.run_release_gate }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_migration_validation: \`${{ inputs.run_migration_validation }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_contract_e2e: \`${{ inputs.run_contract_e2e }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- run_live_smoke: \`${{ inputs.run_live_smoke }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- live_smoke_base_url: \`${{ inputs.live_smoke_base_url }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Result: \`${{ job.status }}\`" >> $GITHUB_STEP_SUMMARY
+
+  quality:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BackEnd/Java/springshop_maven
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Make Maven Wrapper Executable
+        run: chmod +x mvnw
+
+      - name: Run Full Test Suite
+        run: ./mvnw -B test
+
+  platform-e2e:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: quality
+    defaults:
+      run:
+        working-directory: BackEnd/Java/springshop_maven
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Make Maven Wrapper Executable
+        run: chmod +x mvnw
+
+      - name: Run Platform E2E Tests
+        run: |
+          mkdir -p test-results
+          ./mvnw -B -Dtest='*E2ETest' test
+
+      - name: Upload Platform E2E Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-maven-platform-e2e-artifact
+          path: BackEnd/Java/springshop_maven/target/surefire-reports
+          if-no-files-found: warn
+
+  swagger-export:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: quality
+    defaults:
+      run:
+        working-directory: BackEnd/Java/springshop_maven
+    env:
+      SPRING_PROFILES_ACTIVE: ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Make Maven Wrapper Executable
+        run: chmod +x mvnw
+
+      - name: Start Application
+        run: |
+          mkdir -p test-results
+          ./mvnw -B -DskipTests spring-boot:run > test-results/swagger-server.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8000/api/v1/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat test-results/swagger-server.log
+          exit 1
+
+      - name: Export OpenAPI and Swagger UI
+        run: |
+          curl -fsS http://127.0.0.1:8000/docs/openapi > test-results/openapi.json
+          curl -fsSL http://127.0.0.1:8000/docs/swagger > test-results/swagger-ui.html
+
+      - name: Upload Swagger Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-maven-swagger-artifacts
+          path: |
+            BackEnd/Java/springshop_maven/test-results/openapi.json
+            BackEnd/Java/springshop_maven/test-results/swagger-ui.html
+            BackEnd/Java/springshop_maven/test-results/swagger-server.log
+          if-no-files-found: warn
+
+  release-gate:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_release_gate
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BackEnd/Java/springshop_maven
+    env:
+      SPRING_PROFILES_ACTIVE: ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Make Maven Wrapper Executable
+        run: chmod +x mvnw
+
+      - name: Run Release Gate Tests
+        run: |
+          mkdir -p test-results
+          ./mvnw -B test
+          ./mvnw -B -Dtest='*E2ETest' test
+
+      - name: Start Application for Swagger Export
+        run: |
+          ./mvnw -B -DskipTests spring-boot:run > test-results/release-gate-server.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8000/api/v1/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat test-results/release-gate-server.log
+          exit 1
+
+      - name: Export Release Gate Artifacts
+        run: |
+          curl -fsS http://127.0.0.1:8000/docs/openapi > test-results/openapi.json
+          curl -fsSL http://127.0.0.1:8000/docs/swagger > test-results/swagger-ui.html
+
+      - name: Upload Release Gate Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-maven-release-gate-artifact
+          path: |
+            BackEnd/Java/springshop_maven/target/surefire-reports
+            BackEnd/Java/springshop_maven/test-results/openapi.json
+            BackEnd/Java/springshop_maven/test-results/swagger-ui.html
+            BackEnd/Java/springshop_maven/test-results/release-gate-server.log
+          if-no-files-found: warn
+
+      - name: Write Release Gate Summary
+        if: always()
+        run: |
+          echo "## Java Maven Release Gate Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Trigger: \`workflow_dispatch\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Target ref: \`${{ inputs.target_ref }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Job result: \`${{ job.status }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Artifact: \`java-maven-release-gate-artifact\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+
+  migration-validation-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_migration_validation
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BackEnd/Java/springshop_maven
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Make Maven Wrapper Executable
+        run: chmod +x mvnw
+
+      - name: Run Flyway Migration Validation
+        run: ./mvnw -B -Dtest=FlywayMigrationTest test
+
+      - name: Upload Migration Validation Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-maven-migration-validation-artifact
+          path: BackEnd/Java/springshop_maven/target/surefire-reports
+          if-no-files-found: warn
+
+  contract-e2e-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_contract_e2e
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BackEnd/Java/springshop_maven
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Make Maven Wrapper Executable
+        run: chmod +x mvnw
+
+      - name: Run Contract and Swagger E2E Tests
+        run: ./mvnw -B -Dtest=ContractPublicApiE2ETest,SwaggerDocsE2ETest,PublicApiE2ETest test
+
+      - name: Upload Contract E2E Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-maven-contract-e2e-artifact
+          path: BackEnd/Java/springshop_maven/target/surefire-reports
+          if-no-files-found: warn
+
+  live-smoke-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_live_smoke
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Live Smoke
+        run: |
+          mkdir -p BackEnd/Java/springshop_maven/test-results
+          curl -fsS "${{ inputs.live_smoke_base_url }}/api/v1/health" > BackEnd/Java/springshop_maven/test-results/live-smoke-health.json
+          curl -fsS "${{ inputs.live_smoke_base_url }}/api/v1/categories" > BackEnd/Java/springshop_maven/test-results/live-smoke-categories.json
+          curl -fsS "${{ inputs.live_smoke_base_url }}/docs/openapi" > BackEnd/Java/springshop_maven/test-results/live-smoke-openapi.json
+
+      - name: Upload Live Smoke Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-maven-live-smoke-artifact
+          path: |
+            BackEnd/Java/springshop_maven/test-results/live-smoke-health.json
+            BackEnd/Java/springshop_maven/test-results/live-smoke-categories.json
+            BackEnd/Java/springshop_maven/test-results/live-smoke-openapi.json
+          if-no-files-found: warn

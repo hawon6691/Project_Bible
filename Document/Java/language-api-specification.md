@@ -2,14 +2,14 @@
 
 ## 1. 목적
 
-본 문서는 [02_api-specification.md](C:/00_work/00_work/07_project-bible/Project_Bible/Document/02_api-specification.md)를 Java/Spring Boot 구현 기준으로 해석한 언어별 API 명세다.
+본 문서는 [02_api-specification.md](C:/00_work/00_work/07_project-bible/Project_Bible/Document/02_api-specification.md)를 Java/Spring Boot Maven JPA 구현 기준으로 해석한 언어별 API 명세다.
 공통 API 계약은 유지하되, Java 트랙에서 사용하는 Spring 계층 구조와 문서/테스트 기준을 정의한다.
 
 ## 2. 적용 범위
 
 - 프레임워크: Spring Boot
-- 빌드 기준: Maven
-- 기본 구현 위치: `BackEnd/Java/springshop_maven`
+- 빌드 기준: Maven JPA
+- 기본 구현 위치: `BackEnd/Java/springshop_maven_jpa`
 - 검증 기준: integration test, e2e test, Flyway validation, Swagger/OpenAPI, CI workflow
 
 ## 3. 공통 계약 원칙
@@ -68,7 +68,7 @@
 
 ## 11. 완료 기준
 
-Java Maven 트랙이 API 구현 완료 상태라고 판단하려면 다음을 만족해야 한다.
+Java Maven JPA 트랙이 API 구현 완료 상태라고 판단하려면 다음을 만족해야 한다.
 
 1. 공통 API 명세의 핵심 엔드포인트가 Spring controller에 구현되어 있다.
 2. Spring Security 규칙이 공개/관리자/운영 API 경계를 강제한다.

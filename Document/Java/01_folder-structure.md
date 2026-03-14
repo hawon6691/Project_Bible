@@ -3,14 +3,14 @@
 ## 대상
 
 - 트랙: Java
-- 기준 구현체: `BackEnd/Java/springshop_maven`
+- 기준 구현체: `BackEnd/Java/springshop_maven_jpa`
 
 ## 루트 구조
 
 ```text
 BackEnd/Java/
 ├─ README.md
-├─ springshop_maven/
+├─ springshop_maven_jpa/
 │  ├─ pom.xml
 │  ├─ src/
 │  │  ├─ main/
@@ -107,6 +107,6 @@ JUnit 기반 테스트 코드 위치다.
 
 ## 운영 기준
 
-- Maven 트랙을 Java 완료 기준으로 본다.
+- Maven JPA 트랙을 Java 완료 기준으로 본다.
 - Gradle 트랙은 참조용으로만 유지하며 완료 범위에 포함하지 않는다.
-- 테스트/CI/문서 기준은 모두 `springshop_maven` 기준으로 관리한다.
+- 테스트/CI/문서 기준은 모두 `springshop_maven_jpa` 기준으로 관리한다.

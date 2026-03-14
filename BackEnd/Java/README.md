@@ -2,7 +2,7 @@
 
 ## 1. 경로
 
-- Maven 프로젝트: `BackEnd/Java/springshop_maven`
+- Maven JPA 프로젝트: `BackEnd/Java/springshop_maven_jpa`
 - Gradle 프로젝트: `BackEnd/Java/springshop_gradle`
 
 ## 2. 전제
@@ -14,10 +14,10 @@
 
 ## 3. 실행
 
-### Maven
+### Maven JPA
 
 ```bash
-cd BackEnd/Java/springshop_maven
+cd BackEnd/Java/springshop_maven_jpa
 mvnw.cmd spring-boot:run
 ```
 
@@ -30,10 +30,10 @@ gradlew.bat bootRun
 
 ## 4. 테스트
 
-### Maven
+### Maven JPA
 
 ```bash
-cd BackEnd/Java/springshop_maven
+cd BackEnd/Java/springshop_maven_jpa
 mvnw.cmd test
 ```
 

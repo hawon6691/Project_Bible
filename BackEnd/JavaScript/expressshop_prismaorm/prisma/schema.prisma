@@ -55,6 +55,37 @@ enum SpecDataType {
   @@map("spec_data_type")
 }
 
+enum OrderStatus {
+  PENDING
+  PAYMENT_CONFIRMED
+  PREPARING
+  SHIPPED
+  DELIVERED
+  CANCELED
+  REFUNDED
+
+  @@map("order_status")
+}
+
+enum PaymentMethod {
+  CARD
+  BANK_TRANSFER
+  KAKAO_PAY
+  NAVER_PAY
+  TOSS
+
+  @@map("payment_method")
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+
+  @@map("payment_status")
+}
+
 model User {
   id                   Int                @id @default(autoincrement())
   email                String             @unique @db.VarChar(255)
@@ -216,6 +247,7 @@ model Seller {
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @default(now()) @map("updated_at")
   priceEntries PriceEntry[]
+  cartItems    CartItem[]
 
   @@index([isActive], map: "idx_sellers_active")
   @@map("sellers")
@@ -304,6 +336,7 @@ model CartItem {
   updatedAt       DateTime @default(now()) @map("updated_at")
   user            User     @relation(fields: [userId], references: [id], onDelete: Restrict)
   product         Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  seller          Seller?  @relation(fields: [sellerId], references: [id], onDelete: Restrict)
 
   @@map("cart_items")
 }
@@ -312,7 +345,7 @@ model Order {
   id             Int         @id @default(autoincrement())
   orderNumber    String      @map("order_number") @unique @db.VarChar(50)
   userId         Int         @map("user_id")
-  status         String      @db.VarChar(30)
+  status         OrderStatus
   totalAmount    Int         @map("total_amount")
   pointUsed      Int         @default(0) @map("point_used")
   finalAmount    Int         @map("final_amount")
@@ -354,9 +387,9 @@ model OrderItem {
 model Payment {
   id         Int       @id @default(autoincrement())
   orderId    Int       @map("order_id")
-  method     String    @db.VarChar(30)
+  method     PaymentMethod
   amount     Int
-  status     String    @db.VarChar(30)
+  status     PaymentStatus
   paidAt     DateTime? @map("paid_at")
   refundedAt DateTime? @map("refunded_at")
   createdAt  DateTime  @default(now()) @map("created_at")

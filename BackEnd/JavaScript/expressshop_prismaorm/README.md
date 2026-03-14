@@ -7,14 +7,23 @@
 ```bash
 npm install
 cp .env.example .env
+npm run db:docker:up
+npm run db:reset
 npm run prisma:generate
 npm run dev
 ```
 
-공통 Docker DB를 사용할 때:
+## Shared Database Flow
 
 ```bash
-npm run db:docker:up
+npm run db:check
+npm run db:init
+```
+
+빈 DB가 아니라 이미 공통 테이블이 들어 있는 경우에는 아래를 사용합니다.
+
+```bash
+npm run db:reset
 ```
 
 ## Routes
@@ -36,3 +45,8 @@ npm run db:docker:up
 - `Database/docker/docker-compose.yml`
 - `Database/postgresql/postgres_table.sql`
 - `Database/postgresql/sample_data.sql`
+
+## Notes
+
+- 현재 Prisma schema는 공통 PostgreSQL 스키마 기준으로 1차 정렬된 상태입니다.
+- 실제 DB 초기화는 Prisma migration이 아니라 공통 SQL import를 우선 사용합니다.

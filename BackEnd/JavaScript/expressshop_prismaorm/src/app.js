@@ -69,6 +69,14 @@ export function createApp() {
   app.get(`${apiPrefix}/categories`, async (_req, res, next) => {
     try {
       const items = await prisma.category.findMany({
+        select: {
+          id: true,
+          name: true,
+          parentId: true,
+          sortOrder: true,
+          createdAt: true,
+          updatedAt: true,
+        },
         orderBy: { id: "asc" },
       });
 
@@ -81,12 +89,30 @@ export function createApp() {
   app.get(`${apiPrefix}/products`, async (_req, res, next) => {
     try {
       const items = await prisma.product.findMany({
-        include: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          price: true,
+          discountPrice: true,
+          stock: true,
+          status: true,
+          thumbnailUrl: true,
+          lowestPrice: true,
+          sellerCount: true,
+          viewCount: true,
+          reviewCount: true,
+          averageRating: true,
+          salesCount: true,
+          popularityScore: true,
+          createdAt: true,
+          updatedAt: true,
           category: {
             select: {
               id: true,
               name: true,
-              slug: true,
+              parentId: true,
+              sortOrder: true,
             },
           },
         },

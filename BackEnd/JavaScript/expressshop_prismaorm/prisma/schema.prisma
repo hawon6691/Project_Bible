@@ -86,6 +86,45 @@ enum PaymentStatus {
   @@map("payment_status")
 }
 
+enum PointType {
+  EARN
+  USE
+  REFUND
+  EXPIRE
+  ADMIN_GRANT
+
+  @@map("point_type")
+}
+
+enum TicketCategory {
+  ORDER
+  PAYMENT
+  DELIVERY
+  ACCOUNT
+  OTHER
+
+  @@map("ticket_category")
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+
+  @@map("ticket_status")
+}
+
+enum FaqCategory {
+  GENERAL
+  ORDER
+  PAYMENT
+  DELIVERY
+  ACCOUNT
+
+  @@map("faq_category")
+}
+
 model User {
   id                   Int                @id @default(autoincrement())
   email                String             @unique @db.VarChar(255)
@@ -113,6 +152,13 @@ model User {
   wishlistItems        Wishlist[]
   cartItems            CartItem[]
   priceAlerts          PriceAlert[]
+  pointTransactions    PointTransaction[]
+  posts                Post[]
+  comments             Comment[]
+  inquiries            Inquiry[]         @relation("InquiryAuthor")
+  answeredInquiries    Inquiry[]         @relation("InquiryAnsweredBy")
+  supportTickets       SupportTicket[]
+  ticketReplies        TicketReply[]
 
   @@index([status], map: "idx_users_status")
   @@index([role], map: "idx_users_role")
@@ -166,6 +212,7 @@ model Product {
   cartItems       CartItem[]
   reviews         Review[]
   wishlistItems   Wishlist[]
+  inquiries       Inquiry[]
 
   @@index([categoryId], map: "idx_products_category")
   @@index([status], map: "idx_products_status")
@@ -402,15 +449,19 @@ model Review {
   id        Int      @id @default(autoincrement())
   userId    Int      @map("user_id")
   productId Int      @map("product_id")
-  orderId   Int?     @map("order_id")
+  orderId   Int      @map("order_id")
   rating    Int
   content   String
   isBest    Boolean  @default(false) @map("is_best")
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
   user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
   product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
-  order     Order?   @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
 
+  @@unique([userId, orderId], map: "uq_reviews_user_order")
+  @@index([productId], map: "idx_reviews_product")
   @@map("reviews")
 }
 
@@ -422,5 +473,158 @@ model Wishlist {
   user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
   product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
 
+  @@unique([userId, productId], map: "uq_wishlists_user_product")
   @@map("wishlists")
+}
+
+model PointTransaction {
+  id            Int       @id @default(autoincrement())
+  userId        Int       @map("user_id")
+  type          PointType
+  amount        Int
+  balance       Int
+  description   String    @db.VarChar(200)
+  referenceType String?   @map("reference_type") @db.VarChar(50)
+  referenceId   Int?      @map("reference_id")
+  expiresAt     DateTime? @map("expires_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId], map: "idx_point_transactions_user")
+  @@index([type], map: "idx_point_transactions_type")
+  @@index([expiresAt], map: "idx_point_transactions_expires")
+  @@map("point_transactions")
+}
+
+model Board {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(50)
+  slug        String   @unique @db.VarChar(50)
+  description String?  @db.VarChar(200)
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  posts       Post[]
+
+  @@map("boards")
+}
+
+model Post {
+  id           Int        @id @default(autoincrement())
+  boardId      Int        @map("board_id")
+  userId       Int        @map("user_id")
+  title        String     @db.VarChar(200)
+  content      String
+  viewCount    Int        @default(0) @map("view_count")
+  likeCount    Int        @default(0) @map("like_count")
+  commentCount Int        @default(0) @map("comment_count")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @default(now()) @map("updated_at")
+  deletedAt    DateTime?  @map("deleted_at")
+  board        Board      @relation(fields: [boardId], references: [id], onDelete: Restrict)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  comments     Comment[]
+
+  @@index([boardId], map: "idx_posts_board")
+  @@index([userId], map: "idx_posts_user")
+  @@index([createdAt(sort: Desc)], map: "idx_posts_created")
+  @@map("posts")
+}
+
+model Comment {
+  id        Int        @id @default(autoincrement())
+  postId    Int        @map("post_id")
+  userId    Int        @map("user_id")
+  parentId  Int?       @map("parent_id")
+  content   String
+  createdAt DateTime   @default(now()) @map("created_at")
+  deletedAt DateTime?  @map("deleted_at")
+  post      Post       @relation(fields: [postId], references: [id], onDelete: Restrict)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  parent    Comment?   @relation("CommentTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children  Comment[]  @relation("CommentTree")
+
+  @@index([postId], map: "idx_comments_post")
+  @@index([parentId], map: "idx_comments_parent")
+  @@map("comments")
+}
+
+model Inquiry {
+  id          Int       @id @default(autoincrement())
+  productId   Int       @map("product_id")
+  userId      Int       @map("user_id")
+  title       String    @db.VarChar(200)
+  content     String
+  isSecret    Boolean   @default(false) @map("is_secret")
+  answer      String?
+  answeredBy  Int?      @map("answered_by")
+  answeredAt  DateTime? @map("answered_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+  user        User      @relation("InquiryAuthor", fields: [userId], references: [id], onDelete: Restrict)
+  answeredUser User?    @relation("InquiryAnsweredBy", fields: [answeredBy], references: [id], onDelete: Restrict)
+
+  @@index([productId], map: "idx_inquiries_product")
+  @@index([userId], map: "idx_inquiries_user")
+  @@map("inquiries")
+}
+
+model SupportTicket {
+  id             Int           @id @default(autoincrement())
+  ticketNumber   String        @unique @map("ticket_number") @db.VarChar(30)
+  userId         Int           @map("user_id")
+  category       TicketCategory
+  title          String        @db.VarChar(200)
+  content        String
+  status         TicketStatus  @default(OPEN)
+  attachmentUrls Json?         @map("attachment_urls")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @default(now()) @map("updated_at")
+  user           User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  replies        TicketReply[]
+
+  @@index([userId], map: "idx_support_tickets_user")
+  @@index([status], map: "idx_support_tickets_status")
+  @@map("support_tickets")
+}
+
+model TicketReply {
+  id        Int           @id @default(autoincrement())
+  ticketId  Int           @map("ticket_id")
+  userId    Int           @map("user_id")
+  content   String
+  isAdmin   Boolean       @map("is_admin")
+  createdAt DateTime      @default(now()) @map("created_at")
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([ticketId], map: "idx_ticket_replies_ticket")
+  @@map("ticket_replies")
+}
+
+model Faq {
+  id        Int         @id @default(autoincrement())
+  category  FaqCategory
+  question  String      @db.VarChar(300)
+  answer    String
+  sortOrder Int         @default(0) @map("sort_order")
+  isActive  Boolean     @default(true) @map("is_active")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @default(now()) @map("updated_at")
+
+  @@index([category], map: "idx_faqs_category")
+  @@map("faqs")
+}
+
+model Notice {
+  id        Int       @id @default(autoincrement())
+  title     String    @db.VarChar(200)
+  content   String
+  isPinned  Boolean   @default(false) @map("is_pinned")
+  viewCount Int       @default(0) @map("view_count")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
+
+  @@index([isPinned(sort: Desc), createdAt(sort: Desc)], map: "idx_notices_pinned_created")
+  @@map("notices")
 }

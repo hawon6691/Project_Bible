@@ -3,11 +3,11 @@
 ## 대상
 
 - 트랙: Java
-- 기준 구현체: `BackEnd/Java/springshop_maven`
+- 기준 구현체: `BackEnd/Java/springshop_maven_jpa`
 
 ## 목적
 
-본 문서는 릴리스 직전 Java Maven 트랙의 최종 점검 기준을 정의한다.
+본 문서는 릴리스 직전 Java Maven JPA 트랙의 최종 점검 기준을 정의한다.
 
 ## 필수 확인 항목
 

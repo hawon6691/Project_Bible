@@ -1,16 +1,16 @@
-name: PBShop Java Maven CI
+name: PBShop Java Maven JPA CI
 
 on:
   pull_request:
     paths:
-      - ".github/workflows/java-maven-ci.yml"
-      - "BackEnd/Java/springshop_maven/**"
+      - ".github/workflows/java-maven-jpa-ci.yml"
+      - "BackEnd/Java/springshop_maven_jpa/**"
   push:
     branches:
       - main
     paths:
-      - ".github/workflows/java-maven-ci.yml"
-      - "BackEnd/Java/springshop_maven/**"
+      - ".github/workflows/java-maven-jpa-ci.yml"
+      - "BackEnd/Java/springshop_maven_jpa/**"
   workflow_dispatch:
     inputs:
       target_ref:
@@ -38,7 +38,7 @@ on:
           - live-smoke
 
 concurrency:
-  group: java-maven-ci-${{ github.ref }}
+  group: java-maven-jpa-ci-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -46,7 +46,7 @@ permissions:
 
 env:
   JAVA_VERSION: "21"
-  WORKDIR: BackEnd/Java/springshop_maven
+  WORKDIR: BackEnd/Java/springshop_maven_jpa
 
 jobs:
   validate-dispatch-inputs:

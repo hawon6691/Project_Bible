@@ -1,13 +1,13 @@
-# Java Maven Implementation Status
+# Java Maven JPA Implementation Status
 
 ## 1. 범위
 
-본 문서는 Java Maven 트랙의 구현 상태를 정리한다.
-기준 구현 위치는 `BackEnd/Java/springshop_maven`이며, Gradle 트랙은 본 완료 상태에 포함하지 않는다.
+본 문서는 Java Maven JPA 트랙의 구현 상태를 정리한다.
+기준 구현 위치는 `BackEnd/Java/springshop_maven_jpa`이며, Gradle 트랙은 본 완료 상태에 포함하지 않는다.
 
 ## 2. 구현 상태 요약
 
-- 기준 빌드: Maven
+- 기준 빌드: Maven JPA
 - 기준 프레임워크: Spring Boot
 - 상태: 기능 구현 완료
 - 상태: 핵심 테스트 자산 완료
@@ -17,7 +17,7 @@
 
 ## 3. 기능 범위 상태
 
-다음 범위는 Java Maven 기준으로 구현 완료 상태로 본다.
+다음 범위는 Java Maven JPA 기준으로 구현 완료 상태로 본다.
 
 - 인증/인가
 - 사용자/프로필
@@ -60,7 +60,7 @@
 
 ## 5. CI 상태
 
-`java-maven-ci.yml` 기준으로 다음 구성이 준비되어 있다.
+`java-maven-jpa-ci.yml` 기준으로 다음 구성이 준비되어 있다.
 
 - 자동: `quality`
 - 자동: `platform-e2e`
@@ -97,11 +97,11 @@
 
 ## 8. 현재 판단
 
-Java Maven 트랙은 프로젝트 기준에서 다음 상태로 본다.
+Java Maven JPA 트랙은 프로젝트 기준에서 다음 상태로 본다.
 
 - 코드 구현: 완료
 - 테스트 자산: 완료
 - CI 자산: 완료
 - 문서/운영 산출: 정리 중에서 완료 단계로 전환
 
-즉, Java는 Maven 기준으로 PHP 및 TypeScript와 동일한 마감 단계에 진입한 상태다.
+즉, Java는 Maven JPA 기준으로 PHP 및 TypeScript와 동일한 마감 단계에 진입한 상태다.

@@ -106,7 +106,7 @@ public abstract class AuthenticatedApiIntegrationSupport extends ApiIntegrationS
         product.setName(name);
         product.setSlug(slug + "-" + UUID.randomUUID());
         product.setBrand("PB");
-        product.setDescription("Java Maven E2E 상품");
+        product.setDescription("Java Maven JPA E2E 상품");
         product.setThumbnailUrl("https://cdn.pbshop.local/" + slug + ".png");
         product.setReviewCount(0);
         product.setRatingAvg(BigDecimal.ZERO);

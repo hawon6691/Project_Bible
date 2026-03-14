@@ -7,28 +7,371 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  SELLER
+  ADMIN
+
+  @@map("user_role")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+
+  @@map("user_status")
+}
+
+enum ProductStatus {
+  ON_SALE
+  SOLD_OUT
+  HIDDEN
+
+  @@map("product_status")
+}
+
+enum ShippingType {
+  FREE
+  PAID
+  CONDITIONAL
+
+  @@map("shipping_type")
+}
+
+model User {
+  id                   Int                @id @default(autoincrement())
+  email                String             @unique @db.VarChar(255)
+  password             String             @db.VarChar(255)
+  name                 String             @db.VarChar(50)
+  phone                String             @db.VarChar(20)
+  role                 UserRole           @default(USER)
+  status               UserStatus         @default(ACTIVE)
+  emailVerified        Boolean            @default(false) @map("email_verified")
+  emailVerifiedAt      DateTime?          @map("email_verified_at")
+  nickname             String             @unique @db.VarChar(30)
+  bio                  String?            @db.VarChar(200)
+  profileImageUrl      String?            @map("profile_image_url") @db.VarChar(500)
+  searchHistoryEnabled Boolean            @default(true) @map("search_history_enabled")
+  point                Int                @default(0)
+  preferredLocale      String             @default("ko") @map("preferred_locale") @db.VarChar(5)
+  preferredCurrency    String             @default("KRW") @map("preferred_currency") @db.VarChar(3)
+  refreshToken         String?            @map("refresh_token") @db.VarChar(500)
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @default(now()) @map("updated_at")
+  deletedAt            DateTime?          @map("deleted_at")
+  addresses            Address[]
+  orders               Order[]
+  reviews              Review[]
+  wishlistItems        Wishlist[]
+  cartItems            CartItem[]
+  priceAlerts          PriceAlert[]
+
+  @@index([status], map: "idx_users_status")
+  @@index([role], map: "idx_users_role")
+  @@map("users")
+}
+
 model Category {
-  id          Int       @id @default(autoincrement())
-  name        String
-  slug        String    @unique
-  description String?
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(50)
+  parentId    Int?       @map("parent_id")
+  sortOrder   Int        @default(0) @map("sort_order")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @default(now()) @map("updated_at")
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryTree")
   products    Product[]
+  specs       SpecDefinition[]
+
+  @@index([parentId], map: "idx_categories_parent")
+  @@map("categories")
 }
 
 model Product {
-  id          Int       @id @default(autoincrement())
-  categoryId  Int
-  name        String
-  slug        String    @unique
-  description String?
-  price       Decimal   @db.Decimal(12, 2)
-  status      String    @default("ACTIVE")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  id              Int            @id @default(autoincrement())
+  name            String         @db.VarChar(200)
+  description     String
+  price           Int
+  discountPrice   Int?           @map("discount_price")
+  stock           Int            @default(0)
+  status          ProductStatus  @default(ON_SALE)
+  categoryId      Int            @map("category_id")
+  thumbnailUrl    String?        @map("thumbnail_url") @db.VarChar(500)
+  lowestPrice     Int?           @map("lowest_price")
+  sellerCount     Int            @default(0) @map("seller_count")
+  viewCount       Int            @default(0) @map("view_count")
+  reviewCount     Int            @default(0) @map("review_count")
+  averageRating   Decimal        @default(0.0) @map("average_rating") @db.Decimal(2, 1)
+  salesCount      Int            @default(0) @map("sales_count")
+  popularityScore Decimal        @default(0) @map("popularity_score") @db.Decimal(10, 2)
+  version         Int            @default(1)
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @default(now()) @map("updated_at")
+  deletedAt       DateTime?      @map("deleted_at")
+  category        Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  options         ProductOption[]
+  images          ProductImage[]
+  specs           ProductSpec[]
+  priceEntries    PriceEntry[]
+  priceHistory    PriceHistory[]
+  priceAlerts     PriceAlert[]
+  cartItems       CartItem[]
+  reviews         Review[]
+  wishlistItems   Wishlist[]
 
-  @@index([categoryId])
+  @@index([categoryId], map: "idx_products_category")
+  @@index([status], map: "idx_products_status")
+  @@index([lowestPrice], map: "idx_products_lowest_price")
+  @@index([viewCount(sort: Desc)], map: "idx_products_view_count")
+  @@index([popularityScore], map: "idx_products_popularity")
+  @@map("products")
+}
+
+model ProductOption {
+  id        Int      @id @default(autoincrement())
+  productId Int      @map("product_id")
+  name      String   @db.VarChar(50)
+  values    Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([productId], map: "idx_product_options_product")
+  @@map("product_options")
+}
+
+model ProductImage {
+  id             Int       @id @default(autoincrement())
+  productId      Int       @map("product_id")
+  url            String    @db.VarChar(500)
+  isMain         Boolean   @default(false) @map("is_main")
+  sortOrder      Int       @default(0) @map("sort_order")
+  imageVariantId Int?      @map("image_variant_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  product        Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([productId], map: "idx_product_images_product")
+  @@map("product_images")
+}
+
+model SpecDefinition {
+  id           Int           @id @default(autoincrement())
+  categoryId   Int           @map("category_id")
+  name         String        @db.VarChar(50)
+  type         String        @db.VarChar(20)
+  options      Json?
+  unit         String?       @db.VarChar(20)
+  isComparable Boolean       @default(true) @map("is_comparable")
+  dataType     String        @default("STRING") @map("data_type") @db.VarChar(20)
+  sortOrder    Int           @default(0) @map("sort_order")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  category     Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  productSpecs ProductSpec[]
+
+  @@index([categoryId], map: "idx_spec_definitions_category")
+  @@map("spec_definitions")
+}
+
+model ProductSpec {
+  id               Int            @id @default(autoincrement())
+  productId        Int            @map("product_id")
+  specDefinitionId Int            @map("spec_definition_id")
+  value            String         @db.VarChar(200)
+  numericValue     Decimal?       @map("numeric_value") @db.Decimal(10, 2)
+  createdAt        DateTime       @default(now()) @map("created_at")
+  product          Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+  specDefinition   SpecDefinition @relation(fields: [specDefinitionId], references: [id], onDelete: Restrict)
+
+  @@unique([productId, specDefinitionId], map: "uq_product_specs")
+  @@index([specDefinitionId, value], map: "idx_product_specs_value")
+  @@map("product_specs")
+}
+
+model Seller {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(100)
+  url         String       @db.VarChar(500)
+  logoUrl     String?      @map("logo_url") @db.VarChar(500)
+  trustScore  Int          @default(0) @map("trust_score")
+  trustGrade  String?      @map("trust_grade") @db.VarChar(2)
+  description String?      @db.VarChar(200)
+  isActive    Boolean      @default(true) @map("is_active")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @default(now()) @map("updated_at")
+  priceEntries PriceEntry[]
+
+  @@index([isActive], map: "idx_sellers_active")
+  @@map("sellers")
+}
+
+model PriceEntry {
+  id           Int           @id @default(autoincrement())
+  productId    Int           @map("product_id")
+  sellerId     Int           @map("seller_id")
+  price        Int
+  shippingCost Int           @default(0) @map("shipping_cost")
+  shippingInfo String?       @map("shipping_info") @db.VarChar(100)
+  productUrl   String        @map("product_url") @db.VarChar(1000)
+  shippingFee  Int           @default(0) @map("shipping_fee")
+  shippingType ShippingType  @default(PAID) @map("shipping_type")
+  clickCount   Int           @default(0) @map("click_count")
+  isAvailable  Boolean       @default(true) @map("is_available")
+  crawledAt    DateTime?     @map("crawled_at")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @default(now()) @map("updated_at")
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
+  seller       Seller        @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+
+  @@unique([productId, sellerId], map: "uq_price_entries")
+  @@index([productId, price], map: "idx_price_entries_product_price")
+  @@map("price_entries")
+}
+
+model PriceHistory {
+  id           Int       @id @default(autoincrement())
+  productId    Int       @map("product_id")
+  date         DateTime  @db.Date
+  lowestPrice  Int       @map("lowest_price")
+  averagePrice Int       @map("average_price")
+  highestPrice Int       @map("highest_price")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  product      Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([productId, date], map: "uq_price_history")
+  @@index([date(sort: Desc)], map: "idx_price_history_date")
+  @@map("price_history")
+}
+
+model PriceAlert {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @map("user_id")
+  productId   Int       @map("product_id")
+  targetPrice Int       @map("target_price")
+  isTriggered Boolean   @default(false) @map("is_triggered")
+  triggeredAt DateTime? @map("triggered_at")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, productId], map: "uq_price_alerts")
+  @@index([isActive, isTriggered], map: "idx_price_alerts_active")
+  @@map("price_alerts")
+}
+
+model Address {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  label         String   @db.VarChar(30)
+  recipientName String   @map("recipient_name") @db.VarChar(50)
+  phone         String   @db.VarChar(20)
+  zipCode       String   @map("zip_code") @db.VarChar(10)
+  address       String   @db.VarChar(255)
+  addressDetail String?  @map("address_detail") @db.VarChar(255)
+  isDefault     Boolean  @default(false) @map("is_default")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @map("updated_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("addresses")
+}
+
+model CartItem {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  productId       Int      @map("product_id")
+  sellerId        Int?     @map("seller_id")
+  selectedOptions String?  @map("selected_options") @db.Text
+  quantity        Int      @default(1)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @map("updated_at")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("cart_items")
+}
+
+model Order {
+  id             Int         @id @default(autoincrement())
+  orderNumber    String      @map("order_number") @unique @db.VarChar(50)
+  userId         Int         @map("user_id")
+  status         String      @db.VarChar(30)
+  totalAmount    Int         @map("total_amount")
+  pointUsed      Int         @default(0) @map("point_used")
+  finalAmount    Int         @map("final_amount")
+  recipientName  String      @map("recipient_name") @db.VarChar(50)
+  recipientPhone String      @map("recipient_phone") @db.VarChar(20)
+  zipCode        String      @map("zip_code") @db.VarChar(10)
+  address        String      @db.VarChar(255)
+  addressDetail  String?     @map("address_detail") @db.VarChar(255)
+  memo           String?
+  version        Int         @default(1)
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @default(now()) @map("updated_at")
+  user           User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  orderItems     OrderItem[]
+  payments       Payment[]
+  reviews        Review[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id              Int      @id @default(autoincrement())
+  orderId         Int      @map("order_id")
+  productId       Int      @map("product_id")
+  sellerId        Int?     @map("seller_id")
+  productName     String   @map("product_name") @db.VarChar(200)
+  sellerName      String?  @map("seller_name") @db.VarChar(100)
+  selectedOptions String?  @map("selected_options") @db.Text
+  quantity        Int
+  unitPrice       Int      @map("unit_price")
+  totalPrice      Int      @map("total_price")
+  isReviewed      Boolean  @default(false) @map("is_reviewed")
+  createdAt       DateTime @default(now()) @map("created_at")
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@map("order_items")
+}
+
+model Payment {
+  id         Int       @id @default(autoincrement())
+  orderId    Int       @map("order_id")
+  method     String    @db.VarChar(30)
+  amount     Int
+  status     String    @db.VarChar(30)
+  paidAt     DateTime? @map("paid_at")
+  refundedAt DateTime? @map("refunded_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  order      Order     @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@map("payments")
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  productId Int      @map("product_id")
+  orderId   Int?     @map("order_id")
+  rating    Int
+  content   String
+  isBest    Boolean  @default(false) @map("is_best")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  order     Order?   @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@map("reviews")
+}
+
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  productId Int      @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("wishlists")
 }

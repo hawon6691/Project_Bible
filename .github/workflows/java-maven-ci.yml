@@ -151,19 +151,34 @@ jobs:
       - name: Verify Maven wrapper
         run: chmod +x mvnw
 
-      - name: Start application for Swagger export
+      - name: Verify Swagger endpoints via integration test
+        run: >
+          ./mvnw -B -Dspring.profiles.active=ci
+          "-Dtest=SwaggerDocsE2ETest"
+          test
+
+      - name: Start application for OpenAPI export
         shell: bash
         run: |
-          ./mvnw -B -Dspring.profiles.active=ci spring-boot:run > /tmp/java-maven-swagger.log 2>&1 &
+          ./mvnw -B -Dspring.profiles.active=ci -DskipTests spring-boot:run > /tmp/java-maven-swagger.log 2>&1 &
           echo $! > /tmp/java-maven-swagger.pid
-          for _ in $(seq 1 60); do
-            if curl -fsSL http://127.0.0.1:8080/docs/swagger > /tmp/swagger-ui.html; then
+
+          ready=0
+          for _ in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8080/docs/openapi -o openapi.json; then
+              ready=1
               break
             fi
             sleep 2
           done
-          curl -fsSL http://127.0.0.1:8080/docs/openapi -o openapi.json
-          test -s openapi.json
+
+          if [ "$ready" -ne 1 ]; then
+            echo "Spring Boot app did not become ready for Swagger export"
+            cat /tmp/java-maven-swagger.log || true
+            exit 1
+          fi
+
+          curl -fsS http://127.0.0.1:8080/docs/swagger -o /tmp/swagger-ui.html
 
       - name: Upload Swagger artifacts
         uses: actions/upload-artifact@v4
@@ -172,6 +187,9 @@ jobs:
           path: |
             ${{ env.WORKDIR }}/openapi.json
             /tmp/swagger-ui.html
+            ${{ env.WORKDIR }}/target/surefire-reports/*.xml
+            ${{ env.WORKDIR }}/target/surefire-reports/*.txt
+            /tmp/java-maven-swagger.log
 
       - name: Stop application
         if: always()

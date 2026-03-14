@@ -12,7 +12,7 @@
   - 테스트 기준 경로: `BackEnd/TypeScript/nestshop_typeorm/test`
 - PHP
   - 프레임워크: `Laravel`
-  - 테스트 기준 경로: `BackEnd/PHP/laravelshop/tests`
+  - 테스트 기준 경로: `BackEnd/PHP/laravelshop_eloquentorm/tests`
 
 ## 테스트 계층
 

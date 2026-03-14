@@ -8,7 +8,7 @@
 기준 구현체는 다음 두 워크플로다.
 
 - TypeScript/TypeORM: `.github/workflows/typescript-typeorm-ci.yml`
-- PHP/Laravel: `.github/workflows/php-laravel-ci.yml`
+- PHP/Laravel: `.github/workflows/php-eloquentorm-ci.yml`
 
 이 문서는 Java, Python, Go 등 다른 언어 트랙이 추가되더라도 공통 CI 설계 기준으로 재사용한다.
 

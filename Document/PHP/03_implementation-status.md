@@ -2,7 +2,7 @@
 
 ## 1. 기준
 
-- 기준 구현체: `BackEnd/PHP/laravelshop`
+- 기준 구현체: `BackEnd/PHP/laravelshop_eloquentorm`
 - 기준 문서:
   - `Document/01_requirements.md`
   - `Document/02_api-specification.md`
@@ -82,7 +82,7 @@
 - `php artisan route:list`
 - `php artisan test`
 - `vendor/bin/pint`
-- GitHub Actions용 `php-laravel-ci.yml` 추가
+- GitHub Actions용 `php-eloquentorm-ci.yml` 추가
 - `php artisan l5-swagger:generate`
 - `storage/api-docs/api-docs.json` 생성 확인
 - `storage/api-docs/api-docs.yaml` 생성 확인

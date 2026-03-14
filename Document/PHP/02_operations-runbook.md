@@ -2,14 +2,14 @@
 
 ## 1. 개요
 
-이 문서는 `BackEnd/PHP/laravelshop`의 로컬 실행, 테스트, CI 확인 절차를 정리한다.
+이 문서는 `BackEnd/PHP/laravelshop_eloquentorm`의 로컬 실행, 테스트, CI 확인 절차를 정리한다.
 
 ## 2. 환경 전제
 
 - PHP 8.3
 - Composer
 - MySQL 또는 MariaDB
-- 프로젝트 루트: `BackEnd/PHP/laravelshop`
+- 프로젝트 루트: `BackEnd/PHP/laravelshop_eloquentorm`
 
 ## 3. 설치
 
@@ -92,7 +92,7 @@ vendor/bin/pint --test
 
 GitHub Actions:
 
-- `.github/workflows/php-laravel-ci.yml`
+- `.github/workflows/php-eloquentorm-ci.yml`
 
 검사 단계:
 
@@ -114,8 +114,8 @@ php artisan l5-swagger:generate
 생성 산출물:
 
 ```text
-BackEnd/PHP/laravelshop/storage/api-docs/api-docs.json
-BackEnd/PHP/laravelshop/storage/api-docs/api-docs.yaml
+BackEnd/PHP/laravelshop_eloquentorm/storage/api-docs/api-docs.json
+BackEnd/PHP/laravelshop_eloquentorm/storage/api-docs/api-docs.yaml
 ```
 
 문서 접근 경로:

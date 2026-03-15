@@ -2,10 +2,12 @@ import { Router } from "express";
 
 import { apiHealthController, docsStatusController, healthController } from "../health/health.controller.js";
 import addressesRouter from "./addresses.js";
+import activitiesRouter from "./activities.js";
 import authRouter from "./auth.js";
 import boardsRouter from "./boards.js";
 import categoriesRouter from "./categories.js";
 import cartRouter from "./cart.js";
+import chatsRouter from "./chats.js";
 import faqsRouter from "./faqs.js";
 import inquiriesRouter from "./inquiries.js";
 import noticesRouter from "./notices.js";
@@ -32,6 +34,8 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, productsRouter);
   router.use(apiPrefix, cartRouter);
   router.use(apiPrefix, addressesRouter);
+  router.use(apiPrefix, activitiesRouter);
+  router.use(apiPrefix, chatsRouter);
   router.use(apiPrefix, ordersRouter);
   router.use(apiPrefix, paymentsRouter);
   router.use(apiPrefix, reviewsRouter);

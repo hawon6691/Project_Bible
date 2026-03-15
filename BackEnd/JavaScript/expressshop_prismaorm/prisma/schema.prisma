@@ -159,6 +159,11 @@ model User {
   answeredInquiries    Inquiry[]         @relation("InquiryAnsweredBy")
   supportTickets       SupportTicket[]
   ticketReplies        TicketReply[]
+  recentProductViews   RecentProductView[]
+  searchHistories      SearchHistory[]
+  createdChatRooms     ChatRoom[]        @relation("ChatRoomCreatedBy")
+  chatMessages         ChatMessage[]     @relation("ChatMessageSender")
+  chatRoomMembers      ChatRoomMember[]
 
   @@index([status], map: "idx_users_status")
   @@index([role], map: "idx_users_role")
@@ -213,6 +218,7 @@ model Product {
   reviews         Review[]
   wishlistItems   Wishlist[]
   inquiries       Inquiry[]
+  recentViews     RecentProductView[]
 
   @@index([categoryId], map: "idx_products_category")
   @@index([status], map: "idx_products_status")
@@ -627,4 +633,75 @@ model Notice {
 
   @@index([isPinned(sort: Desc), createdAt(sort: Desc)], map: "idx_notices_pinned_created")
   @@map("notices")
+}
+
+model RecentProductView {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  productId Int      @map("product_id")
+  viewedAt  DateTime @map("viewed_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, productId], map: "uq_recent_product_view_user_product")
+  @@index([userId, viewedAt(sort: Desc)], map: "idx_recent_product_views_user")
+  @@map("recent_product_views")
+}
+
+model SearchHistory {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  keyword   String   @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt(sort: Desc)], map: "idx_search_histories_user")
+  @@map("search_histories")
+}
+
+model ChatRoom {
+  id         Int              @id @default(autoincrement())
+  name       String           @db.VarChar(100)
+  createdBy  Int              @map("created_by")
+  isPrivate  Boolean          @default(true) @map("is_private")
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @default(now()) @map("updated_at")
+  creator    User             @relation("ChatRoomCreatedBy", fields: [createdBy], references: [id], onDelete: Restrict)
+  messages   ChatMessage[]
+  members    ChatRoomMember[]
+
+  @@index([name], map: "idx_chat_rooms_name")
+  @@index([createdBy], map: "idx_chat_rooms_created_by")
+  @@map("chat_rooms")
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  roomId     Int      @map("room_id")
+  senderId   Int      @map("sender_id")
+  message    String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+  room       ChatRoom @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  sender     User     @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Restrict)
+
+  @@index([roomId, createdAt], map: "idx_chat_messages_room")
+  @@map("chat_messages")
+}
+
+model ChatRoomMember {
+  id        Int      @id @default(autoincrement())
+  roomId     Int      @map("room_id")
+  userId     Int      @map("user_id")
+  joinedAt   DateTime @map("joined_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+  room       ChatRoom @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([roomId, userId], map: "uq_chat_room_members_room_user")
+  @@map("chat_room_members")
 }

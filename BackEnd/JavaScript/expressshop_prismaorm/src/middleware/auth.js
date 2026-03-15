@@ -1,5 +1,5 @@
 import { prisma } from "../prisma.js";
-import { verifyAccessToken } from "../services/token-service.js";
+import { verifyAccessToken } from "../auth/token.service.js";
 import { asyncHandler } from "../utils/async-handler.js";
 import { forbidden, unauthorized } from "../utils/http-error.js";
 

@@ -28,6 +28,20 @@ export function findCategoryById(categoryId) {
   });
 }
 
+export async function existsCategoryChildren(categoryId) {
+  const count = await prisma.category.count({
+    where: { parentId: Number(categoryId) },
+  });
+  return count > 0;
+}
+
+export async function existsCategoryProducts(categoryId) {
+  const count = await prisma.product.count({
+    where: { categoryId: Number(categoryId) },
+  });
+  return count > 0;
+}
+
 export function createCategory(data) {
   return prisma.$transaction(async (tx) => {
     await tx.$executeRawUnsafe(

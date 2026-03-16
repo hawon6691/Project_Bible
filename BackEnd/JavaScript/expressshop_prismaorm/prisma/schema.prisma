@@ -149,6 +149,39 @@ enum MappingStatus {
   @@map("mapping_status")
 }
 
+enum FraudStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("fraud_status")
+}
+
+enum BuildPurpose {
+  GAMING
+  OFFICE
+  DESIGN
+  DEVELOPMENT
+  STREAMING
+
+  @@map("build_purpose")
+}
+
+enum PartType {
+  CPU
+  MOTHERBOARD
+  RAM
+  GPU
+  SSD
+  HDD
+  PSU
+  CASE
+  COOLER
+  MONITOR
+
+  @@map("part_type")
+}
+
 enum VerificationType {
   SIGNUP
   PASSWORD_RESET
@@ -207,6 +240,8 @@ model User {
   mediaAssets          MediaAsset[]
   reviewedMappings     ProductMapping[]
   emailVerifications   EmailVerification[]
+  reviewedFraudAlerts  FraudAlert[]
+  pcBuilds             PcBuild[]
 
   @@index([status], map: "idx_users_status")
   @@index([role], map: "idx_users_role")
@@ -269,6 +304,10 @@ model Product {
   shortformProducts ShortformProduct[]
   newsProducts      NewsProduct[]
   approvedMappings  ProductMapping[]
+  fraudAlerts       FraudAlert[]
+  usedPrices        UsedPrice[]
+  buildParts        BuildPart[]
+  compareItems      CompareItem[]
 
   @@index([categoryId], map: "idx_products_category")
   @@index([status], map: "idx_products_status")
@@ -368,6 +407,8 @@ model Seller {
   priceEntries PriceEntry[]
   cartItems    CartItem[]
   productMappings ProductMapping[]
+  fraudAlerts     FraudAlert[]
+  buildParts      BuildPart[]
 
   @@index([isActive], map: "idx_sellers_active")
   @@map("sellers")
@@ -390,6 +431,7 @@ model PriceEntry {
   updatedAt    DateTime      @default(now()) @map("updated_at")
   product      Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
   seller       Seller        @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  fraudAlerts  FraudAlert[]
 
   @@unique([productId, sellerId], map: "uq_price_entries")
   @@index([productId, price], map: "idx_price_entries_product_price")
@@ -1044,4 +1086,95 @@ model EmailVerification {
   @@index([userId, code, type], map: "idx_email_verifications_code")
   @@index([expiresAt], map: "idx_email_verifications_expires")
   @@map("email_verifications")
+}
+
+model FraudAlert {
+  id               Int         @id @default(autoincrement())
+  priceEntryId     Int         @map("price_entry_id")
+  productId        Int         @map("product_id")
+  sellerId         Int         @map("seller_id")
+  detectedPrice    Int         @map("detected_price")
+  averagePrice     Int         @map("average_price")
+  deviationPercent Decimal     @map("deviation_percent") @db.Decimal(5, 2)
+  status           FraudStatus @default(PENDING)
+  reviewedBy       Int?        @map("reviewed_by")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  priceEntry       PriceEntry  @relation(fields: [priceEntryId], references: [id], onDelete: Restrict)
+  product          Product     @relation(fields: [productId], references: [id], onDelete: Restrict)
+  seller           Seller      @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  reviewer         User?       @relation(fields: [reviewedBy], references: [id], onDelete: Restrict)
+
+  @@index([status], map: "idx_fraud_status")
+  @@index([productId], map: "idx_fraud_product")
+  @@map("fraud_alerts")
+}
+
+model UsedPrice {
+  id           Int      @id @default(autoincrement())
+  productId    Int      @map("product_id")
+  averagePrice Int      @map("average_price")
+  minPrice     Int      @map("min_price")
+  maxPrice     Int      @map("max_price")
+  sampleCount  Int      @map("sample_count")
+  source       String   @db.VarChar(50)
+  collectedAt  DateTime @map("collected_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([productId, collectedAt], map: "idx_used_prices_product")
+  @@map("used_prices")
+}
+
+model PcBuild {
+  id          Int          @id @default(autoincrement())
+  userId      Int          @map("user_id")
+  name        String       @db.VarChar(120)
+  description String?      @db.VarChar(500)
+  purpose     BuildPurpose
+  budget      Int?
+  totalPrice  Int          @default(0) @map("total_price")
+  shareCode   String?      @unique @map("share_code") @db.VarChar(20)
+  viewCount   Int          @default(0) @map("view_count")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @default(now()) @map("updated_at")
+  deletedAt   DateTime?    @map("deleted_at")
+  user        User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  parts       BuildPart[]
+
+  @@index([userId], map: "idx_pc_builds_user")
+  @@index([shareCode], map: "idx_pc_builds_share_code")
+  @@map("pc_builds")
+}
+
+model BuildPart {
+  id         Int       @id @default(autoincrement())
+  buildId    Int       @map("build_id")
+  productId  Int       @map("product_id")
+  sellerId   Int?      @map("seller_id")
+  partType   PartType  @map("part_type")
+  quantity   Int       @default(1)
+  priceAtAdd Int       @map("price_at_add")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  build      PcBuild   @relation(fields: [buildId], references: [id], onDelete: Restrict)
+  product    Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+  seller     Seller?   @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+
+  @@unique([buildId, partType, productId], map: "uq_build_parts")
+  @@index([buildId], map: "idx_build_parts_build")
+  @@map("build_parts")
+}
+
+model CompareItem {
+  id         Int      @id @default(autoincrement())
+  compareKey String   @map("compare_key") @db.VarChar(100)
+  productId  Int      @map("product_id")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([compareKey, productId], map: "uq_compare_items_compare_key_product_id")
+  @@index([compareKey], map: "idx_compare_items_compare_key")
+  @@index([productId], map: "idx_compare_items_product_id")
+  @@map("compare_items")
 }

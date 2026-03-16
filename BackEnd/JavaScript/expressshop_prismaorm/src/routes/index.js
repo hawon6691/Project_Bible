@@ -23,6 +23,7 @@ import productsRouter from "./products.js";
 import rankingsRouter from "./rankings.js";
 import recommendationsRouter from "./recommendations.js";
 import reviewsRouter from "./reviews.js";
+import sellersRouter from "./sellers.js";
 import shortformsRouter from "./shortforms.js";
 import ticketsRouter from "./tickets.js";
 import usersRouter from "./users.js";
@@ -40,6 +41,7 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, usersRouter);
   router.use(apiPrefix, categoriesRouter);
   router.use(apiPrefix, productsRouter);
+  router.use(apiPrefix, sellersRouter);
   router.use(apiPrefix, cartRouter);
   router.use(apiPrefix, addressesRouter);
   router.use(apiPrefix, activitiesRouter);

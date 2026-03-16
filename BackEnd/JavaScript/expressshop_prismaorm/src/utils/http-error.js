@@ -19,6 +19,18 @@ export function forbidden(message = "Forbidden") {
   return new HttpError(403, "FORBIDDEN", message);
 }
 
+export function conflict(message = "Conflict") {
+  return new HttpError(409, "CONFLICT", message);
+}
+
+export function gone(message = "Gone") {
+  return new HttpError(410, "GONE", message);
+}
+
+export function tooManyRequests(message = "Too many requests") {
+  return new HttpError(429, "TOO_MANY_REQUESTS", message);
+}
+
 export function notFound(message = "Resource not found") {
   return new HttpError(404, "NOT_FOUND", message);
 }

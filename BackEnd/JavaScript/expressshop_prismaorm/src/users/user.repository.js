@@ -1,5 +1,17 @@
 import { prisma } from "../prisma.js";
 
+export function findUserById(userId) {
+  return prisma.user.findUnique({
+    where: { id: Number(userId) },
+  });
+}
+
+export function findUserByNickname(nickname) {
+  return prisma.user.findUnique({
+    where: { nickname },
+  });
+}
+
 export function updateUser(userId, data) {
   return prisma.user.update({
     where: { id: Number(userId) },
@@ -19,6 +31,16 @@ export function findUsers(where, page, limit) {
   ]);
 }
 
+export function softDeleteUser(userId) {
+  return prisma.user.update({
+    where: { id: Number(userId) },
+    data: {
+      deletedAt: new Date(),
+      refreshToken: null,
+    },
+  });
+}
+
 export function findUserProfile(userId) {
   return prisma.user.findUnique({
     where: { id: Number(userId) },
@@ -30,6 +52,7 @@ export function findUserProfile(userId) {
       profileImageUrl: true,
       role: true,
       createdAt: true,
+      deletedAt: true,
     },
   });
 }

@@ -149,6 +149,13 @@ enum MappingStatus {
   @@map("mapping_status")
 }
 
+enum VerificationType {
+  SIGNUP
+  PASSWORD_RESET
+
+  @@map("verification_type")
+}
+
 model User {
   id                   Int                @id @default(autoincrement())
   email                String             @unique @db.VarChar(255)
@@ -199,6 +206,7 @@ model User {
   shortformComments    ShortformComment[]
   mediaAssets          MediaAsset[]
   reviewedMappings     ProductMapping[]
+  emailVerifications   EmailVerification[]
 
   @@index([status], map: "idx_users_status")
   @@index([role], map: "idx_users_role")
@@ -310,6 +318,7 @@ model SpecDefinition {
   createdAt    DateTime      @default(now()) @map("created_at")
   category     Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   productSpecs ProductSpec[]
+  specScores   SpecScore[]
 
   @@index([categoryId], map: "idx_spec_definitions_category")
   @@map("spec_definitions")
@@ -328,6 +337,21 @@ model ProductSpec {
   @@unique([productId, specDefinitionId], map: "uq_product_specs")
   @@index([specDefinitionId, value], map: "idx_product_specs_value")
   @@map("product_specs")
+}
+
+model SpecScore {
+  id               Int            @id @default(autoincrement())
+  specDefinitionId Int            @map("spec_definition_id")
+  value            String         @db.VarChar(200)
+  score            Int
+  benchmarkSource  String?        @map("benchmark_source") @db.VarChar(100)
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @default(now()) @map("updated_at")
+  specDefinition   SpecDefinition @relation(fields: [specDefinitionId], references: [id], onDelete: Restrict)
+
+  @@unique([specDefinitionId, value], map: "uq_spec_scores")
+  @@index([specDefinitionId], map: "idx_spec_scores_definition")
+  @@map("spec_scores")
 }
 
 model Seller {
@@ -1003,4 +1027,21 @@ model ProductMapping {
   @@index([sellerId], map: "idx_mappings_seller")
   @@index([productId], map: "idx_mappings_product")
   @@map("product_mappings")
+}
+
+model EmailVerification {
+  id           Int              @id @default(autoincrement())
+  userId       Int              @map("user_id")
+  type         VerificationType
+  code         String           @db.VarChar(6)
+  attemptCount Int              @default(0) @map("attempt_count")
+  isUsed       Boolean          @default(false) @map("is_used")
+  expiresAt    DateTime         @map("expires_at")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  user         User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, type], map: "idx_email_verifications_user_type")
+  @@index([userId, code, type], map: "idx_email_verifications_code")
+  @@index([expiresAt], map: "idx_email_verifications_expires")
+  @@map("email_verifications")
 }

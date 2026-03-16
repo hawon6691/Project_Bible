@@ -30,8 +30,16 @@ npm run db:reset
 
 - `GET /health`
 - `GET /api/v1/health`
+- `POST /api/v1/auth/verify-email`
+- `POST /api/v1/auth/password-reset/request`
 - `GET /api/v1/categories`
+- `POST /api/v1/categories`
 - `GET /api/v1/products`
+- `POST /api/v1/products`
+- `GET /api/v1/sellers`
+- `POST /api/v1/sellers`
+- `POST /api/v1/specs/compare`
+- `GET /api/v1/price-alerts`
 - `GET /api/v1/docs-status`
 
 ## Stack

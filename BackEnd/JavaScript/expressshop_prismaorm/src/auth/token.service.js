@@ -44,6 +44,30 @@ export function verifyRefreshToken(token) {
   }
 }
 
+export function signPasswordResetToken(user) {
+  return jwt.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      type: "password-reset",
+    },
+    jwtConfig.refreshSecret,
+    { expiresIn: "5m" },
+  );
+}
+
+export function verifyPasswordResetToken(token) {
+  try {
+    const payload = jwt.verify(token, jwtConfig.refreshSecret);
+    if (payload?.type !== "password-reset") {
+      throw new Error("invalid token type");
+    }
+    return payload;
+  } catch {
+    throw unauthorized("Invalid reset token");
+  }
+}
+
 export function tokenResponse(user) {
   return {
     accessToken: signAccessToken(user),

@@ -133,6 +133,22 @@ enum RecommendationType {
   @@map("recommendation_type")
 }
 
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  BLOCKED
+
+  @@map("friendship_status")
+}
+
+enum MappingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("mapping_status")
+}
+
 model User {
   id                   Int                @id @default(autoincrement())
   email                String             @unique @db.VarChar(255)
@@ -173,6 +189,16 @@ model User {
   chatMessages         ChatMessage[]     @relation("ChatMessageSender")
   chatRoomMembers      ChatRoomMember[]
   searchLogs           SearchLog[]
+  sentFriendRequests   Friendship[]      @relation("FriendRequester")
+  receivedFriendRequests Friendship[]    @relation("FriendAddressee")
+  blockedUsers         FriendBlock[]     @relation("FriendBlockOwner")
+  blockedByUsers       FriendBlock[]     @relation("FriendBlockedUser")
+  friendActivities     FriendActivity[]
+  shortforms           Shortform[]
+  shortformLikes       ShortformLike[]
+  shortformComments    ShortformComment[]
+  mediaAssets          MediaAsset[]
+  reviewedMappings     ProductMapping[]
 
   @@index([status], map: "idx_users_status")
   @@index([role], map: "idx_users_role")
@@ -232,6 +258,9 @@ model Product {
   recommendations Recommendation[]
   deals           Deal[]
   dealProducts    DealProduct[]
+  shortformProducts ShortformProduct[]
+  newsProducts      NewsProduct[]
+  approvedMappings  ProductMapping[]
 
   @@index([categoryId], map: "idx_products_category")
   @@index([status], map: "idx_products_status")
@@ -314,6 +343,7 @@ model Seller {
   updatedAt   DateTime     @default(now()) @map("updated_at")
   priceEntries PriceEntry[]
   cartItems    CartItem[]
+  productMappings ProductMapping[]
 
   @@index([isActive], map: "idx_sellers_active")
   @@map("sellers")
@@ -787,4 +817,190 @@ model SearchLog {
   @@index([categoryId], map: "idx_search_logs_category")
   @@index([searchedAt(sort: Desc)], map: "idx_search_logs_searched_at")
   @@map("search_logs")
+}
+
+model Friendship {
+  id          Int              @id @default(autoincrement())
+  requesterId Int              @map("requester_id")
+  addresseeId Int              @map("addressee_id")
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @default(now()) @map("updated_at")
+  requester   User             @relation("FriendRequester", fields: [requesterId], references: [id], onDelete: Restrict)
+  addressee   User             @relation("FriendAddressee", fields: [addresseeId], references: [id], onDelete: Restrict)
+
+  @@unique([requesterId, addresseeId], map: "uq_friendships_pair")
+  @@index([addresseeId], map: "idx_friendships_addressee")
+  @@index([status], map: "idx_friendships_status")
+  @@map("friendships")
+}
+
+model FriendBlock {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  blockedUserId Int      @map("blocked_user_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @map("updated_at")
+  user          User     @relation("FriendBlockOwner", fields: [userId], references: [id], onDelete: Restrict)
+  blockedUser   User     @relation("FriendBlockedUser", fields: [blockedUserId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, blockedUserId], map: "uq_friend_blocks_user_blocked_user")
+  @@map("friend_blocks")
+}
+
+model FriendActivity {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  type      String   @db.VarChar(40)
+  message   String   @db.VarChar(300)
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("friend_activities")
+}
+
+model Shortform {
+  id                 Int                @id @default(autoincrement())
+  userId             Int                @map("user_id")
+  title              String             @db.VarChar(120)
+  videoUrl           String             @map("video_url") @db.VarChar(500)
+  thumbnailUrl       String?            @map("thumbnail_url") @db.VarChar(500)
+  durationSec        Int                @default(0) @map("duration_sec")
+  viewCount          Int                @default(0) @map("view_count")
+  likeCount          Int                @default(0) @map("like_count")
+  commentCount       Int                @default(0) @map("comment_count")
+  transcodeStatus    String             @default("PENDING") @map("transcode_status") @db.VarChar(20)
+  transcodedVideoUrl String?            @map("transcoded_video_url") @db.VarChar(500)
+  transcodeError     String?            @map("transcode_error") @db.VarChar(500)
+  transcodedAt       DateTime?          @map("transcoded_at")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @default(now()) @map("updated_at")
+  user               User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  products           ShortformProduct[]
+  likes              ShortformLike[]
+  comments           ShortformComment[]
+
+  @@map("shortforms")
+}
+
+model ShortformProduct {
+  id          Int       @id @default(autoincrement())
+  shortformId Int       @map("shortform_id")
+  productId   Int       @map("product_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @map("updated_at")
+  shortform   Shortform @relation(fields: [shortformId], references: [id], onDelete: Restrict)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([shortformId, productId], map: "uq_shortform_products_shortform_product")
+  @@map("shortform_products")
+}
+
+model ShortformLike {
+  id          Int       @id @default(autoincrement())
+  shortformId Int       @map("shortform_id")
+  userId      Int       @map("user_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @map("updated_at")
+  shortform   Shortform @relation(fields: [shortformId], references: [id], onDelete: Restrict)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([shortformId, userId], map: "uq_shortform_likes_shortform_user")
+  @@map("shortform_likes")
+}
+
+model ShortformComment {
+  id          Int       @id @default(autoincrement())
+  shortformId Int       @map("shortform_id")
+  userId      Int       @map("user_id")
+  content     String    @db.VarChar(500)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @map("updated_at")
+  shortform   Shortform @relation(fields: [shortformId], references: [id], onDelete: Restrict)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("shortform_comments")
+}
+
+model MediaAsset {
+  id           Int      @id @default(autoincrement())
+  uploaderId   Int      @map("uploader_id")
+  ownerType    String   @map("owner_type") @db.VarChar(30)
+  ownerId      Int      @map("owner_id")
+  originalName String   @map("original_name") @db.VarChar(255)
+  fileKey      String   @map("file_key") @unique @db.VarChar(500)
+  fileUrl      String   @map("file_url") @db.VarChar(500)
+  type         String   @db.VarChar(20)
+  mime         String   @db.VarChar(120)
+  size         BigInt
+  duration     Int?
+  width        Int?
+  height       Int?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @map("updated_at")
+  uploader     User     @relation(fields: [uploaderId], references: [id], onDelete: Restrict)
+
+  @@map("media_assets")
+}
+
+model NewsCategory {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique @db.VarChar(80)
+  slug      String   @unique @db.VarChar(80)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  newsItems News[]
+
+  @@map("news_categories")
+}
+
+model News {
+  id           Int           @id @default(autoincrement())
+  title        String        @db.VarChar(200)
+  content      String
+  categoryId   Int           @map("category_id")
+  thumbnailUrl String?       @map("thumbnail_url") @db.VarChar(500)
+  viewCount    Int           @default(0) @map("view_count")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @default(now()) @map("updated_at")
+  category     NewsCategory  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  products     NewsProduct[]
+
+  @@map("news")
+}
+
+model NewsProduct {
+  id        Int      @id @default(autoincrement())
+  newsId     Int      @map("news_id")
+  productId  Int      @map("product_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+  news       News     @relation(fields: [newsId], references: [id], onDelete: Restrict)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([newsId, productId], map: "uq_news_products_news_product")
+  @@map("news_products")
+}
+
+model ProductMapping {
+  id                 Int           @id @default(autoincrement())
+  crawledProductName String        @map("crawled_product_name") @db.VarChar(300)
+  extractedModel     String?       @map("extracted_model") @db.VarChar(100)
+  sellerId           Int           @map("seller_id")
+  productId          Int?          @map("product_id")
+  status             MappingStatus @default(PENDING)
+  confidence         Decimal?      @db.Decimal(3, 2)
+  reviewedBy         Int?          @map("reviewed_by")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @default(now()) @map("updated_at")
+  seller             Seller        @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  product            Product?      @relation(fields: [productId], references: [id], onDelete: Restrict)
+  reviewer           User?         @relation(fields: [reviewedBy], references: [id], onDelete: Restrict)
+
+  @@index([status], map: "idx_mappings_status")
+  @@index([sellerId], map: "idx_mappings_seller")
+  @@index([productId], map: "idx_mappings_product")
+  @@map("product_mappings")
 }

@@ -8,9 +8,11 @@ import boardsRouter from "./boards.js";
 import categoriesRouter from "./categories.js";
 import cartRouter from "./cart.js";
 import chatsRouter from "./chats.js";
+import compareRouter from "./compare.js";
 import dealsRouter from "./deals.js";
 import faqsRouter from "./faqs.js";
 import friendsRouter from "./friends.js";
+import fraudRouter from "./fraud.js";
 import inquiriesRouter from "./inquiries.js";
 import matchingRouter from "./matching.js";
 import mediaRouter from "./media.js";
@@ -26,6 +28,7 @@ import reviewsRouter from "./reviews.js";
 import sellersRouter from "./sellers.js";
 import shortformsRouter from "./shortforms.js";
 import ticketsRouter from "./tickets.js";
+import usedMarketRouter from "./used-market.js";
 import usersRouter from "./users.js";
 import wishlistRouter from "./wishlist.js";
 import { asyncHandler } from "../utils/async-handler.js";
@@ -41,6 +44,7 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, usersRouter);
   router.use(apiPrefix, categoriesRouter);
   router.use(apiPrefix, productsRouter);
+  router.use(apiPrefix, fraudRouter);
   router.use(apiPrefix, sellersRouter);
   router.use(apiPrefix, cartRouter);
   router.use(apiPrefix, addressesRouter);
@@ -51,6 +55,7 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, mediaRouter);
   router.use(apiPrefix, newsRouter);
   router.use(apiPrefix, matchingRouter);
+  router.use(apiPrefix, compareRouter);
   router.use(apiPrefix, rankingsRouter);
   router.use(apiPrefix, recommendationsRouter);
   router.use(apiPrefix, dealsRouter);
@@ -64,6 +69,7 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, faqsRouter);
   router.use(apiPrefix, noticesRouter);
   router.use(apiPrefix, ticketsRouter);
+  router.use(apiPrefix, usedMarketRouter);
 
   return router;
 }

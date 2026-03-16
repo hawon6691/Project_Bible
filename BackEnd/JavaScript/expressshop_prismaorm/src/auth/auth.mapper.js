@@ -28,3 +28,11 @@ export function toAuthTokenDto(tokens) {
     expiresIn: tokens.expiresIn,
   };
 }
+
+export function toAuthMessageDto(result) {
+  return {
+    message: result.message,
+    ...(result.verified !== undefined ? { verified: result.verified } : {}),
+    ...(result.resetToken ? { resetToken: result.resetToken } : {}),
+  };
+}

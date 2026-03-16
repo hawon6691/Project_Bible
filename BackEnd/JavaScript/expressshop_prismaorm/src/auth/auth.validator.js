@@ -13,3 +13,27 @@ export function validateLogin(req) {
 export function validateRefresh(req) {
   return req.body?.refreshToken ? null : "refreshToken is required";
 }
+
+export function validateVerifyEmail(req) {
+  const { email, code } = req.body ?? {};
+  return email && code ? null : "email and code are required";
+}
+
+export function validateResendVerification(req) {
+  return req.body?.email ? null : "email is required";
+}
+
+export function validatePasswordResetRequest(req) {
+  const { email, phone } = req.body ?? {};
+  return email && phone ? null : "email and phone are required";
+}
+
+export function validatePasswordResetVerify(req) {
+  const { email, code } = req.body ?? {};
+  return email && code ? null : "email and code are required";
+}
+
+export function validatePasswordResetConfirm(req) {
+  const { resetToken, newPassword } = req.body ?? {};
+  return resetToken && newPassword ? null : "resetToken and newPassword are required";
+}

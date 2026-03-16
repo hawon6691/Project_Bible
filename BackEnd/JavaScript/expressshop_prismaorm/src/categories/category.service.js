@@ -1,6 +1,8 @@
 import {
   createCategory as createCategoryRecord,
   deleteCategory as deleteCategoryRecord,
+  existsCategoryChildren,
+  existsCategoryProducts,
   findCategories,
   findCategoryById,
   updateCategory as updateCategoryRecord,
@@ -57,6 +59,22 @@ export async function deleteCategory(categoryId) {
     throw notFound("Category not found");
   }
 
-  await deleteCategoryRecord(categoryId);
+  if (await existsCategoryChildren(categoryId)) {
+    throw badRequest("Child categories exist");
+  }
+
+  if (await existsCategoryProducts(categoryId)) {
+    throw badRequest("Products are linked to this category");
+  }
+
+  try {
+    await deleteCategoryRecord(categoryId);
+  } catch (error) {
+    if (error?.code === "P2003") {
+      throw badRequest("Category has related records");
+    }
+    throw error;
+  }
+
   return { message: "Category deleted" };
 }

@@ -32,12 +32,14 @@ npm run db:reset
 - `GET /api/v1/health`
 - `POST /api/v1/auth/verify-email`
 - `POST /api/v1/auth/password-reset/request`
+- `GET /api/v1/badges`
 - `GET /api/v1/categories`
 - `POST /api/v1/categories`
 - `GET /api/v1/products`
 - `POST /api/v1/products`
 - `GET /api/v1/sellers`
 - `POST /api/v1/sellers`
+- `POST /api/v1/admin/badges`
 - `POST /api/v1/push/subscriptions`
 - `GET /api/v1/push/preferences`
 - `POST /api/v1/specs/compare`

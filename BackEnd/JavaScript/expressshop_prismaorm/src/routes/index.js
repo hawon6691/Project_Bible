@@ -7,6 +7,7 @@ import analyticsRouter from "./analytics.js";
 import autoRouter from "./auto.js";
 import authRouter from "./auth.js";
 import auctionsRouter from "./auctions.js";
+import badgesRouter from "./badges.js";
 import boardsRouter from "./boards.js";
 import categoriesRouter from "./categories.js";
 import cartRouter from "./cart.js";
@@ -46,6 +47,7 @@ export function createRoutes(apiPrefix) {
 
   router.use(apiPrefix, authRouter);
   router.use(apiPrefix, usersRouter);
+  router.use(apiPrefix, badgesRouter);
   router.use(apiPrefix, analyticsRouter);
   router.use(apiPrefix, autoRouter);
   router.use(apiPrefix, auctionsRouter);

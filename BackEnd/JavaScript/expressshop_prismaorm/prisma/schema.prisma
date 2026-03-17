@@ -217,6 +217,23 @@ enum VerificationType {
   @@map("verification_type")
 }
 
+enum BadgeType {
+  AUTO
+  MANUAL
+
+  @@map("badge_type")
+}
+
+enum BadgeRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+
+  @@map("badge_rarity")
+}
+
 model User {
   id                   Int                @id @default(autoincrement())
   email                String             @unique @db.VarChar(255)
@@ -255,6 +272,8 @@ model User {
   searchHistories      SearchHistory[]
   pushSubscriptions    PushSubscription[]
   pushPreference       PushPreference?
+  userBadges           UserBadge[]       @relation("UserBadgeOwner")
+  grantedUserBadges    UserBadge[]       @relation("UserBadgeGrantedBy")
   createdChatRooms     ChatRoom[]        @relation("ChatRoomCreatedBy")
   chatMessages         ChatMessage[]     @relation("ChatMessageSender")
   chatRoomMembers      ChatRoomMember[]
@@ -1315,4 +1334,41 @@ model PushPreference {
   user               User     @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@map("push_preferences")
+}
+
+model Badge {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique @db.VarChar(50)
+  description String       @db.VarChar(200)
+  iconUrl     String       @map("icon_url") @db.VarChar(500)
+  type        BadgeType
+  condition   Json?
+  rarity      BadgeRarity  @default(COMMON)
+  holderCount Int          @default(0) @map("holder_count")
+  isActive    Boolean      @default(true) @map("is_active")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @default(now()) @map("updated_at")
+  userBadges  UserBadge[]
+
+  @@index([type], map: "idx_badges_type")
+  @@map("badges")
+}
+
+model UserBadge {
+  id               Int       @id @default(autoincrement())
+  userId           Int       @map("user_id")
+  badgeId          Int       @map("badge_id")
+  grantedByAdminId Int?      @map("granted_by_admin_id")
+  reason           String?   @db.VarChar(255)
+  grantedAt        DateTime  @default(now()) @map("granted_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @map("updated_at")
+  user             User      @relation("UserBadgeOwner", fields: [userId], references: [id], onDelete: Restrict)
+  badge            Badge     @relation(fields: [badgeId], references: [id], onDelete: Restrict)
+  grantedByAdmin   User?     @relation("UserBadgeGrantedBy", fields: [grantedByAdminId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, badgeId], map: "uq_user_badges")
+  @@index([userId], map: "idx_user_badges_user_id")
+  @@index([badgeId], map: "idx_user_badges_badge_id")
+  @@map("user_badges")
 }

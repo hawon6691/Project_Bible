@@ -234,6 +234,14 @@ enum BuyRecommendation {
   @@map("buy_recommendation")
 }
 
+enum TrustTrend {
+  IMPROVING
+  STABLE
+  DECLINING
+
+  @@map("trust_trend")
+}
+
 enum BadgeType {
   AUTO
   MANUAL
@@ -307,6 +315,7 @@ model User {
   reviewedMappings     ProductMapping[]
   emailVerifications   EmailVerification[]
   reviewedFraudAlerts  FraudAlert[]
+  sellerReviews        SellerReview[]
   pcBuilds             PcBuild[]
   auctions             Auction[]
 
@@ -475,6 +484,8 @@ model Seller {
   updatedAt   DateTime     @default(now()) @map("updated_at")
   priceEntries PriceEntry[]
   cartItems    CartItem[]
+  trustMetric  SellerTrustMetric?
+  reviews      SellerReview[]
   productMappings ProductMapping[]
   fraudAlerts     FraudAlert[]
   buildParts      BuildPart[]
@@ -594,6 +605,7 @@ model Order {
   orderItems     OrderItem[]
   payments       Payment[]
   reviews        Review[]
+  sellerReviews  SellerReview[]
 
   @@map("orders")
 }
@@ -1352,6 +1364,47 @@ model PushPreference {
   user               User     @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@map("push_preferences")
+}
+
+model SellerTrustMetric {
+  id                Int        @id @default(autoincrement())
+  sellerId          Int        @unique @map("seller_id")
+  deliveryScore     Int        @default(0) @map("delivery_score")
+  priceAccuracy     Int        @default(0) @map("price_accuracy")
+  returnRate        Decimal    @default(0) @map("return_rate") @db.Decimal(5, 2)
+  responseTimeHours Decimal    @default(0) @map("response_time_hours") @db.Decimal(5, 1)
+  reviewScore       Decimal    @default(0) @map("review_score") @db.Decimal(2, 1)
+  orderCount        Int        @default(0) @map("order_count")
+  disputeRate       Decimal    @default(0) @map("dispute_rate") @db.Decimal(5, 2)
+  overallScore      Int        @default(0) @map("overall_score")
+  grade             String     @default("C") @db.VarChar(2)
+  trend             TrustTrend @default(STABLE)
+  calculatedAt      DateTime   @map("calculated_at")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @default(now()) @map("updated_at")
+  seller            Seller     @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+
+  @@map("seller_trust_metrics")
+}
+
+model SellerReview {
+  id             Int      @id @default(autoincrement())
+  sellerId       Int      @map("seller_id")
+  userId         Int      @map("user_id")
+  orderId        Int      @map("order_id")
+  rating         Int
+  deliveryRating Int      @map("delivery_rating")
+  content        String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  seller         Seller   @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, orderId], map: "uq_seller_reviews_user_order")
+  @@index([sellerId], map: "idx_seller_reviews_seller")
+  @@map("seller_reviews")
 }
 
 model PricePrediction {

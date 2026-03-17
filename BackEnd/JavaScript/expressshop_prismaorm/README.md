@@ -38,6 +38,8 @@ npm run db:reset
 - `POST /api/v1/products`
 - `GET /api/v1/sellers`
 - `POST /api/v1/sellers`
+- `POST /api/v1/push/subscriptions`
+- `GET /api/v1/push/preferences`
 - `POST /api/v1/specs/compare`
 - `GET /api/v1/price-alerts`
 - `GET /api/v1/docs-status`

@@ -25,6 +25,7 @@ import ordersRouter from "./orders.js";
 import paymentsRouter from "./payments.js";
 import pointsRouter from "./points.js";
 import productsRouter from "./products.js";
+import pushRouter from "./push.js";
 import rankingsRouter from "./rankings.js";
 import recommendationsRouter from "./recommendations.js";
 import reviewsRouter from "./reviews.js";
@@ -52,6 +53,7 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, productsRouter);
   router.use(apiPrefix, fraudRouter);
   router.use(apiPrefix, sellersRouter);
+  router.use(apiPrefix, pushRouter);
   router.use(apiPrefix, cartRouter);
   router.use(apiPrefix, addressesRouter);
   router.use(apiPrefix, activitiesRouter);

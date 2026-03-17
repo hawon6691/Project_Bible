@@ -217,6 +217,23 @@ enum VerificationType {
   @@map("verification_type")
 }
 
+enum PriceTrend {
+  RISING
+  FALLING
+  STABLE
+
+  @@map("price_trend")
+}
+
+enum BuyRecommendation {
+  BUY_NOW
+  BUY_SOON
+  WAIT
+  HOLD
+
+  @@map("buy_recommendation")
+}
+
 enum BadgeType {
   AUTO
   MANUAL
@@ -343,6 +360,7 @@ model Product {
   specs           ProductSpec[]
   priceEntries    PriceEntry[]
   priceHistory    PriceHistory[]
+  pricePredictions PricePrediction[]
   priceAlerts     PriceAlert[]
   cartItems       CartItem[]
   reviews         Review[]
@@ -1334,6 +1352,27 @@ model PushPreference {
   user               User     @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@map("push_preferences")
+}
+
+model PricePrediction {
+  id               Int               @id @default(autoincrement())
+  productId        Int               @map("product_id")
+  predictionDate   DateTime          @map("prediction_date") @db.Date
+  predictedPrice   Int               @map("predicted_price")
+  confidence       Decimal           @db.Decimal(3, 2)
+  trend            PriceTrend
+  trendStrength    Decimal           @map("trend_strength") @db.Decimal(3, 2)
+  movingAvg7d      Int?              @map("moving_avg_7d")
+  movingAvg30d     Int?              @map("moving_avg_30d")
+  recommendation   BuyRecommendation
+  seasonalityNote  String?           @map("seasonality_note") @db.VarChar(200)
+  calculatedAt     DateTime          @map("calculated_at")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  product          Product           @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([productId, predictionDate], map: "uq_price_predictions")
+  @@index([predictionDate], map: "idx_price_predictions_date")
+  @@map("price_predictions")
 }
 
 model Badge {

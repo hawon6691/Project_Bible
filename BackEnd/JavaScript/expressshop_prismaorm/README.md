@@ -40,6 +40,13 @@ npm run db:reset
 - `GET /api/v1/sellers`
 - `POST /api/v1/sellers`
 - `GET /api/v1/predictions/products/:productId/price-trend`
+- `GET /api/v1/search`
+- `GET /api/v1/search/autocomplete`
+- `GET /api/v1/search/popular`
+- `POST /api/v1/search/recent`
+- `GET /api/v1/search/admin/index/status`
+- `POST /api/v1/search/admin/index/reindex`
+- `GET /api/v1/search/admin/index/outbox/summary`
 - `GET /api/v1/sellers/:id/trust`
 - `POST /api/v1/sellers/:id/reviews`
 - `POST /api/v1/admin/badges`

@@ -31,6 +31,7 @@ import pushRouter from "./push.js";
 import rankingsRouter from "./rankings.js";
 import recommendationsRouter from "./recommendations.js";
 import reviewsRouter from "./reviews.js";
+import searchRouter from "./search.js";
 import sellersRouter from "./sellers.js";
 import shortformsRouter from "./shortforms.js";
 import ticketsRouter from "./tickets.js";
@@ -74,6 +75,7 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, paymentsRouter);
   router.use(apiPrefix, predictionsRouter);
   router.use(apiPrefix, reviewsRouter);
+  router.use(apiPrefix, searchRouter);
   router.use(apiPrefix, wishlistRouter);
   router.use(apiPrefix, pointsRouter);
   router.use(apiPrefix, boardsRouter);

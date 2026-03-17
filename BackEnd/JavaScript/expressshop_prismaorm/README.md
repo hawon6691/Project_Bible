@@ -39,6 +39,7 @@ npm run db:reset
 - `POST /api/v1/products`
 - `GET /api/v1/sellers`
 - `POST /api/v1/sellers`
+- `GET /api/v1/predictions/products/:productId/price-trend`
 - `POST /api/v1/admin/badges`
 - `POST /api/v1/push/subscriptions`
 - `GET /api/v1/push/preferences`

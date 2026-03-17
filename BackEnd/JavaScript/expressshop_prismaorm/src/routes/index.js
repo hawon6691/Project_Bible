@@ -25,6 +25,7 @@ import noticesRouter from "./notices.js";
 import ordersRouter from "./orders.js";
 import paymentsRouter from "./payments.js";
 import pointsRouter from "./points.js";
+import predictionsRouter from "./predictions.js";
 import productsRouter from "./products.js";
 import pushRouter from "./push.js";
 import rankingsRouter from "./rankings.js";
@@ -71,6 +72,7 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, dealsRouter);
   router.use(apiPrefix, ordersRouter);
   router.use(apiPrefix, paymentsRouter);
+  router.use(apiPrefix, predictionsRouter);
   router.use(apiPrefix, reviewsRouter);
   router.use(apiPrefix, wishlistRouter);
   router.use(apiPrefix, pointsRouter);

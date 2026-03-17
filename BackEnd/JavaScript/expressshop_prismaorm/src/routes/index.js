@@ -4,6 +4,7 @@ import { apiHealthController, docsStatusController, healthController } from "../
 import addressesRouter from "./addresses.js";
 import activitiesRouter from "./activities.js";
 import authRouter from "./auth.js";
+import auctionsRouter from "./auctions.js";
 import boardsRouter from "./boards.js";
 import categoriesRouter from "./categories.js";
 import cartRouter from "./cart.js";
@@ -42,6 +43,7 @@ export function createRoutes(apiPrefix) {
 
   router.use(apiPrefix, authRouter);
   router.use(apiPrefix, usersRouter);
+  router.use(apiPrefix, auctionsRouter);
   router.use(apiPrefix, categoriesRouter);
   router.use(apiPrefix, productsRouter);
   router.use(apiPrefix, fraudRouter);

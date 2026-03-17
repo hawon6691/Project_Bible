@@ -167,6 +167,15 @@ enum BuildPurpose {
   @@map("build_purpose")
 }
 
+enum AuctionStatus {
+  OPEN
+  CLOSED
+  CANCELLED
+  COMPLETED
+
+  @@map("auction_status")
+}
+
 enum PartType {
   CPU
   MOTHERBOARD
@@ -242,6 +251,7 @@ model User {
   emailVerifications   EmailVerification[]
   reviewedFraudAlerts  FraudAlert[]
   pcBuilds             PcBuild[]
+  auctions             Auction[]
 
   @@index([status], map: "idx_users_status")
   @@index([role], map: "idx_users_role")
@@ -260,6 +270,7 @@ model Category {
   products    Product[]
   specs       SpecDefinition[]
   searchLogs  SearchLog[]
+  auctions    Auction[]
 
   @@index([parentId], map: "idx_categories_parent")
   @@map("categories")
@@ -409,6 +420,7 @@ model Seller {
   productMappings ProductMapping[]
   fraudAlerts     FraudAlert[]
   buildParts      BuildPart[]
+  auctionBids     AuctionBid[]
 
   @@index([isActive], map: "idx_sellers_active")
   @@map("sellers")
@@ -1177,4 +1189,43 @@ model CompareItem {
   @@index([compareKey], map: "idx_compare_items_compare_key")
   @@index([productId], map: "idx_compare_items_product_id")
   @@map("compare_items")
+}
+
+model Auction {
+  id          Int           @id @default(autoincrement())
+  userId      Int           @map("user_id")
+  title       String        @db.VarChar(100)
+  description String
+  categoryId  Int           @map("category_id")
+  budget      Int?
+  status      AuctionStatus @default(OPEN)
+  bidCount    Int           @default(0) @map("bid_count")
+  expiresAt   DateTime      @map("expires_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @default(now()) @map("updated_at")
+  user        User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  category    Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  bids        AuctionBid[]
+
+  @@index([userId], map: "idx_auctions_user")
+  @@index([status], map: "idx_auctions_status")
+  @@index([expiresAt], map: "idx_auctions_expires")
+  @@map("auctions")
+}
+
+model AuctionBid {
+  id           Int      @id @default(autoincrement())
+  auctionId    Int      @map("auction_id")
+  sellerId     Int      @map("seller_id")
+  price        Int
+  description  String?  @db.VarChar(500)
+  deliveryDays Int      @map("delivery_days")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @map("updated_at")
+  auction      Auction  @relation(fields: [auctionId], references: [id], onDelete: Restrict)
+  seller       Seller   @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+
+  @@index([auctionId], map: "idx_bids_auction")
+  @@index([sellerId], map: "idx_bids_seller")
+  @@map("bids")
 }

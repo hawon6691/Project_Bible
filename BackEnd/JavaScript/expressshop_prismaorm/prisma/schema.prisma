@@ -176,6 +176,25 @@ enum AuctionStatus {
   @@map("auction_status")
 }
 
+enum CarType {
+  SEDAN
+  SUV
+  HATCHBACK
+  TRUCK
+  VAN
+  EV
+
+  @@map("car_type")
+}
+
+enum LeaseType {
+  RENT
+  LEASE
+  FINANCE
+
+  @@map("lease_type")
+}
+
 enum PartType {
   CPU
   MOTHERBOARD
@@ -1228,4 +1247,40 @@ model AuctionBid {
   @@index([auctionId], map: "idx_bids_auction")
   @@index([sellerId], map: "idx_bids_seller")
   @@map("bids")
+}
+
+model CarModel {
+  id          Int          @id @default(autoincrement())
+  brand       String       @db.VarChar(50)
+  name        String       @db.VarChar(100)
+  type        CarType
+  year        Int
+  basePrice   Int          @map("base_price")
+  imageUrl    String?      @map("image_url") @db.VarChar(500)
+  isActive    Boolean      @default(true) @map("is_active")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @default(now()) @map("updated_at")
+  leaseOffers LeaseOffer[]
+
+  @@index([brand], map: "idx_car_models_brand")
+  @@index([type], map: "idx_car_models_type")
+  @@map("car_models")
+}
+
+model LeaseOffer {
+  id             Int        @id @default(autoincrement())
+  carModelId     Int        @map("car_model_id")
+  company        String     @db.VarChar(50)
+  type           LeaseType
+  monthlyPayment Int        @map("monthly_payment")
+  deposit        Int        @default(0)
+  contractMonths Int        @map("contract_months")
+  annualMileage  Int        @map("annual_mileage")
+  isActive       Boolean    @default(true) @map("is_active")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @default(now()) @map("updated_at")
+  carModel       CarModel   @relation(fields: [carModelId], references: [id], onDelete: Restrict)
+
+  @@index([carModelId], map: "idx_lease_offers_model")
+  @@map("lease_offers")
 }

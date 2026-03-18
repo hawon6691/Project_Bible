@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
+    "test:e2e:critical": "node --env-file=.env --test test/e2e/critical.test.js",
     "db:docker:up": "docker compose -f ../../Database/docker/docker-compose.yml up -d postgres redis elasticsearch",
     "db:docker:down": "docker compose -f ../../Database/docker/docker-compose.yml down",
     "db:check": "powershell -ExecutionPolicy Bypass -File scripts/db-check.ps1",

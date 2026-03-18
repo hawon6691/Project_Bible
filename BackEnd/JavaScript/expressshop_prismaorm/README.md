@@ -54,6 +54,9 @@ npm run db:reset
 - `GET /api/v1/admin/queues/stats`
 - `POST /api/v1/admin/queues/auto-retry`
 - `GET /api/v1/admin/ops-dashboard/summary`
+- `POST /api/v1/images/upload`
+- `GET /api/v1/images/:id/variants`
+- `DELETE /api/v1/images/:id`
 - `GET /api/v1/pc-builds`
 - `POST /api/v1/pc-builds`
 - `GET /api/v1/pc-builds/:id`

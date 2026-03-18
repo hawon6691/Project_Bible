@@ -29,6 +29,7 @@ import observabilityRouter from "./observability.js";
 import opsDashboardRouter from "./ops-dashboard.js";
 import ordersRouter from "./orders.js";
 import paymentsRouter from "./payments.js";
+import pcBuildsRouter from "./pc-builds.js";
 import pointsRouter from "./points.js";
 import predictionsRouter from "./predictions.js";
 import productsRouter from "./products.js";
@@ -87,6 +88,7 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, dealsRouter);
   router.use(apiPrefix, ordersRouter);
   router.use(apiPrefix, paymentsRouter);
+  router.use(apiPrefix, pcBuildsRouter);
   router.use(apiPrefix, predictionsRouter);
   router.use(apiPrefix, reviewsRouter);
   router.use(apiPrefix, searchRouter);

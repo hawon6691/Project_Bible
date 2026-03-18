@@ -389,6 +389,7 @@ model Product {
   fraudAlerts       FraudAlert[]
   usedPrices        UsedPrice[]
   buildParts        BuildPart[]
+  pcBuildParts      PcBuildPart[]
   compareItems      CompareItem[]
   queryView         ProductQueryView?
 
@@ -496,6 +497,7 @@ model Seller {
   productMappings ProductMapping[]
   fraudAlerts     FraudAlert[]
   buildParts      BuildPart[]
+  pcBuildParts    PcBuildPart[]
   auctionBids     AuctionBid[]
 
   @@index([isActive], map: "idx_sellers_active")
@@ -1317,6 +1319,7 @@ model PcBuild {
   deletedAt   DateTime?    @map("deleted_at")
   user        User         @relation(fields: [userId], references: [id], onDelete: Restrict)
   parts       BuildPart[]
+  pcParts     PcBuildPart[]
 
   @@index([userId], map: "idx_pc_builds_user")
   @@index([shareCode], map: "idx_pc_builds_share_code")
@@ -1339,6 +1342,41 @@ model BuildPart {
   @@unique([buildId, partType, productId], map: "uq_build_parts")
   @@index([buildId], map: "idx_build_parts_build")
   @@map("build_parts")
+}
+
+model PcBuildPart {
+  id        Int      @id @default(autoincrement())
+  buildId   Int      @map("build_id")
+  productId Int      @map("product_id")
+  sellerId  Int      @map("seller_id")
+  partType  String   @map("part_type") @db.VarChar(20)
+  quantity  Int      @default(1)
+  unitPrice Int      @map("unit_price")
+  totalPrice Int     @map("total_price")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  build     PcBuild  @relation(fields: [buildId], references: [id], onDelete: Restrict)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  seller    Seller   @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+
+  @@unique([buildId, partType], map: "uq_pc_build_parts_build_part_type")
+  @@index([buildId], map: "idx_pc_build_parts_build")
+  @@map("pc_build_parts")
+}
+
+model PcCompatibilityRule {
+  id             Int       @id @default(autoincrement())
+  partType       String    @map("part_type") @db.VarChar(20)
+  targetPartType String?   @map("target_part_type") @db.VarChar(20)
+  title          String    @db.VarChar(100)
+  description    String    @db.VarChar(500)
+  severity       String    @default("MEDIUM") @db.VarChar(10)
+  enabled        Boolean   @default(true)
+  metadata       Json?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @map("updated_at")
+
+  @@map("pc_compatibility_rules")
 }
 
 model CompareItem {

@@ -3,6 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 
 import { appConfig } from "./config/app.js";
+import { observabilityTrace } from "./middleware/observability.js";
 import { createRoutes } from "./routes/index.js";
 import { HttpError } from "./utils/http-error.js";
 import { failure } from "./utils/response.js";
@@ -13,6 +14,7 @@ export function createApp() {
 
   app.use(cors());
   app.use(express.json());
+  app.use(observabilityTrace);
 
   app.use(createRoutes(appConfig.apiPrefix));
 

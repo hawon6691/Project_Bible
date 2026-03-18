@@ -49,6 +49,129 @@ import usersRouter from "./users.js";
 import wishlistRouter from "./wishlist.js";
 import { asyncHandler } from "../utils/async-handler.js";
 
+function joinRoutePath(prefix, path) {
+  const left = prefix.endsWith("/") ? prefix.slice(0, -1) : prefix;
+  const right = path.startsWith("/") ? path : `/${path}`;
+  const joined = `${left}${right}`.replace(/\/+/g, "/");
+  return joined === "" ? "/" : joined;
+}
+
+function normalizeOpenApiPath(path) {
+  return path.replace(/:([A-Za-z0-9_]+)/g, "{$1}");
+}
+
+function collectRouterRoutes(router, prefix) {
+  const routes = [];
+
+  for (const layer of router.stack ?? []) {
+    if (layer.route?.path) {
+      const routePaths = Array.isArray(layer.route.path)
+        ? layer.route.path
+        : [layer.route.path];
+      const methods = Object.keys(layer.route.methods ?? {})
+        .filter((method) => layer.route.methods[method])
+        .map((method) => method.toUpperCase());
+
+      for (const routePath of routePaths) {
+        const fullPath = normalizeOpenApiPath(joinRoutePath(prefix, routePath));
+        for (const method of methods) {
+          routes.push({ method, path: fullPath });
+        }
+      }
+      continue;
+    }
+
+    if (layer.handle?.stack) {
+      routes.push(...collectRouterRoutes(layer.handle, prefix));
+    }
+  }
+
+  return routes;
+}
+
+function dedupeRoutes(routes) {
+  const seen = new Set();
+  return routes.filter((route) => {
+    const key = `${route.method}:${route.path}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
+const apiRouters = [
+  authRouter,
+  usersRouter,
+  adminSettingsRouter,
+  badgesRouter,
+  analyticsRouter,
+  autoRouter,
+  auctionsRouter,
+  categoriesRouter,
+  productsRouter,
+  fraudRouter,
+  i18nRouter,
+  imagesRouter,
+  sellersRouter,
+  pushRouter,
+  queueAdminRouter,
+  resilienceRouter,
+  cartRouter,
+  addressesRouter,
+  activitiesRouter,
+  chatsRouter,
+  friendsRouter,
+  shortformsRouter,
+  mediaRouter,
+  newsRouter,
+  observabilityRouter,
+  opsDashboardRouter,
+  matchingRouter,
+  compareRouter,
+  crawlerRouter,
+  rankingsRouter,
+  recommendationsRouter,
+  dealsRouter,
+  ordersRouter,
+  paymentsRouter,
+  pcBuildsRouter,
+  predictionsRouter,
+  reviewsRouter,
+  searchRouter,
+  wishlistRouter,
+  pointsRouter,
+  boardsRouter,
+  inquiriesRouter,
+  faqsRouter,
+  noticesRouter,
+  ticketsRouter,
+  usedMarketRouter,
+];
+
+export function getRouteCatalog(apiPrefix) {
+  const baseRoutes = [
+    { method: "GET", path: "/health" },
+    { method: "GET", path: normalizeOpenApiPath(`${apiPrefix}/health`) },
+    { method: "GET", path: normalizeOpenApiPath(`${apiPrefix}/docs-status`) },
+    { method: "GET", path: "/docs/openapi" },
+    { method: "GET", path: "/docs/swagger" },
+    { method: "GET", path: "/docs/swagger-ui/index.html" },
+  ];
+
+  const apiRoutes = apiRouters.flatMap((router) =>
+    collectRouterRoutes(router, apiPrefix),
+  );
+
+  return dedupeRoutes([...baseRoutes, ...apiRoutes]).sort((a, b) => {
+    if (a.path === b.path) {
+      return a.method.localeCompare(b.method);
+    }
+    return a.path.localeCompare(b.path);
+  });
+}
+
 export function createRoutes(apiPrefix) {
   const router = Router();
 
@@ -56,52 +179,9 @@ export function createRoutes(apiPrefix) {
   router.get(`${apiPrefix}/health`, asyncHandler(apiHealthController));
   router.get(`${apiPrefix}/docs-status`, docsStatusController);
 
-  router.use(apiPrefix, authRouter);
-  router.use(apiPrefix, usersRouter);
-  router.use(apiPrefix, adminSettingsRouter);
-  router.use(apiPrefix, badgesRouter);
-  router.use(apiPrefix, analyticsRouter);
-  router.use(apiPrefix, autoRouter);
-  router.use(apiPrefix, auctionsRouter);
-  router.use(apiPrefix, categoriesRouter);
-  router.use(apiPrefix, productsRouter);
-  router.use(apiPrefix, fraudRouter);
-  router.use(apiPrefix, i18nRouter);
-  router.use(apiPrefix, imagesRouter);
-  router.use(apiPrefix, sellersRouter);
-  router.use(apiPrefix, pushRouter);
-  router.use(apiPrefix, queueAdminRouter);
-  router.use(apiPrefix, resilienceRouter);
-  router.use(apiPrefix, cartRouter);
-  router.use(apiPrefix, addressesRouter);
-  router.use(apiPrefix, activitiesRouter);
-  router.use(apiPrefix, chatsRouter);
-  router.use(apiPrefix, friendsRouter);
-  router.use(apiPrefix, shortformsRouter);
-  router.use(apiPrefix, mediaRouter);
-  router.use(apiPrefix, newsRouter);
-  router.use(apiPrefix, observabilityRouter);
-  router.use(apiPrefix, opsDashboardRouter);
-  router.use(apiPrefix, matchingRouter);
-  router.use(apiPrefix, compareRouter);
-  router.use(apiPrefix, crawlerRouter);
-  router.use(apiPrefix, rankingsRouter);
-  router.use(apiPrefix, recommendationsRouter);
-  router.use(apiPrefix, dealsRouter);
-  router.use(apiPrefix, ordersRouter);
-  router.use(apiPrefix, paymentsRouter);
-  router.use(apiPrefix, pcBuildsRouter);
-  router.use(apiPrefix, predictionsRouter);
-  router.use(apiPrefix, reviewsRouter);
-  router.use(apiPrefix, searchRouter);
-  router.use(apiPrefix, wishlistRouter);
-  router.use(apiPrefix, pointsRouter);
-  router.use(apiPrefix, boardsRouter);
-  router.use(apiPrefix, inquiriesRouter);
-  router.use(apiPrefix, faqsRouter);
-  router.use(apiPrefix, noticesRouter);
-  router.use(apiPrefix, ticketsRouter);
-  router.use(apiPrefix, usedMarketRouter);
+  for (const apiRouter of apiRouters) {
+    router.use(apiPrefix, apiRouter);
+  }
 
   return router;
 }

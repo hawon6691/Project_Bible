@@ -16,8 +16,10 @@ export async function getApiHealth() {
 
 export function getDocsStatus() {
   return {
-    swagger: "pending",
-    openapi: "pending",
-    message: "Swagger/OpenAPI wiring is the next setup step.",
+    swagger: "available",
+    openapi: "available",
+    openapiPath: "/docs/openapi",
+    swaggerPath: "/docs/swagger",
+    message: "Swagger/OpenAPI routes are exposed.",
   };
 }

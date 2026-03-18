@@ -53,6 +53,7 @@ npm run db:reset
 - `GET /api/v1/admin/queues/supported`
 - `GET /api/v1/admin/queues/stats`
 - `POST /api/v1/admin/queues/auto-retry`
+- `GET /api/v1/admin/ops-dashboard/summary`
 - `GET /api/v1/crawler/admin/jobs`
 - `POST /api/v1/crawler/admin/jobs`
 - `GET /api/v1/crawler/admin/runs`

@@ -25,6 +25,7 @@ import matchingRouter from "./matching.js";
 import mediaRouter from "./media.js";
 import newsRouter from "./news.js";
 import noticesRouter from "./notices.js";
+import opsDashboardRouter from "./ops-dashboard.js";
 import ordersRouter from "./orders.js";
 import paymentsRouter from "./payments.js";
 import pointsRouter from "./points.js";
@@ -75,6 +76,7 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, shortformsRouter);
   router.use(apiPrefix, mediaRouter);
   router.use(apiPrefix, newsRouter);
+  router.use(apiPrefix, opsDashboardRouter);
   router.use(apiPrefix, matchingRouter);
   router.use(apiPrefix, compareRouter);
   router.use(apiPrefix, crawlerRouter);

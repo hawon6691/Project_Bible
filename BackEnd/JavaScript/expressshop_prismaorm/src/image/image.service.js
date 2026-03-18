@@ -97,6 +97,10 @@ export async function uploadImage(userId, file, body) {
   };
 }
 
+export async function uploadImageWithCategory(userId, file, category) {
+  return uploadImage(userId, file, { category });
+}
+
 export async function getImageVariants(imageId) {
   const image = await findImageAssetById(imageId);
   if (!image) {

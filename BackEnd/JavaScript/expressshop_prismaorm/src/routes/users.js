@@ -2,14 +2,17 @@ import { Router } from "express";
 
 import {
   deleteMeController,
+  deleteMyProfileImageController,
   getMeController,
   getProfileController,
   getUsersController,
+  uploadMyProfileImageController,
   updateMyProfileController,
   updateMeController,
   updateUserStatusController,
 } from "../users/user.controller.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
+import { uploadImageFile } from "../middleware/upload.js";
 import { validate } from "../middleware/validate.js";
 import { asyncHandler } from "../utils/async-handler.js";
 import {
@@ -38,5 +41,13 @@ router.patch(
   validate(validateUpdateMyProfile),
   asyncHandler(updateMyProfileController),
 );
+router.post(
+  "/users/me/profile-image",
+  requireAuth,
+  requireRole("USER", "SELLER", "ADMIN"),
+  uploadImageFile,
+  asyncHandler(uploadMyProfileImageController),
+);
+router.delete("/users/me/profile-image", requireAuth, asyncHandler(deleteMyProfileImageController));
 
 export default router;

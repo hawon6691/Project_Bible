@@ -46,7 +46,7 @@ export function findProductById(productId) {
         orderBy: { id: "asc" },
       },
       images: {
-        select: { id: true, url: true, isMain: true, sortOrder: true, createdAt: true },
+        select: { id: true, url: true, isMain: true, sortOrder: true, createdAt: true, imageVariantId: true },
         orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
       },
       specs: {
@@ -83,6 +83,56 @@ export function findProductById(productId) {
         },
         orderBy: [{ price: "asc" }, { id: "asc" }],
       },
+    },
+  });
+}
+
+export function findProductImageById(imageId) {
+  return prisma.productImage.findUnique({
+    where: { id: Number(imageId) },
+    include: {
+      imageVariant: {
+        select: {
+          id: true,
+          imageId: true,
+        },
+      },
+    },
+  });
+}
+
+export async function createProductImage(data) {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(
+      "SELECT setval(pg_get_serial_sequence('product_images', 'id'), COALESCE((SELECT MAX(id) FROM product_images), 0) + 1, false)",
+    );
+    return tx.productImage.create({
+      data,
+    });
+  });
+}
+
+export function updateProductImages(productId, where, data) {
+  return prisma.productImage.updateMany({
+    where: {
+      productId: Number(productId),
+      ...where,
+    },
+    data,
+  });
+}
+
+export function deleteProductImage(imageId) {
+  return prisma.productImage.delete({
+    where: { id: Number(imageId) },
+  });
+}
+
+export function findProductImageMaxSortOrder(productId) {
+  return prisma.productImage.aggregate({
+    where: { productId: Number(productId) },
+    _max: {
+      sortOrder: true,
     },
   });
 }

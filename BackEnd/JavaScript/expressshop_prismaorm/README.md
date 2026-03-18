@@ -50,6 +50,9 @@ npm run db:reset
 - `GET /api/v1/resilience/circuit-breakers`
 - `GET /api/v1/resilience/circuit-breakers/policies`
 - `POST /api/v1/resilience/circuit-breakers/:name/reset`
+- `GET /api/v1/admin/queues/supported`
+- `GET /api/v1/admin/queues/stats`
+- `POST /api/v1/admin/queues/auto-retry`
 - `GET /api/v1/crawler/admin/jobs`
 - `POST /api/v1/crawler/admin/jobs`
 - `GET /api/v1/crawler/admin/runs`

@@ -31,6 +31,7 @@ import pointsRouter from "./points.js";
 import predictionsRouter from "./predictions.js";
 import productsRouter from "./products.js";
 import pushRouter from "./push.js";
+import queueAdminRouter from "./queue-admin.js";
 import rankingsRouter from "./rankings.js";
 import recommendationsRouter from "./recommendations.js";
 import resilienceRouter from "./resilience.js";
@@ -64,6 +65,7 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, i18nRouter);
   router.use(apiPrefix, sellersRouter);
   router.use(apiPrefix, pushRouter);
+  router.use(apiPrefix, queueAdminRouter);
   router.use(apiPrefix, resilienceRouter);
   router.use(apiPrefix, cartRouter);
   router.use(apiPrefix, addressesRouter);

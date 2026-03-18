@@ -259,6 +259,31 @@ enum BadgeRarity {
   @@map("badge_rarity")
 }
 
+enum ImageVariantType {
+  THUMBNAIL
+  MEDIUM
+  LARGE
+
+  @@map("image_variant_type")
+}
+
+enum ImageFormat {
+  JPEG
+  PNG
+  WEBP
+
+  @@map("image_format")
+}
+
+enum ImageProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+
+  @@map("image_processing_status")
+}
+
 model User {
   id                   Int                @id @default(autoincrement())
   email                String             @unique @db.VarChar(255)
@@ -314,6 +339,7 @@ model User {
   shortformLikes       ShortformLike[]
   shortformComments    ShortformComment[]
   mediaAssets          MediaAsset[]
+  imageAssets          ImageAsset[]
   reviewedMappings     ProductMapping[]
   emailVerifications   EmailVerification[]
   reviewedFraudAlerts  FraudAlert[]
@@ -426,6 +452,23 @@ model ProductImage {
 
   @@index([productId], map: "idx_product_images_product")
   @@map("product_images")
+}
+
+model ImageVariant {
+  id        Int              @id @default(autoincrement())
+  imageId   Int              @map("image_id")
+  type      ImageVariantType
+  url       String           @db.VarChar(500)
+  format    ImageFormat
+  width     Int
+  height    Int
+  size      Int
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @default(now()) @map("updated_at")
+  image     ImageAsset       @relation(fields: [imageId], references: [id], onDelete: Restrict)
+
+  @@index([imageId], map: "idx_image_variants_image_id")
+  @@map("image_variants")
 }
 
 model SpecDefinition {
@@ -1188,6 +1231,24 @@ model MediaAsset {
   uploader     User     @relation(fields: [uploaderId], references: [id], onDelete: Restrict)
 
   @@map("media_assets")
+}
+
+model ImageAsset {
+  id               Int                   @id @default(autoincrement())
+  uploadedByUserId Int?                  @map("uploaded_by_user_id")
+  originalFilename String                @map("original_filename") @db.VarChar(255)
+  storedFilename   String                @unique @map("stored_filename") @db.VarChar(255)
+  originalUrl      String                @map("original_url") @db.VarChar(500)
+  mimeType         String                @map("mime_type") @db.VarChar(100)
+  size             Int
+  category         String                @db.VarChar(20)
+  processingStatus ImageProcessingStatus @default(PENDING) @map("processing_status")
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @default(now()) @map("updated_at")
+  uploadedByUser   User?                 @relation(fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+  variants         ImageVariant[]
+
+  @@map("image_assets")
 }
 
 model NewsCategory {

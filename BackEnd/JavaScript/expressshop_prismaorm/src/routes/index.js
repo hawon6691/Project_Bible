@@ -20,6 +20,7 @@ import faqsRouter from "./faqs.js";
 import friendsRouter from "./friends.js";
 import fraudRouter from "./fraud.js";
 import i18nRouter from "./i18n.js";
+import imagesRouter from "./images.js";
 import inquiriesRouter from "./inquiries.js";
 import matchingRouter from "./matching.js";
 import mediaRouter from "./media.js";
@@ -66,6 +67,7 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, productsRouter);
   router.use(apiPrefix, fraudRouter);
   router.use(apiPrefix, i18nRouter);
+  router.use(apiPrefix, imagesRouter);
   router.use(apiPrefix, sellersRouter);
   router.use(apiPrefix, pushRouter);
   router.use(apiPrefix, queueAdminRouter);

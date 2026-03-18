@@ -30,6 +30,9 @@ npm run db:reset
 
 ```bash
 npm run test:e2e:critical
+npm run test:e2e:contract
+npm run test:e2e:admin-boundary
+npm run test:e2e:platform
 ```
 
 ## CI

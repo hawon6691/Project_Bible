@@ -1,67 +1,26 @@
 import assert from "node:assert/strict";
-import { once } from "node:events";
 import test, { after, before } from "node:test";
 
-import { signAccessToken } from "../../src/auth/token.service.js";
-import { createApp } from "../../src/app.js";
-import { prisma } from "../../src/prisma.js";
+import {
+  bootTestApp,
+  requestJson,
+  requestText,
+  shutdownTestApp,
+  withBearer,
+} from "./_support/harness.js";
 
-let server;
-let baseUrl;
-let adminToken;
-let userToken;
-
-async function requestJson(path, init = {}) {
-  const response = await fetch(`${baseUrl}${path}`, init);
-  const text = await response.text();
-  return {
-    status: response.status,
-    body: text ? JSON.parse(text) : null,
-  };
-}
-
-async function requestText(path, init = {}) {
-  const response = await fetch(`${baseUrl}${path}`, init);
-  return {
-    status: response.status,
-    body: await response.text(),
-    headers: response.headers,
-  };
-}
+let context;
 
 before(async () => {
-  const [admin, user] = await Promise.all([
-    prisma.user.findFirst({
-      where: { role: "ADMIN", deletedAt: null },
-      select: { id: true, email: true, role: true },
-    }),
-    prisma.user.findFirst({
-      where: { role: "USER", deletedAt: null },
-      select: { id: true, email: true, role: true },
-    }),
-  ]);
-
-  assert.ok(admin, "Seed admin account is required");
-  assert.ok(user, "Seed user account is required");
-
-  adminToken = signAccessToken(admin);
-  userToken = signAccessToken(user);
-
-  server = createApp().listen(0, "127.0.0.1");
-  await once(server, "listening");
-  const address = server.address();
-  baseUrl = `http://127.0.0.1:${address.port}`;
+  context = await bootTestApp();
 });
 
 after(async () => {
-  if (server) {
-    await new Promise((resolve) => server.close(resolve));
-  }
-  await prisma.$disconnect();
+  await shutdownTestApp(context);
 });
 
 test("GET /health returns UP", async () => {
-  const result = await requestJson("/health");
+  const result = await requestJson(context.baseUrl, "/health");
 
   assert.equal(result.status, 200);
   assert.equal(result.body.success, true);
@@ -69,7 +28,7 @@ test("GET /health returns UP", async () => {
 });
 
 test("GET /api/v1/docs-status returns available docs wiring state", async () => {
-  const result = await requestJson("/api/v1/docs-status");
+  const result = await requestJson(context.baseUrl, "/api/v1/docs-status");
 
   assert.equal(result.status, 200);
   assert.equal(result.body.success, true);
@@ -80,7 +39,7 @@ test("GET /api/v1/docs-status returns available docs wiring state", async () => 
 });
 
 test("GET /docs/openapi exposes OpenAPI document", async () => {
-  const result = await requestJson("/docs/openapi");
+  const result = await requestJson(context.baseUrl, "/docs/openapi");
 
   assert.equal(result.status, 200);
   assert.equal(typeof result.body.openapi, "string");
@@ -89,14 +48,14 @@ test("GET /docs/openapi exposes OpenAPI document", async () => {
 });
 
 test("GET /docs/swagger exposes Swagger UI page", async () => {
-  const result = await requestText("/docs/swagger");
+  const result = await requestText(context.baseUrl, "/docs/swagger");
 
   assert.equal(result.status, 200);
   assert.match(result.body, /Swagger UI/);
 });
 
 test("GET /api/v1/products returns public product list", async () => {
-  const result = await requestJson("/api/v1/products");
+  const result = await requestJson(context.baseUrl, "/api/v1/products");
 
   assert.equal(result.status, 200);
   assert.equal(result.body.success, true);
@@ -104,18 +63,18 @@ test("GET /api/v1/products returns public product list", async () => {
 });
 
 test("GET /api/v1/users/me requires auth", async () => {
-  const result = await requestJson("/api/v1/users/me");
+  const result = await requestJson(context.baseUrl, "/api/v1/users/me");
 
   assert.equal(result.status, 401);
   assert.equal(result.body.success, false);
 });
 
 test("GET /api/v1/users/me returns current user with bearer token", async () => {
-  const result = await requestJson("/api/v1/users/me", {
-    headers: {
-      Authorization: `Bearer ${userToken}`,
-    },
-  });
+  const result = await requestJson(
+    context.baseUrl,
+    "/api/v1/users/me",
+    withBearer(context.userToken),
+  );
 
   assert.equal(result.status, 200);
   assert.equal(result.body.success, true);
@@ -123,22 +82,22 @@ test("GET /api/v1/users/me returns current user with bearer token", async () => 
 });
 
 test("GET /api/v1/admin/observability/metrics rejects non-admin user", async () => {
-  const result = await requestJson("/api/v1/admin/observability/metrics", {
-    headers: {
-      Authorization: `Bearer ${userToken}`,
-    },
-  });
+  const result = await requestJson(
+    context.baseUrl,
+    "/api/v1/admin/observability/metrics",
+    withBearer(context.userToken),
+  );
 
   assert.equal(result.status, 403);
   assert.equal(result.body.success, false);
 });
 
 test("GET /api/v1/admin/observability/metrics allows admin user", async () => {
-  const result = await requestJson("/api/v1/admin/observability/metrics", {
-    headers: {
-      Authorization: `Bearer ${adminToken}`,
-    },
-  });
+  const result = await requestJson(
+    context.baseUrl,
+    "/api/v1/admin/observability/metrics",
+    withBearer(context.adminToken),
+  );
 
   assert.equal(result.status, 200);
   assert.equal(result.body.success, true);
@@ -146,11 +105,11 @@ test("GET /api/v1/admin/observability/metrics allows admin user", async () => {
 });
 
 test("GET /api/v1/pc-builds returns current user build list", async () => {
-  const result = await requestJson("/api/v1/pc-builds?page=1&limit=5", {
-    headers: {
-      Authorization: `Bearer ${userToken}`,
-    },
-  });
+  const result = await requestJson(
+    context.baseUrl,
+    "/api/v1/pc-builds?page=1&limit=5",
+    withBearer(context.userToken),
+  );
 
   assert.equal(result.status, 200);
   assert.equal(result.body.success, true);
@@ -159,7 +118,7 @@ test("GET /api/v1/pc-builds returns current user build list", async () => {
 });
 
 test("GET /api/v1/images/:id/variants returns 404 for missing image", async () => {
-  const result = await requestJson("/api/v1/images/999999/variants");
+  const result = await requestJson(context.baseUrl, "/api/v1/images/999999/variants");
 
   assert.equal(result.status, 404);
   assert.equal(result.body.success, false);

@@ -32,6 +32,11 @@ npm run db:reset
 npm run test:e2e:critical
 ```
 
+## CI
+
+- GitHub Actions workflow: `.github/workflows/javascript-express-prisma-ci.yml`
+- Shared PostgreSQL SQL을 올린 뒤 `npm run prisma:generate`와 `npm run test:e2e:critical`을 실행합니다.
+
 ## Routes
 
 - `GET /health`

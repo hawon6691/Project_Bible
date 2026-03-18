@@ -372,6 +372,7 @@ model Product {
   priceEntries    PriceEntry[]
   priceHistory    PriceHistory[]
   pricePredictions PricePrediction[]
+  crawlerRuns      CrawlerRun[]
   priceAlerts     PriceAlert[]
   cartItems       CartItem[]
   reviews         Review[]
@@ -489,6 +490,8 @@ model Seller {
   cartItems    CartItem[]
   trustMetric  SellerTrustMetric?
   reviews      SellerReview[]
+  crawlerJobs  CrawlerJob[]
+  crawlerRuns  CrawlerRun[]
   productMappings ProductMapping[]
   fraudAlerts     FraudAlert[]
   buildParts      BuildPart[]
@@ -1511,6 +1514,55 @@ model ExchangeRate {
   @@unique([baseCurrency, targetCurrency], map: "uq_exchange_rates")
   @@index([fetchedAt(sort: Desc)], map: "idx_exchange_rates_fetched")
   @@map("exchange_rates")
+}
+
+model CrawlerJob {
+  id              Int          @id @default(autoincrement())
+  sellerId        Int          @map("seller_id")
+  name            String       @db.VarChar(100)
+  cronExpression  String?      @map("cron_expression") @db.VarChar(100)
+  collectPrice    Boolean      @default(true) @map("collect_price")
+  collectSpec     Boolean      @default(true) @map("collect_spec")
+  detectAnomaly   Boolean      @default(true) @map("detect_anomaly")
+  isActive        Boolean      @default(true) @map("is_active")
+  lastTriggeredAt DateTime?    @map("last_triggered_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @default(now()) @map("updated_at")
+  seller          Seller       @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  runs            CrawlerRun[]
+
+  @@index([sellerId], map: "idx_crawler_jobs_seller_id")
+  @@index([isActive], map: "idx_crawler_jobs_active")
+  @@map("crawler_jobs")
+}
+
+model CrawlerRun {
+  id                  Int         @id @default(autoincrement())
+  jobId               Int?        @map("job_id")
+  sellerId            Int         @map("seller_id")
+  productId           Int?        @map("product_id")
+  triggerType         String      @map("trigger_type") @db.VarChar(20)
+  collectPrice        Boolean     @default(true) @map("collect_price")
+  collectSpec         Boolean     @default(true) @map("collect_spec")
+  detectAnomaly       Boolean     @default(true) @map("detect_anomaly")
+  status              String      @db.VarChar(20)
+  startedAt           DateTime    @map("started_at")
+  endedAt             DateTime    @map("ended_at")
+  durationMs          Int         @default(0) @map("duration_ms")
+  collectedPriceCount Int         @default(0) @map("collected_price_count")
+  collectedSpecCount  Int         @default(0) @map("collected_spec_count")
+  anomalyCount        Int         @default(0) @map("anomaly_count")
+  errorMessage        String?     @map("error_message") @db.VarChar(500)
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @default(now()) @map("updated_at")
+  job                 CrawlerJob? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  seller              Seller      @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  product             Product?    @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([jobId], map: "idx_crawler_runs_job_id")
+  @@index([sellerId], map: "idx_crawler_runs_seller_id")
+  @@index([status], map: "idx_crawler_runs_status")
+  @@map("crawler_runs")
 }
 
 model PricePrediction {

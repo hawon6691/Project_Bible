@@ -13,6 +13,7 @@ import categoriesRouter from "./categories.js";
 import cartRouter from "./cart.js";
 import chatsRouter from "./chats.js";
 import compareRouter from "./compare.js";
+import crawlerRouter from "./crawler.js";
 import dealsRouter from "./deals.js";
 import faqsRouter from "./faqs.js";
 import friendsRouter from "./friends.js";
@@ -70,6 +71,7 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, newsRouter);
   router.use(apiPrefix, matchingRouter);
   router.use(apiPrefix, compareRouter);
+  router.use(apiPrefix, crawlerRouter);
   router.use(apiPrefix, rankingsRouter);
   router.use(apiPrefix, recommendationsRouter);
   router.use(apiPrefix, dealsRouter);

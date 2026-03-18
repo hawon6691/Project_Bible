@@ -26,6 +26,12 @@ npm run db:init
 npm run db:reset
 ```
 
+## Test
+
+```bash
+npm run test:e2e:critical
+```
+
 ## Routes
 
 - `GET /health`

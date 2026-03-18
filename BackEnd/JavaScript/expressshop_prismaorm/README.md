@@ -47,6 +47,9 @@ npm run db:reset
 - `GET /api/v1/admin/settings/extensions`
 - `PATCH /api/v1/admin/settings/upload-limits`
 - `PATCH /api/v1/admin/settings/review-policy`
+- `GET /api/v1/resilience/circuit-breakers`
+- `GET /api/v1/resilience/circuit-breakers/policies`
+- `POST /api/v1/resilience/circuit-breakers/:name/reset`
 - `GET /api/v1/crawler/admin/jobs`
 - `POST /api/v1/crawler/admin/jobs`
 - `GET /api/v1/crawler/admin/runs`

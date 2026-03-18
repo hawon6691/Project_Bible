@@ -304,6 +304,7 @@ model User {
   chatRoomMembers      ChatRoomMember[]
   searchLogs           SearchLog[]
   searchRecentKeywords SearchRecentKeyword[]
+  adminSettingsUpdated AdminSetting[]
   sentFriendRequests   Friendship[]      @relation("FriendRequester")
   receivedFriendRequests Friendship[]    @relation("FriendAddressee")
   blockedUsers         FriendBlock[]     @relation("FriendBlockOwner")
@@ -1046,6 +1047,19 @@ model SearchRecentKeyword {
   @@index([userId], map: "idx_search_recent_keywords_user")
   @@index([searchedAt(sort: Desc)], map: "idx_search_recent_keywords_searched_at")
   @@map("search_recent_keywords")
+}
+
+model AdminSetting {
+  id           Int      @id @default(autoincrement())
+  settingKey   String   @unique @map("setting_key") @db.VarChar(100)
+  settingValue Json     @map("setting_value")
+  description  String?  @db.VarChar(200)
+  updatedBy    Int?     @map("updated_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @map("updated_at")
+  updater      User?    @relation(fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  @@map("admin_settings")
 }
 
 model Friendship {

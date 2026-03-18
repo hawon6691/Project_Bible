@@ -44,6 +44,9 @@ npm run db:reset
 - `GET /api/v1/i18n/exchange-rates`
 - `GET /api/v1/i18n/convert`
 - `POST /api/v1/admin/i18n/translations`
+- `GET /api/v1/admin/settings/extensions`
+- `PATCH /api/v1/admin/settings/upload-limits`
+- `PATCH /api/v1/admin/settings/review-policy`
 - `GET /api/v1/crawler/admin/jobs`
 - `POST /api/v1/crawler/admin/jobs`
 - `GET /api/v1/crawler/admin/runs`

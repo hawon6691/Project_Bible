@@ -3,6 +3,7 @@ import { Router } from "express";
 import { apiHealthController, docsStatusController, healthController } from "../health/health.controller.js";
 import addressesRouter from "./addresses.js";
 import activitiesRouter from "./activities.js";
+import adminSettingsRouter from "./admin-settings.js";
 import analyticsRouter from "./analytics.js";
 import autoRouter from "./auto.js";
 import authRouter from "./auth.js";
@@ -51,6 +52,7 @@ export function createRoutes(apiPrefix) {
 
   router.use(apiPrefix, authRouter);
   router.use(apiPrefix, usersRouter);
+  router.use(apiPrefix, adminSettingsRouter);
   router.use(apiPrefix, badgesRouter);
   router.use(apiPrefix, analyticsRouter);
   router.use(apiPrefix, autoRouter);

@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   deleteImageController,
   getImageVariantsController,
+  uploadLegacyImageController,
   uploadImageController,
 } from "../image/image.controller.js";
 import { validateImageUploadBody } from "../image/image.validator.js";
@@ -20,6 +21,13 @@ router.post(
   uploadImageFile,
   validate(validateImageUploadBody),
   asyncHandler(uploadImageController),
+);
+router.post(
+  "/upload/image",
+  requireAuth,
+  requireRole("USER", "ADMIN"),
+  uploadImageFile,
+  asyncHandler(uploadLegacyImageController),
 );
 router.get("/images/:id/variants", asyncHandler(getImageVariantsController));
 router.delete("/images/:id", requireAuth, requireRole("ADMIN"), asyncHandler(deleteImageController));

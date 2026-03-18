@@ -26,6 +26,14 @@ export function validateCreateProductOption(req) {
   return name && Array.isArray(values) && values.length > 0 ? null : "name and values are required";
 }
 
+export function validateCreateProductImage(req) {
+  const { isMain } = req.body ?? {};
+  if (isMain === undefined) {
+    return null;
+  }
+  return ["true", "false"].includes(String(isMain).toLowerCase()) ? null : "isMain must be a boolean";
+}
+
 export function validateUpdateProductOption(req) {
   const { name, values } = req.body ?? {};
   return name !== undefined || values !== undefined ? null : "At least one field is required";

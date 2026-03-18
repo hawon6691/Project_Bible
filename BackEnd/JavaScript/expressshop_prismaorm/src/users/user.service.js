@@ -9,6 +9,7 @@ import {
   updateUser,
 } from "./user.repository.js";
 import { badRequest, conflict, notFound } from "../utils/http-error.js";
+import { uploadImageWithCategory } from "../image/image.service.js";
 
 const USER_STATUSES = new Set(["ACTIVE", "INACTIVE", "BLOCKED"]);
 const USER_ROLES = new Set(["USER", "SELLER", "ADMIN"]);
@@ -136,4 +137,33 @@ export async function getProfile(userId) {
     throw notFound("User profile not found");
   }
   return user;
+}
+
+export async function uploadMyProfileImage(userId, file) {
+  const user = await findUserById(userId);
+  if (!user || user.deletedAt) {
+    throw notFound("User not found");
+  }
+
+  const uploaded = await uploadImageWithCategory(userId, file, "community");
+  const updated = await updateUser(userId, {
+    profileImageUrl: uploaded.originalUrl,
+  });
+
+  return {
+    imageUrl: updated.profileImageUrl,
+  };
+}
+
+export async function deleteMyProfileImage(userId) {
+  const user = await findUserById(userId);
+  if (!user || user.deletedAt) {
+    throw notFound("User not found");
+  }
+
+  await updateUser(userId, {
+    profileImageUrl: null,
+  });
+
+  return { message: "Profile image deleted" };
 }

@@ -55,8 +55,11 @@ npm run db:reset
 - `POST /api/v1/admin/queues/auto-retry`
 - `GET /api/v1/admin/ops-dashboard/summary`
 - `POST /api/v1/images/upload`
+- `POST /api/v1/upload/image`
 - `GET /api/v1/images/:id/variants`
 - `DELETE /api/v1/images/:id`
+- `POST /api/v1/users/me/profile-image`
+- `DELETE /api/v1/users/me/profile-image`
 - `GET /api/v1/pc-builds`
 - `POST /api/v1/pc-builds`
 - `GET /api/v1/pc-builds/:id`
@@ -65,6 +68,8 @@ npm run db:reset
 - `GET /api/v1/pc-builds/:id/share`
 - `GET /api/v1/pc-builds/shared/:shareCode`
 - `GET /api/v1/pc-builds/popular`
+- `POST /api/v1/products/:id/images`
+- `DELETE /api/v1/products/:id/images/:imageId`
 - `GET /api/v1/admin/compatibility-rules`
 - `GET /api/v1/admin/observability/metrics`
 - `GET /api/v1/admin/observability/traces`

@@ -6,7 +6,9 @@ import {
   createAdminSpecDefinition,
   createPriceAlert,
   createProductPrice,
+  addAdminProductImage,
   deleteAdminProduct,
+  deleteAdminProductImage,
   deleteAdminProductOption,
   deleteAdminSpecDefinition,
   deletePriceAlert,
@@ -60,6 +62,16 @@ export async function updateProductController(req, res) {
 
 export async function deleteProductController(req, res) {
   const data = await deleteAdminProduct(req.params.id);
+  res.status(200).json(success(data));
+}
+
+export async function createProductImageController(req, res) {
+  const data = await addAdminProductImage(req.params.id, req.user.id, req.file, req.body);
+  res.status(201).json(success(data));
+}
+
+export async function deleteProductImageController(req, res) {
+  const data = await deleteAdminProductImage(req.params.id, req.params.imageId);
   res.status(200).json(success(data));
 }
 

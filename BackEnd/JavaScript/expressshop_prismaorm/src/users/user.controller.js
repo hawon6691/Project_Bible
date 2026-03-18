@@ -1,8 +1,10 @@
 import {
   deleteMe,
+  deleteMyProfileImage,
   getMe,
   getProfile,
   getUsers,
+  uploadMyProfileImage,
   updateMe,
   updateMyProfile,
   updateUserStatus,
@@ -43,4 +45,14 @@ export async function getProfileController(req, res) {
 export async function updateMyProfileController(req, res) {
   const data = await updateMyProfile(req.user.id, req.body);
   res.status(200).json(success(toUserProfileDto(data)));
+}
+
+export async function uploadMyProfileImageController(req, res) {
+  const data = await uploadMyProfileImage(req.user.id, req.file);
+  res.status(201).json(success(data));
+}
+
+export async function deleteMyProfileImageController(req, res) {
+  const data = await deleteMyProfileImage(req.user.id);
+  res.status(200).json(success(data));
 }

@@ -2,10 +2,12 @@ import {
   createPriceAlert as createPriceAlertRecord,
   createPriceEntry as createPriceEntryRecord,
   createProduct as createProductRecord,
+  createProductImage as createProductImageRecord,
   createProductOption as createProductOptionRecord,
   createSpecDefinition as createSpecDefinitionRecord,
   deletePriceAlert as deletePriceAlertRecord,
   deletePriceEntry as deletePriceEntryRecord,
+  deleteProductImage as deleteProductImageRecord,
   deleteProductOption as deleteProductOptionRecord,
   deleteSpecDefinition as deleteSpecDefinitionRecord,
   findPriceAlertById,
@@ -14,6 +16,8 @@ import {
   findPriceEntryById,
   findPriceHistory,
   findProductById,
+  findProductImageById,
+  findProductImageMaxSortOrder,
   findProductByIds,
   findProductOptionById,
   findProductPrices,
@@ -26,12 +30,15 @@ import {
   replaceProductSpecs,
   replaceSpecScores,
   softDeleteProduct,
+  updateProductImages,
   updatePriceEntry as updatePriceEntryRecord,
   updateProduct as updateProductRecord,
   updateProductOption as updateProductOptionRecord,
   updateSpecDefinition as updateSpecDefinitionRecord,
 } from "./product.repository.js";
 import { conflict, notFound, badRequest } from "../utils/http-error.js";
+import { uploadImageWithCategory } from "../image/image.service.js";
+import { deleteImageAssetWithVariants } from "../image/image.repository.js";
 
 const SPEC_TYPES = new Set(["TEXT", "NUMBER", "SELECT"]);
 const SPEC_DATA_TYPES = new Set(["STRING", "NUMBER", "BOOLEAN"]);
@@ -168,6 +175,57 @@ export async function deleteAdminProduct(productId) {
 
   await softDeleteProduct(productId);
   return { message: "Product deleted" };
+}
+
+export async function addAdminProductImage(productId, uploaderUserId, file, payload) {
+  const product = await findProductById(productId);
+  if (!product) {
+    throw notFound("Product not found");
+  }
+
+  const uploaded = await uploadImageWithCategory(uploaderUserId, file, "product");
+  const largeVariant = uploaded.variants.find((item) => item.type === "LARGE") ?? uploaded.variants[0] ?? null;
+  const isMain = payload?.isMain === true || String(payload?.isMain ?? "").toLowerCase() === "true";
+  const sortAggregate = await findProductImageMaxSortOrder(productId);
+  const sortOrder = (sortAggregate._max.sortOrder ?? -1) + 1;
+
+  if (isMain) {
+    await updateProductImages(productId, {}, { isMain: false });
+  }
+
+  const created = await createProductImageRecord({
+    productId: Number(productId),
+    url: largeVariant?.url ?? uploaded.originalUrl,
+    isMain,
+    sortOrder,
+    imageVariantId: largeVariant?.id ?? null,
+  });
+
+  return created;
+}
+
+export async function deleteAdminProductImage(productId, imageId) {
+  const product = await findProductById(productId);
+  if (!product) {
+    throw notFound("Product not found");
+  }
+
+  const image = await findProductImageById(imageId);
+  if (!image || image.productId !== Number(productId)) {
+    throw notFound("Product image not found");
+  }
+
+  await deleteProductImageRecord(imageId);
+
+  if (image.imageVariant?.imageId) {
+    try {
+      await deleteImageAssetWithVariants(image.imageVariant.imageId);
+    } catch {
+      // Keep product image deletion successful even if the backing asset was already removed.
+    }
+  }
+
+  return { message: "Product image deleted" };
 }
 
 export async function createAdminProductOption(productId, payload) {

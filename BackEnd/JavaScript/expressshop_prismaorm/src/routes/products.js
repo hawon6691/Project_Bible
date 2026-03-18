@@ -5,11 +5,13 @@ import {
   compareSpecsController,
   createPriceAlertController,
   createProductController,
+  createProductImageController,
   createProductOptionController,
   createProductPriceController,
   createSpecDefinitionController,
   deletePriceAlertController,
   deleteProductController,
+  deleteProductImageController,
   deleteProductOptionController,
   deleteProductPriceController,
   deleteSpecDefinitionController,
@@ -32,6 +34,7 @@ import {
   validateCreatePriceAlert,
   validateCreatePriceEntry,
   validateCreateProduct,
+  validateCreateProductImage,
   validateCreateProductOption,
   validateCreateSpecDefinition,
   validateSetProductSpecs,
@@ -42,6 +45,7 @@ import {
   validateUpdateSpecScores,
 } from "../products/product.validator.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
+import { uploadImageFile } from "../middleware/upload.js";
 import { validate } from "../middleware/validate.js";
 import { asyncHandler } from "../utils/async-handler.js";
 
@@ -52,6 +56,20 @@ router.get("/products/:id", asyncHandler(getProductController));
 router.post("/products", requireAuth, requireRole("ADMIN"), validate(validateCreateProduct), asyncHandler(createProductController));
 router.patch("/products/:id", requireAuth, requireRole("ADMIN"), validate(validateUpdateProduct), asyncHandler(updateProductController));
 router.delete("/products/:id", requireAuth, requireRole("ADMIN"), asyncHandler(deleteProductController));
+router.post(
+  "/products/:id/images",
+  requireAuth,
+  requireRole("ADMIN"),
+  uploadImageFile,
+  validate(validateCreateProductImage),
+  asyncHandler(createProductImageController),
+);
+router.delete(
+  "/products/:id/images/:imageId",
+  requireAuth,
+  requireRole("ADMIN"),
+  asyncHandler(deleteProductImageController),
+);
 router.post(
   "/products/:id/options",
   requireAuth,

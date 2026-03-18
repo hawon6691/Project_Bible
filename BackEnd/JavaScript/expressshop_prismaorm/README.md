@@ -54,6 +54,15 @@ npm run db:reset
 - `GET /api/v1/admin/queues/stats`
 - `POST /api/v1/admin/queues/auto-retry`
 - `GET /api/v1/admin/ops-dashboard/summary`
+- `GET /api/v1/pc-builds`
+- `POST /api/v1/pc-builds`
+- `GET /api/v1/pc-builds/:id`
+- `POST /api/v1/pc-builds/:id/parts`
+- `GET /api/v1/pc-builds/:id/compatibility`
+- `GET /api/v1/pc-builds/:id/share`
+- `GET /api/v1/pc-builds/shared/:shareCode`
+- `GET /api/v1/pc-builds/popular`
+- `GET /api/v1/admin/compatibility-rules`
 - `GET /api/v1/admin/observability/metrics`
 - `GET /api/v1/admin/observability/traces`
 - `GET /api/v1/admin/observability/dashboard`

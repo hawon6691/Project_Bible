@@ -33,6 +33,7 @@ import productsRouter from "./products.js";
 import pushRouter from "./push.js";
 import rankingsRouter from "./rankings.js";
 import recommendationsRouter from "./recommendations.js";
+import resilienceRouter from "./resilience.js";
 import reviewsRouter from "./reviews.js";
 import searchRouter from "./search.js";
 import sellersRouter from "./sellers.js";
@@ -63,6 +64,7 @@ export function createRoutes(apiPrefix) {
   router.use(apiPrefix, i18nRouter);
   router.use(apiPrefix, sellersRouter);
   router.use(apiPrefix, pushRouter);
+  router.use(apiPrefix, resilienceRouter);
   router.use(apiPrefix, cartRouter);
   router.use(apiPrefix, addressesRouter);
   router.use(apiPrefix, activitiesRouter);

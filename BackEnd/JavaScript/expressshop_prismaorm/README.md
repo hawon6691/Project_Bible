@@ -37,6 +37,11 @@ npm run test:e2e:critical
 - GitHub Actions workflow: `.github/workflows/javascript-express-prisma-ci.yml`
 - Shared PostgreSQL SQL을 올린 뒤 `npm run prisma:generate`와 `npm run test:e2e:critical`을 실행합니다.
 
+## Docs
+
+- OpenAPI JSON: `/docs/openapi`
+- Swagger UI: `/docs/swagger`
+
 ## Routes
 
 - `GET /health`

@@ -20,6 +20,15 @@ async function requestJson(path, init = {}) {
   };
 }
 
+async function requestText(path, init = {}) {
+  const response = await fetch(`${baseUrl}${path}`, init);
+  return {
+    status: response.status,
+    body: await response.text(),
+    headers: response.headers,
+  };
+}
+
 before(async () => {
   const [admin, user] = await Promise.all([
     prisma.user.findFirst({
@@ -59,13 +68,31 @@ test("GET /health returns UP", async () => {
   assert.equal(result.body.data.status, "UP");
 });
 
-test("GET /api/v1/docs-status returns pending docs wiring state", async () => {
+test("GET /api/v1/docs-status returns available docs wiring state", async () => {
   const result = await requestJson("/api/v1/docs-status");
 
   assert.equal(result.status, 200);
   assert.equal(result.body.success, true);
-  assert.equal(result.body.data.swagger, "pending");
-  assert.equal(result.body.data.openapi, "pending");
+  assert.equal(result.body.data.swagger, "available");
+  assert.equal(result.body.data.openapi, "available");
+  assert.equal(result.body.data.openapiPath, "/docs/openapi");
+  assert.equal(result.body.data.swaggerPath, "/docs/swagger");
+});
+
+test("GET /docs/openapi exposes OpenAPI document", async () => {
+  const result = await requestJson("/docs/openapi");
+
+  assert.equal(result.status, 200);
+  assert.equal(typeof result.body.openapi, "string");
+  assert.equal(result.body.info.title, "PBShop JavaScript Express Prisma API");
+  assert.ok(result.body.paths["/api/v1/products"]);
+});
+
+test("GET /docs/swagger exposes Swagger UI page", async () => {
+  const result = await requestText("/docs/swagger");
+
+  assert.equal(result.status, 200);
+  assert.match(result.body, /Swagger UI/);
 });
 
 test("GET /api/v1/products returns public product list", async () => {

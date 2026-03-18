@@ -3,6 +3,11 @@ import express from "express";
 import dotenv from "dotenv";
 
 import { appConfig } from "./config/app.js";
+import {
+  openApiController,
+  swaggerRedirectController,
+  swaggerUiController,
+} from "./docs/docs.controller.js";
 import { observabilityTrace } from "./middleware/observability.js";
 import { createRoutes } from "./routes/index.js";
 import { HttpError } from "./utils/http-error.js";
@@ -17,6 +22,9 @@ export function createApp() {
   app.use(observabilityTrace);
 
   app.use(createRoutes(appConfig.apiPrefix));
+  app.get("/docs/openapi", openApiController(appConfig.apiPrefix));
+  app.get("/docs/swagger", swaggerRedirectController);
+  app.get("/docs/swagger-ui/index.html", swaggerUiController);
 
   app.use((_req, res) => {
     res.status(404).json(failure("NOT_FOUND", "Route not found"));

@@ -13,6 +13,41 @@ const ERROR_CODE_ITEM_SCHEMA = {
   },
 };
 
+const QUERY_PRODUCT_VIEW_SCHEMA = {
+  type: "object",
+  required: [
+    "productId",
+    "categoryId",
+    "name",
+    "status",
+    "basePrice",
+    "lowestPrice",
+    "sellerCount",
+    "averageRating",
+    "reviewCount",
+    "viewCount",
+    "popularityScore",
+    "syncedAt",
+    "updatedAt",
+  ],
+  properties: {
+    productId: { type: "integer", example: 1 },
+    categoryId: { type: "integer", example: 10 },
+    name: { type: "string", example: "PBShop Gaming Laptop" },
+    thumbnailUrl: { type: ["string", "null"], example: "https://cdn.pbshop.dev/products/1.png" },
+    status: { type: "string", example: "ON_SALE" },
+    basePrice: { type: "integer", example: 1599000 },
+    lowestPrice: { type: ["integer", "null"], example: 1499000 },
+    sellerCount: { type: "integer", example: 3 },
+    averageRating: { type: "number", example: 4.7 },
+    reviewCount: { type: "integer", example: 28 },
+    viewCount: { type: "integer", example: 1024 },
+    popularityScore: { type: "number", example: 86.4 },
+    syncedAt: { type: "string", format: "date-time" },
+    updatedAt: { type: "string", format: "date-time" },
+  },
+};
+
 const SUCCESS_SCHEMA = {
   type: "object",
   required: ["success", "data"],
@@ -71,6 +106,71 @@ function buildSingleErrorCodeResponseSchema() {
   };
 }
 
+function buildQueryProductListResponseSchema() {
+  return {
+    allOf: [
+      SUCCESS_SCHEMA,
+      {
+        type: "object",
+        properties: {
+          data: {
+            type: "array",
+            items: {
+              $ref: "#/components/schemas/QueryProductView",
+            },
+          },
+          meta: {
+            type: "object",
+            required: ["page", "limit", "total", "totalPages"],
+            properties: {
+              page: { type: "integer", minimum: 1, example: 1 },
+              limit: { type: "integer", minimum: 1, example: 20 },
+              total: { type: "integer", minimum: 0, example: 1 },
+              totalPages: { type: "integer", minimum: 0, example: 1 },
+            },
+          },
+        },
+      },
+    ],
+  };
+}
+
+function buildSingleQueryProductResponseSchema() {
+  return {
+    allOf: [
+      SUCCESS_SCHEMA,
+      {
+        type: "object",
+        properties: {
+          data: {
+            $ref: "#/components/schemas/QueryProductView",
+          },
+        },
+      },
+    ],
+  };
+}
+
+function buildRebuildQueryProductsResponseSchema() {
+  return {
+    allOf: [
+      SUCCESS_SCHEMA,
+      {
+        type: "object",
+        properties: {
+          data: {
+            type: "object",
+            required: ["syncedCount"],
+            properties: {
+              syncedCount: { type: "integer", minimum: 0, example: 42 },
+            },
+          },
+        },
+      },
+    ],
+  };
+}
+
 function buildOperation(route) {
   const operation = {
     tags: [buildTag(route.path)],
@@ -99,6 +199,50 @@ function buildOperation(route) {
       content: {
         "application/json": {
           schema: buildSingleErrorCodeResponseSchema(),
+        },
+      },
+    };
+  }
+
+  if (route.path === "/api/v1/query/products" && route.method === "GET") {
+    operation.responses[200] = {
+      description: "Query product list",
+      content: {
+        "application/json": {
+          schema: buildQueryProductListResponseSchema(),
+        },
+      },
+    };
+  }
+
+  if (route.path === "/api/v1/query/products/{productId}" && route.method === "GET") {
+    operation.responses[200] = {
+      description: "Single query product view",
+      content: {
+        "application/json": {
+          schema: buildSingleQueryProductResponseSchema(),
+        },
+      },
+    };
+  }
+
+  if (route.path === "/api/v1/admin/query/products/{productId}/sync" && route.method === "POST") {
+    operation.responses[200] = {
+      description: "Sync a single query product view",
+      content: {
+        "application/json": {
+          schema: buildSingleQueryProductResponseSchema(),
+        },
+      },
+    };
+  }
+
+  if (route.path === "/api/v1/admin/query/products/rebuild" && route.method === "POST") {
+    operation.responses[200] = {
+      description: "Rebuild all query product views",
+      content: {
+        "application/json": {
+          schema: buildRebuildQueryProductsResponseSchema(),
         },
       },
     };
@@ -159,6 +303,7 @@ export function buildOpenApiSpec(apiPrefix) {
       },
       schemas: {
         ErrorCodeItem: ERROR_CODE_ITEM_SCHEMA,
+        QueryProductView: QUERY_PRODUCT_VIEW_SCHEMA,
       },
     },
     paths,

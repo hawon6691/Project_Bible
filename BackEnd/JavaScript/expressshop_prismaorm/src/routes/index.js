@@ -36,6 +36,7 @@ import pointsRouter from "./points.js";
 import predictionsRouter from "./predictions.js";
 import productsRouter from "./products.js";
 import pushRouter from "./push.js";
+import queryRouter from "./query.js";
 import queueAdminRouter from "./queue-admin.js";
 import rankingsRouter from "./rankings.js";
 import recommendationsRouter from "./recommendations.js";
@@ -112,6 +113,7 @@ const apiRouters = [
   auctionsRouter,
   categoriesRouter,
   productsRouter,
+  queryRouter,
   fraudRouter,
   i18nRouter,
   imagesRouter,

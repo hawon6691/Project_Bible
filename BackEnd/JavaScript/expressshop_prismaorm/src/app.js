@@ -8,6 +8,7 @@ import {
   swaggerRedirectController,
   swaggerUiController,
 } from "./docs/docs.controller.js";
+import { getErrorCodeItem } from "./error-codes/error-code.catalog.js";
 import { observabilityTrace } from "./middleware/observability.js";
 import { createRoutes } from "./routes/index.js";
 import { HttpError } from "./utils/http-error.js";
@@ -27,7 +28,8 @@ export function createApp() {
   app.get("/docs/swagger-ui/index.html", swaggerUiController);
 
   app.use((_req, res) => {
-    res.status(404).json(failure("NOT_FOUND", "Route not found"));
+    const item = getErrorCodeItem("NOT_FOUND");
+    res.status(404).json(failure("NOT_FOUND", item?.message ?? "Route not found"));
   });
 
   app.use((err, _req, res, _next) => {
@@ -43,7 +45,9 @@ export function createApp() {
       .json(
         failure(
           "INTERNAL_SERVER_ERROR",
-          err instanceof Error ? err.message : "unexpected error",
+          err instanceof Error
+            ? err.message
+            : (getErrorCodeItem("INTERNAL_SERVER_ERROR")?.message ?? "unexpected error"),
         ),
       );
   });

@@ -1,3 +1,5 @@
+import { getErrorCodeItem } from "../error-codes/error-code.catalog.js";
+
 export class HttpError extends Error {
   constructor(status, code, message, details) {
     super(message);
@@ -7,30 +9,35 @@ export class HttpError extends Error {
   }
 }
 
+function createHttpError(status, key, fallbackMessage, details) {
+  const item = getErrorCodeItem(key);
+  return new HttpError(status, key, fallbackMessage ?? item?.message ?? key, details);
+}
+
 export function badRequest(message, details) {
-  return new HttpError(400, "BAD_REQUEST", message, details);
+  return createHttpError(400, "BAD_REQUEST", message, details);
 }
 
 export function unauthorized(message = "Authentication required") {
-  return new HttpError(401, "UNAUTHORIZED", message);
+  return createHttpError(401, "UNAUTHORIZED", message);
 }
 
 export function forbidden(message = "Forbidden") {
-  return new HttpError(403, "FORBIDDEN", message);
+  return createHttpError(403, "FORBIDDEN", message);
 }
 
 export function conflict(message = "Conflict") {
-  return new HttpError(409, "CONFLICT", message);
+  return createHttpError(409, "CONFLICT", message);
 }
 
 export function gone(message = "Gone") {
-  return new HttpError(410, "GONE", message);
+  return createHttpError(410, "GONE", message);
 }
 
 export function tooManyRequests(message = "Too many requests") {
-  return new HttpError(429, "TOO_MANY_REQUESTS", message);
+  return createHttpError(429, "TOO_MANY_REQUESTS", message);
 }
 
 export function notFound(message = "Resource not found") {
-  return new HttpError(404, "NOT_FOUND", message);
+  return createHttpError(404, "NOT_FOUND", message);
 }

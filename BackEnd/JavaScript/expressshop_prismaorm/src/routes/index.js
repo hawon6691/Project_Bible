@@ -16,6 +16,7 @@ import chatsRouter from "./chats.js";
 import compareRouter from "./compare.js";
 import crawlerRouter from "./crawler.js";
 import dealsRouter from "./deals.js";
+import errorsRouter from "./errors.js";
 import faqsRouter from "./faqs.js";
 import friendsRouter from "./friends.js";
 import fraudRouter from "./fraud.js";
@@ -134,6 +135,7 @@ const apiRouters = [
   rankingsRouter,
   recommendationsRouter,
   dealsRouter,
+  errorsRouter,
   ordersRouter,
   paymentsRouter,
   pcBuildsRouter,

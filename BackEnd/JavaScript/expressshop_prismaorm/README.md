@@ -32,6 +32,7 @@ npm run db:reset
 npm run test:e2e:critical
 npm run test:e2e:contract
 npm run test:e2e:admin-boundary
+npm run test:e2e:security-regression
 npm run test:e2e:platform
 ```
 

@@ -1,5 +1,112 @@
 import { getRouteCatalog } from "../routes/index.js";
 
+const ERROR_CODE_ITEM_SCHEMA = {
+  type: "object",
+  required: ["key", "code", "message"],
+  properties: {
+    key: { type: "string", example: "NOT_FOUND" },
+    code: { type: "string", example: "HTTP_404" },
+    message: {
+      type: "string",
+      example: "The requested resource could not be found.",
+    },
+  },
+};
+
+const SUCCESS_SCHEMA = {
+  type: "object",
+  required: ["success", "data"],
+  properties: {
+    success: { type: "boolean", const: true },
+    data: {},
+    meta: {
+      type: "object",
+      additionalProperties: true,
+    },
+  },
+};
+
+function buildErrorCodeResponseSchema() {
+  return {
+    allOf: [
+      SUCCESS_SCHEMA,
+      {
+        type: "object",
+        properties: {
+          data: {
+            type: "object",
+            required: ["total", "items"],
+            properties: {
+              total: { type: "integer", minimum: 0, example: 8 },
+              items: {
+                type: "array",
+                items: {
+                  $ref: "#/components/schemas/ErrorCodeItem",
+                },
+              },
+            },
+          },
+        },
+      },
+    ],
+  };
+}
+
+function buildSingleErrorCodeResponseSchema() {
+  return {
+    allOf: [
+      SUCCESS_SCHEMA,
+      {
+        type: "object",
+        properties: {
+          data: {
+            oneOf: [
+              { $ref: "#/components/schemas/ErrorCodeItem" },
+              { type: "null" },
+            ],
+          },
+        },
+      },
+    ],
+  };
+}
+
+function buildOperation(route) {
+  const operation = {
+    tags: [buildTag(route.path)],
+    summary: buildSummary(route.method, route.path),
+    responses: {
+      200: {
+        description: "Successful response",
+      },
+    },
+  };
+
+  if (route.path === "/api/v1/errors/codes" && route.method === "GET") {
+    operation.responses[200] = {
+      description: "Error code catalog",
+      content: {
+        "application/json": {
+          schema: buildErrorCodeResponseSchema(),
+        },
+      },
+    };
+  }
+
+  if (route.path === "/api/v1/errors/codes/{key}" && route.method === "GET") {
+    operation.responses[200] = {
+      description: "Single error code lookup",
+      content: {
+        "application/json": {
+          schema: buildSingleErrorCodeResponseSchema(),
+        },
+      },
+    };
+  }
+
+  return operation;
+}
+
 function buildSummary(method, path) {
   const normalizedPath = path.replace(/^\/api\/v1/, "") || "/";
   return `${method} ${normalizedPath}`;
@@ -25,15 +132,7 @@ export function buildOpenApiSpec(apiPrefix) {
       paths[route.path] = {};
     }
 
-    paths[route.path][route.method.toLowerCase()] = {
-      tags: [buildTag(route.path)],
-      summary: buildSummary(route.method, route.path),
-      responses: {
-        200: {
-          description: "Successful response",
-        },
-      },
-    };
+    paths[route.path][route.method.toLowerCase()] = buildOperation(route);
   }
 
   return {
@@ -57,6 +156,9 @@ export function buildOpenApiSpec(apiPrefix) {
           scheme: "bearer",
           bearerFormat: "JWT",
         },
+      },
+      schemas: {
+        ErrorCodeItem: ERROR_CODE_ITEM_SCHEMA,
       },
     },
     paths,

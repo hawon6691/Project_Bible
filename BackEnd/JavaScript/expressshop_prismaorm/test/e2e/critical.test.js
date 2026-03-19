@@ -45,6 +45,8 @@ test("GET /docs/openapi exposes OpenAPI document", async () => {
   assert.equal(typeof result.body.openapi, "string");
   assert.equal(result.body.info.title, "PBShop JavaScript Express Prisma API");
   assert.ok(result.body.paths["/api/v1/products"]);
+  assert.ok(result.body.paths["/api/v1/errors/codes"]);
+  assert.ok(result.body.paths["/api/v1/errors/codes/{key}"]);
 });
 
 test("GET /docs/swagger exposes Swagger UI page", async () => {
@@ -60,6 +62,37 @@ test("GET /api/v1/products returns public product list", async () => {
   assert.equal(result.status, 200);
   assert.equal(result.body.success, true);
   assert.ok(Array.isArray(result.body.data));
+});
+
+test("GET /api/v1/errors/codes returns public error code catalog", async () => {
+  const result = await requestJson(context.baseUrl, "/api/v1/errors/codes");
+
+  assert.equal(result.status, 200);
+  assert.equal(result.body.success, true);
+  assert.equal(typeof result.body.data.total, "number");
+  assert.ok(Array.isArray(result.body.data.items));
+  assert.ok(result.body.data.items.length > 0);
+  assert.equal(typeof result.body.data.items[0].key, "string");
+  assert.equal(typeof result.body.data.items[0].code, "string");
+  assert.equal(typeof result.body.data.items[0].message, "string");
+});
+
+test("GET /api/v1/errors/codes/:key returns a matching error code item", async () => {
+  const result = await requestJson(context.baseUrl, "/api/v1/errors/codes/NOT_FOUND");
+
+  assert.equal(result.status, 200);
+  assert.equal(result.body.success, true);
+  assert.equal(result.body.data.key, "NOT_FOUND");
+  assert.equal(result.body.data.code, "HTTP_404");
+  assert.equal(typeof result.body.data.message, "string");
+});
+
+test("GET /api/v1/errors/codes/:key returns null for unknown keys", async () => {
+  const result = await requestJson(context.baseUrl, "/api/v1/errors/codes/UNKNOWN_CODE");
+
+  assert.equal(result.status, 200);
+  assert.equal(result.body.success, true);
+  assert.equal(result.body.data, null);
 });
 
 test("GET /api/v1/users/me requires auth", async () => {

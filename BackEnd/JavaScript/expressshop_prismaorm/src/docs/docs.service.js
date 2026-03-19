@@ -48,6 +48,32 @@ const QUERY_PRODUCT_VIEW_SCHEMA = {
   },
 };
 
+const CHAT_ROOM_SCHEMA = {
+  type: "object",
+  required: ["id", "name", "createdBy", "isPrivate", "createdAt", "updatedAt"],
+  properties: {
+    id: { type: "integer", example: 1 },
+    name: { type: "string", example: "고객 문의 채팅" },
+    createdBy: { type: "integer", example: 2 },
+    isPrivate: { type: "boolean", example: true },
+    createdAt: { type: "string", format: "date-time" },
+    updatedAt: { type: "string", format: "date-time" },
+  },
+};
+
+const CHAT_MESSAGE_SCHEMA = {
+  type: "object",
+  required: ["id", "roomId", "senderId", "message", "createdAt", "updatedAt"],
+  properties: {
+    id: { type: "integer", example: 10 },
+    roomId: { type: "integer", example: 1 },
+    senderId: { type: "integer", example: 2 },
+    message: { type: "string", example: "안녕하세요. 상품 재고 문의드립니다." },
+    createdAt: { type: "string", format: "date-time" },
+    updatedAt: { type: "string", format: "date-time" },
+  },
+};
+
 const SUCCESS_SCHEMA = {
   type: "object",
   required: ["success", "data"],
@@ -171,6 +197,38 @@ function buildRebuildQueryProductsResponseSchema() {
   };
 }
 
+function buildSingleChatRoomResponseSchema() {
+  return {
+    allOf: [
+      SUCCESS_SCHEMA,
+      {
+        type: "object",
+        properties: {
+          data: {
+            $ref: "#/components/schemas/ChatRoom",
+          },
+        },
+      },
+    ],
+  };
+}
+
+function buildSingleChatMessageResponseSchema() {
+  return {
+    allOf: [
+      SUCCESS_SCHEMA,
+      {
+        type: "object",
+        properties: {
+          data: {
+            $ref: "#/components/schemas/ChatMessage",
+          },
+        },
+      },
+    ],
+  };
+}
+
 function buildOperation(route) {
   const operation = {
     tags: [buildTag(route.path)],
@@ -248,6 +306,28 @@ function buildOperation(route) {
     };
   }
 
+  if (route.path === "/api/v1/chat/rooms/{id}/join" && route.method === "POST") {
+    operation.responses[200] = {
+      description: "Join a chat room",
+      content: {
+        "application/json": {
+          schema: buildSingleChatRoomResponseSchema(),
+        },
+      },
+    };
+  }
+
+  if (route.path === "/api/v1/chat/rooms/{id}/messages" && route.method === "POST") {
+    operation.responses[201] = {
+      description: "Send a chat message",
+      content: {
+        "application/json": {
+          schema: buildSingleChatMessageResponseSchema(),
+        },
+      },
+    };
+  }
+
   return operation;
 }
 
@@ -302,6 +382,8 @@ export function buildOpenApiSpec(apiPrefix) {
         },
       },
       schemas: {
+        ChatMessage: CHAT_MESSAGE_SCHEMA,
+        ChatRoom: CHAT_ROOM_SCHEMA,
         ErrorCodeItem: ERROR_CODE_ITEM_SCHEMA,
         QueryProductView: QUERY_PRODUCT_VIEW_SCHEMA,
       },

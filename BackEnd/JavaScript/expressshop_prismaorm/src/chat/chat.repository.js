@@ -1,5 +1,11 @@
 import { prisma } from "../prisma.js";
 
+function bumpSequence(tx, tableName) {
+  return tx.$executeRawUnsafe(
+    `SELECT setval(pg_get_serial_sequence('${tableName}', 'id'), COALESCE((SELECT MAX(id) FROM ${tableName}), 0) + 1, false)`,
+  );
+}
+
 function roomInclude() {
   return {
     creator: {
@@ -26,12 +32,8 @@ function messageInclude() {
 
 export function createChatRoom(data) {
   return prisma.$transaction(async (tx) => {
-    await tx.$executeRawUnsafe(
-      "SELECT setval(pg_get_serial_sequence('chat_rooms', 'id'), COALESCE((SELECT MAX(id) FROM chat_rooms), 0) + 1, false)",
-    );
-    await tx.$executeRawUnsafe(
-      "SELECT setval(pg_get_serial_sequence('chat_room_members', 'id'), COALESCE((SELECT MAX(id) FROM chat_room_members), 0) + 1, false)",
-    );
+    await bumpSequence(tx, "chat_rooms");
+    await bumpSequence(tx, "chat_room_members");
 
     return tx.chatRoom.create({
       data,
@@ -74,6 +76,24 @@ export function findChatRoomById(roomId) {
   });
 }
 
+export function findChatRoomMember(roomId, userId) {
+  return prisma.chatRoomMember.findUnique({
+    where: {
+      roomId_userId: {
+        roomId: Number(roomId),
+        userId: Number(userId),
+      },
+    },
+  });
+}
+
+export function createChatRoomMember(data) {
+  return prisma.$transaction(async (tx) => {
+    await bumpSequence(tx, "chat_room_members");
+    return tx.chatRoomMember.create({ data });
+  });
+}
+
 export function findChatMessages(roomId, page = 1, limit = 20) {
   const skip = (page - 1) * limit;
   return prisma.chatMessage.findMany({
@@ -87,6 +107,16 @@ export function findChatMessages(roomId, page = 1, limit = 20) {
 
 export function countChatMessages(roomId) {
   return prisma.chatMessage.count({ where: { roomId: Number(roomId) } });
+}
+
+export function createChatMessage(data) {
+  return prisma.$transaction(async (tx) => {
+    await bumpSequence(tx, "chat_messages");
+    return tx.chatMessage.create({
+      data,
+      include: messageInclude(),
+    });
+  });
 }
 
 export function touchChatRoom(roomId) {

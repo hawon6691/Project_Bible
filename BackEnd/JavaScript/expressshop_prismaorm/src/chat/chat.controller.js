@@ -3,6 +3,8 @@ import {
   createRoom,
   getRoomMessages,
   getRooms,
+  joinRoom,
+  sendMessage,
 } from "./chat.service.js";
 import { toChatMessageDto, toChatRoomDto } from "./chat.mapper.js";
 import { success } from "../utils/response.js";
@@ -20,6 +22,16 @@ export async function getRoomsController(req, res) {
 export async function getRoomMessagesController(req, res) {
   const { items, meta } = await getRoomMessages(req.user, req.params.id, req.query);
   res.status(200).json(success(items.map(toChatMessageDto), meta));
+}
+
+export async function joinRoomController(req, res) {
+  const data = await joinRoom(req.user, req.params.id);
+  res.status(200).json(success(toChatRoomDto(data)));
+}
+
+export async function sendMessageController(req, res) {
+  const data = await sendMessage(req.user, req.params.id, req.body);
+  res.status(201).json(success(toChatMessageDto(data)));
 }
 
 export async function closeRoomController(req, res) {

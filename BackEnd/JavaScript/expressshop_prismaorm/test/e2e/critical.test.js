@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test, { after, before } from "node:test";
+import { io as createSocketClient } from "socket.io-client";
 
 import {
   bootTestApp,
@@ -10,6 +11,61 @@ import {
 } from "./_support/harness.js";
 
 let context;
+
+function emitWithAck(socket, event, payload) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Timed out waiting for ack from ${event}`));
+    }, 5000);
+
+    socket.emit(event, payload, (response) => {
+      clearTimeout(timer);
+      resolve(response);
+    });
+  });
+}
+
+function waitForSocketEvent(socket, event) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      socket.off(event, onEvent);
+      reject(new Error(`Timed out waiting for ${event}`));
+    }, 5000);
+
+    function onEvent(payload) {
+      clearTimeout(timer);
+      resolve(payload);
+    }
+
+    socket.once(event, onEvent);
+  });
+}
+
+function connectSocket(baseUrl, token) {
+  return new Promise((resolve, reject) => {
+    const socket = createSocketClient(baseUrl, {
+      transports: ["websocket"],
+      auth: {
+        token,
+      },
+    });
+
+    const timer = setTimeout(() => {
+      socket.close();
+      reject(new Error("Timed out waiting for socket connection"));
+    }, 5000);
+
+    socket.once("connect", () => {
+      clearTimeout(timer);
+      resolve(socket);
+    });
+
+    socket.once("connect_error", (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+  });
+}
 
 before(async () => {
   context = await bootTestApp();
@@ -254,6 +310,81 @@ test("POST /api/v1/chat/rooms/:id/messages sends a chat message", async () => {
   assert.equal(sendResult.body.data.roomId, roomId);
   assert.equal(sendResult.body.data.senderId, context.user.id);
   assert.equal(sendResult.body.data.message, "critical hello");
+});
+
+test("Socket.IO chat events join, send, typing, read, leave work with JWT auth", async () => {
+  const createRoomResult = await requestJson(
+    context.baseUrl,
+    "/api/v1/chat/rooms",
+    {
+      method: "POST",
+      headers: {
+        ...withBearer(context.userToken).headers,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: "socket room",
+        participantUserIds: [],
+        isPrivate: true,
+      }),
+    },
+  );
+
+  assert.equal(createRoomResult.status, 201);
+  const roomId = createRoomResult.body.data.id;
+
+  const userSocket = await connectSocket(context.baseUrl, context.userToken);
+  const adminSocket = await connectSocket(context.baseUrl, context.adminToken);
+
+  try {
+    const userJoinAck = await emitWithAck(userSocket, "joinRoom", { roomId });
+    assert.equal(userJoinAck.success, true);
+    assert.equal(userJoinAck.data.roomId, roomId);
+
+    const adminJoinAck = await emitWithAck(adminSocket, "joinRoom", { roomId });
+    assert.equal(adminJoinAck.success, true);
+    assert.equal(adminJoinAck.data.roomId, roomId);
+
+    const typingEventPromise = waitForSocketEvent(adminSocket, "userTyping");
+    const typingAck = await emitWithAck(userSocket, "typing", { roomId });
+    assert.equal(typingAck.success, true);
+    const typingEvent = await typingEventPromise;
+    assert.equal(typingEvent.roomId, roomId);
+    assert.equal(typingEvent.userId, context.user.id);
+
+    const newMessagePromise = waitForSocketEvent(adminSocket, "newMessage");
+    const sendAck = await emitWithAck(userSocket, "sendMessage", {
+      roomId,
+      content: "socket hello",
+    });
+    assert.equal(sendAck.success, true);
+    assert.equal(sendAck.data.roomId, roomId);
+    assert.equal(sendAck.data.senderId, context.user.id);
+    assert.equal(sendAck.data.content, "socket hello");
+
+    const newMessageEvent = await newMessagePromise;
+    assert.equal(newMessageEvent.roomId, roomId);
+    assert.equal(newMessageEvent.senderId, context.user.id);
+    assert.equal(newMessageEvent.content, "socket hello");
+
+    const readReceiptPromise = waitForSocketEvent(userSocket, "readReceipt");
+    const readAck = await emitWithAck(adminSocket, "messageRead", {
+      roomId,
+      messageId: newMessageEvent.id,
+    });
+    assert.equal(readAck.success, true);
+    const readReceiptEvent = await readReceiptPromise;
+    assert.equal(readReceiptEvent.roomId, roomId);
+    assert.equal(readReceiptEvent.messageId, newMessageEvent.id);
+    assert.equal(readReceiptEvent.readBy, context.admin.id);
+
+    const leaveAck = await emitWithAck(adminSocket, "leaveRoom", { roomId });
+    assert.equal(leaveAck.success, true);
+    assert.equal(leaveAck.data.roomId, roomId);
+  } finally {
+    userSocket.close();
+    adminSocket.close();
+  }
 });
 
 test("GET /api/v1/users/me requires auth", async () => {

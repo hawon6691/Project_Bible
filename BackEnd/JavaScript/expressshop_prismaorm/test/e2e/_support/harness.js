@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { once } from "node:events";
+import { createServer } from "node:http";
 
 import { signAccessToken } from "../../../src/auth/token.service.js";
 import { createApp } from "../../../src/app.js";
+import { attachChatSocket } from "../../../src/chat/chat.socket.js";
 import { prisma } from "../../../src/prisma.js";
 
 export async function bootTestApp() {
@@ -20,13 +22,17 @@ export async function bootTestApp() {
   assert.ok(admin, "Seed admin account is required");
   assert.ok(user, "Seed user account is required");
 
-  const server = createApp().listen(0, "127.0.0.1");
+  const app = createApp();
+  const server = createServer(app);
+  const io = attachChatSocket(server);
+  server.listen(0, "127.0.0.1");
   await once(server, "listening");
   const address = server.address();
   const baseUrl = `http://127.0.0.1:${address.port}`;
 
   return {
     server,
+    io,
     baseUrl,
     admin,
     user,
@@ -36,6 +42,9 @@ export async function bootTestApp() {
 }
 
 export async function shutdownTestApp(context) {
+  if (context?.io) {
+    await new Promise((resolve) => context.io.close(resolve));
+  }
   if (context?.server) {
     await new Promise((resolve) => context.server.close(resolve));
   }

@@ -1,10 +1,13 @@
 import {
   countChatMessages,
+  createChatMessage,
   createChatRoom,
+  createChatRoomMember,
   findAllChatRooms,
   findChatMessages,
   findChatRoomAccessibleByUser,
   findChatRoomById,
+  findChatRoomMember,
   findChatRoomsForUser,
   touchChatRoom,
 } from "./chat.repository.js";
@@ -60,6 +63,60 @@ export async function getRoomMessages(user, roomId, query) {
   ]);
 
   return { items, meta: { total, page, limit } };
+}
+
+export async function joinRoom(user, roomId) {
+  const room = await findChatRoomById(roomId);
+  if (!room) {
+    throw notFound("Chat room not found");
+  }
+
+  const existingMember = await findChatRoomMember(room.id, user.id);
+  if (!existingMember) {
+    await createChatRoomMember({
+      roomId: room.id,
+      userId: user.id,
+      joinedAt: new Date(),
+    });
+  }
+
+  return findChatRoomById(room.id);
+}
+
+export async function sendMessage(user, roomId, payload) {
+  const room = await findChatRoomAccessibleByUser(user.id, roomId);
+  if (!room && user.role !== "ADMIN") {
+    throw forbidden("You do not have access to this chat room");
+  }
+
+  const adminRoom = room ?? (await findChatRoomById(roomId));
+  if (!adminRoom) {
+    throw notFound("Chat room not found");
+  }
+
+  if (user.role === "ADMIN") {
+    const existingMember = await findChatRoomMember(adminRoom.id, user.id);
+    if (!existingMember) {
+      await createChatRoomMember({
+        roomId: adminRoom.id,
+        userId: user.id,
+        joinedAt: new Date(),
+      });
+    }
+  }
+
+  const message = String(payload?.message ?? "").trim();
+  if (!message) {
+    throw badRequest("message is required");
+  }
+
+  const item = await createChatMessage({
+    roomId: adminRoom.id,
+    senderId: user.id,
+    message,
+  });
+  await touchChatRoom(adminRoom.id);
+  return item;
 }
 
 export async function closeRoom(user, roomId) {

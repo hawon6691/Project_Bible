@@ -29,23 +29,35 @@ npm run db:reset
 ## Test
 
 ```bash
+npm run test:quality
 npm run test:e2e:critical
 npm run test:e2e:contract
+npm run test:e2e:auth-search
+npm run test:e2e:queue-admin
+npm run test:e2e:observability
 npm run test:e2e:admin-boundary
+npm run test:e2e:rate-limit-regression
 npm run test:e2e:security-regression
 npm run test:e2e:ops
 npm run test:e2e:platform
+npm run test:api:domain
+npm run test:perf:smoke
+npm run test:script:validate-migrations
 ```
 
 ## CI
 
 - GitHub Actions workflow: `.github/workflows/javascript-express-prisma-ci.yml`
-- Shared PostgreSQL SQL을 올린 뒤 `npm run prisma:generate`와 `npm run test:e2e:critical`을 실행합니다.
+- 자동 잡: `quality`, `critical-e2e`, `contract-doc`, `perf-smoke`
+- 수동 잡: `migration-validation-manual`, `migration-roundtrip-manual`, `security-regression-manual`, `admin-boundary-manual`, `release-gate`
+- Shared PostgreSQL SQL을 올린 뒤 `npm run prisma:generate`, `npm run test:e2e:critical`, `npm run test:contract:doc`, `npm run test:perf:smoke`를 실행합니다.
 
 ## Docs
 
 - OpenAPI JSON: `/docs/openapi`
 - Swagger UI: `/docs/swagger`
+- OpenAPI artifact export: `npm run docs:export`
+- Socket.IO chat events are documented in the OpenAPI `x-socket-events` extension.
 
 ## Routes
 
@@ -58,8 +70,14 @@ npm run test:e2e:platform
 - `POST /api/v1/categories`
 - `GET /api/v1/products`
 - `POST /api/v1/products`
+- `GET /api/v1/query/products`
+- `GET /api/v1/query/products/:productId`
+- `POST /api/v1/admin/query/products/:productId/sync`
+- `POST /api/v1/admin/query/products/rebuild`
 - `GET /api/v1/sellers`
 - `POST /api/v1/sellers`
+- `GET /api/v1/errors/codes`
+- `GET /api/v1/errors/codes/:key`
 - `GET /api/v1/predictions/products/:productId/price-trend`
 - `GET /api/v1/i18n/translations`
 - `GET /api/v1/i18n/exchange-rates`
@@ -105,6 +123,8 @@ npm run test:e2e:platform
 - `GET /api/v1/search/admin/index/status`
 - `POST /api/v1/search/admin/index/reindex`
 - `GET /api/v1/search/admin/index/outbox/summary`
+- `POST /api/v1/chat/rooms/:id/join`
+- `POST /api/v1/chat/rooms/:id/messages`
 - `GET /api/v1/sellers/:id/trust`
 - `POST /api/v1/sellers/:id/reviews`
 - `POST /api/v1/admin/badges`
@@ -130,3 +150,5 @@ npm run test:e2e:platform
 
 - 현재 Prisma schema는 공통 PostgreSQL 스키마 기준으로 1차 정렬된 상태입니다.
 - 실제 DB 초기화는 Prisma migration이 아니라 공통 SQL import를 우선 사용합니다.
+- Socket.IO 채팅 이벤트는 JWT 인증 소켓 연결을 전제로 합니다.
+- 최근 추가된 parity 기능은 `Error Code Catalog`, `Query API`, `Chat REST gap`, `Chat Socket.IO`입니다.

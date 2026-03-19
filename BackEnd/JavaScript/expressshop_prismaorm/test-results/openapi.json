@@ -1,0 +1,4205 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PBShop JavaScript Express Prisma API",
+    "version": "0.1.0",
+    "description": "Shared-document-based JavaScript Express Prisma backend for PBShop. Recent parity work includes Error Code Catalog, Query API, Chat REST extensions, and Socket.IO chat events."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ChatMessage": {
+        "type": "object",
+        "required": [
+          "id",
+          "roomId",
+          "senderId",
+          "message",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 10
+          },
+          "roomId": {
+            "type": "integer",
+            "example": 1
+          },
+          "senderId": {
+            "type": "integer",
+            "example": 2
+          },
+          "message": {
+            "type": "string",
+            "example": "안녕하세요. 상품 재고 문의드립니다."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ChatRoom": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "createdBy",
+          "isPrivate",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "고객 문의 채팅"
+          },
+          "createdBy": {
+            "type": "integer",
+            "example": 2
+          },
+          "isPrivate": {
+            "type": "boolean",
+            "example": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ErrorCodeItem": {
+        "type": "object",
+        "required": [
+          "key",
+          "code",
+          "message"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "NOT_FOUND"
+          },
+          "code": {
+            "type": "string",
+            "example": "HTTP_404"
+          },
+          "message": {
+            "type": "string",
+            "example": "The requested resource could not be found."
+          }
+        }
+      },
+      "QueryProductView": {
+        "type": "object",
+        "required": [
+          "productId",
+          "categoryId",
+          "name",
+          "status",
+          "basePrice",
+          "lowestPrice",
+          "sellerCount",
+          "averageRating",
+          "reviewCount",
+          "viewCount",
+          "popularityScore",
+          "syncedAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "example": 1
+          },
+          "categoryId": {
+            "type": "integer",
+            "example": 10
+          },
+          "name": {
+            "type": "string",
+            "example": "PBShop Gaming Laptop"
+          },
+          "thumbnailUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "https://cdn.pbshop.dev/products/1.png"
+          },
+          "status": {
+            "type": "string",
+            "example": "ON_SALE"
+          },
+          "basePrice": {
+            "type": "integer",
+            "example": 1599000
+          },
+          "lowestPrice": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "example": 1499000
+          },
+          "sellerCount": {
+            "type": "integer",
+            "example": 3
+          },
+          "averageRating": {
+            "type": "number",
+            "example": 4.7
+          },
+          "reviewCount": {
+            "type": "integer",
+            "example": 28
+          },
+          "viewCount": {
+            "type": "integer",
+            "example": 1024
+          },
+          "popularityScore": {
+            "type": "number",
+            "example": 86.4
+          },
+          "syncedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "x-socket-events": [
+    {
+      "name": "joinRoom",
+      "direction": "client->server",
+      "payload": {
+        "roomId": "number"
+      },
+      "description": "Join an existing chat room after JWT-authenticated socket connection."
+    },
+    {
+      "name": "leaveRoom",
+      "direction": "client->server",
+      "payload": {
+        "roomId": "number"
+      },
+      "description": "Leave a previously joined chat room."
+    },
+    {
+      "name": "sendMessage",
+      "direction": "client->server",
+      "payload": {
+        "roomId": "number",
+        "content": "string"
+      },
+      "description": "Persist a chat message and broadcast newMessage to the room."
+    },
+    {
+      "name": "newMessage",
+      "direction": "server->client",
+      "payload": {
+        "id": "number",
+        "roomId": "number",
+        "senderId": "number",
+        "content": "string",
+        "createdAt": "date-time"
+      },
+      "description": "Broadcast when a room member sends a new message."
+    },
+    {
+      "name": "messageRead",
+      "direction": "client->server",
+      "payload": {
+        "roomId": "number",
+        "messageId": "number"
+      },
+      "description": "Emit that a specific chat message was read."
+    },
+    {
+      "name": "readReceipt",
+      "direction": "server->client",
+      "payload": {
+        "roomId": "number",
+        "messageId": "number",
+        "readBy": "number"
+      },
+      "description": "Broadcast read receipt to other room members."
+    },
+    {
+      "name": "typing",
+      "direction": "client->server",
+      "payload": {
+        "roomId": "number"
+      },
+      "description": "Emit typing status for a room."
+    },
+    {
+      "name": "userTyping",
+      "direction": "server->client",
+      "payload": {
+        "roomId": "number",
+        "userId": "number"
+      },
+      "description": "Broadcast typing state to other room members."
+    }
+  ],
+  "paths": {
+    "/api/v1/activity/searches": {
+      "delete": {
+        "tags": [
+          "activity"
+        ],
+        "summary": "DELETE /activity/searches",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "activity"
+        ],
+        "summary": "GET /activity/searches",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/activity/searches/{id}": {
+      "delete": {
+        "tags": [
+          "activity"
+        ],
+        "summary": "DELETE /activity/searches/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/activity/views": {
+      "delete": {
+        "tags": [
+          "activity"
+        ],
+        "summary": "DELETE /activity/views",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "activity"
+        ],
+        "summary": "GET /activity/views",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/addresses": {
+      "get": {
+        "tags": [
+          "addresses"
+        ],
+        "summary": "GET /addresses",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "addresses"
+        ],
+        "summary": "POST /addresses",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/addresses/{id}": {
+      "delete": {
+        "tags": [
+          "addresses"
+        ],
+        "summary": "DELETE /addresses/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "addresses"
+        ],
+        "summary": "PATCH /addresses/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/badges": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "POST /admin/badges",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/badges/{id}": {
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "DELETE /admin/badges/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "PATCH /admin/badges/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/badges/{id}/grant": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "POST /admin/badges/{id}/grant",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/badges/{id}/revoke/{userId}": {
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "DELETE /admin/badges/{id}/revoke/{userId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/compatibility-rules": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/compatibility-rules",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "POST /admin/compatibility-rules",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/compatibility-rules/{id}": {
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "DELETE /admin/compatibility-rules/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "PATCH /admin/compatibility-rules/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/i18n/exchange-rates": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "POST /admin/i18n/exchange-rates",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/i18n/translations": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "POST /admin/i18n/translations",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/i18n/translations/{id}": {
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "DELETE /admin/i18n/translations/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/observability/dashboard": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/observability/dashboard",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/observability/metrics": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/observability/metrics",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/observability/traces": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/observability/traces",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/ops-dashboard/summary": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/ops-dashboard/summary",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/orders",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/orders/{id}/status": {
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "PATCH /admin/orders/{id}/status",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/points/grant": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "POST /admin/points/grant",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/query/products/{productId}/sync": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "POST /admin/query/products/{productId}/sync",
+        "responses": {
+          "200": {
+            "description": "Sync a single query product view",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "success",
+                        "data"
+                      ],
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "const": true
+                        },
+                        "data": {},
+                        "meta": {
+                          "type": "object",
+                          "additionalProperties": true
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/QueryProductView"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/query/products/rebuild": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "POST /admin/query/products/rebuild",
+        "responses": {
+          "200": {
+            "description": "Rebuild all query product views",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "success",
+                        "data"
+                      ],
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "const": true
+                        },
+                        "data": {},
+                        "meta": {
+                          "type": "object",
+                          "additionalProperties": true
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "syncedCount"
+                          ],
+                          "properties": {
+                            "syncedCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "example": 42
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/queues/{queueName}/failed": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/queues/{queueName}/failed",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/queues/{queueName}/failed/retry": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "POST /admin/queues/{queueName}/failed/retry",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/queues/{queueName}/jobs/{jobId}": {
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "DELETE /admin/queues/{queueName}/jobs/{jobId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/queues/{queueName}/jobs/{jobId}/retry": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "POST /admin/queues/{queueName}/jobs/{jobId}/retry",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/queues/auto-retry": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "POST /admin/queues/auto-retry",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/queues/stats": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/queues/stats",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/queues/supported": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/queues/supported",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/recommendations": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/recommendations",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "POST /admin/recommendations",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/recommendations/{id}": {
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "DELETE /admin/recommendations/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/settings/extensions": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/settings/extensions",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "POST /admin/settings/extensions",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/settings/review-policy": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/settings/review-policy",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "PATCH /admin/settings/review-policy",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/settings/upload-limits": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/settings/upload-limits",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "PATCH /admin/settings/upload-limits",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/support/tickets": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "GET /admin/support/tickets",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/support/tickets/{id}/status": {
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "PATCH /admin/support/tickets/{id}/status",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/products/{id}/lowest-ever": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "GET /analytics/products/{id}/lowest-ever",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/products/{id}/unit-price": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "GET /analytics/products/{id}/unit-price",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auctions": {
+      "get": {
+        "tags": [
+          "auctions"
+        ],
+        "summary": "GET /auctions",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "auctions"
+        ],
+        "summary": "POST /auctions",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auctions/{id}": {
+      "delete": {
+        "tags": [
+          "auctions"
+        ],
+        "summary": "DELETE /auctions/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "auctions"
+        ],
+        "summary": "GET /auctions/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auctions/{id}/bids": {
+      "post": {
+        "tags": [
+          "auctions"
+        ],
+        "summary": "POST /auctions/{id}/bids",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auctions/{id}/bids/{bidId}": {
+      "delete": {
+        "tags": [
+          "auctions"
+        ],
+        "summary": "DELETE /auctions/{id}/bids/{bidId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "auctions"
+        ],
+        "summary": "PATCH /auctions/{id}/bids/{bidId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auctions/{id}/bids/{bidId}/select": {
+      "patch": {
+        "tags": [
+          "auctions"
+        ],
+        "summary": "PATCH /auctions/{id}/bids/{bidId}/select",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "POST /auth/login",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "POST /auth/logout",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "GET /auth/me",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password-reset/confirm": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "POST /auth/password-reset/confirm",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password-reset/request": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "POST /auth/password-reset/request",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password-reset/verify": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "POST /auth/password-reset/verify",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "POST /auth/refresh",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/resend-verification": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "POST /auth/resend-verification",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/signup": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "POST /auth/signup",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "POST /auth/verify-email",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auto/models": {
+      "get": {
+        "tags": [
+          "auto"
+        ],
+        "summary": "GET /auto/models",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/auto/models/{id}/lease-offers": {
+      "get": {
+        "tags": [
+          "auto"
+        ],
+        "summary": "GET /auto/models/{id}/lease-offers",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/badges": {
+      "get": {
+        "tags": [
+          "badges"
+        ],
+        "summary": "GET /badges",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/badges/me": {
+      "get": {
+        "tags": [
+          "badges"
+        ],
+        "summary": "GET /badges/me",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/cart": {
+      "delete": {
+        "tags": [
+          "cart"
+        ],
+        "summary": "DELETE /cart",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "cart"
+        ],
+        "summary": "GET /cart",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "cart"
+        ],
+        "summary": "POST /cart",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/cart/{itemId}": {
+      "delete": {
+        "tags": [
+          "cart"
+        ],
+        "summary": "DELETE /cart/{itemId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "cart"
+        ],
+        "summary": "PATCH /cart/{itemId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/categories": {
+      "get": {
+        "tags": [
+          "categories"
+        ],
+        "summary": "GET /categories",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "categories"
+        ],
+        "summary": "POST /categories",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/categories/{id}": {
+      "delete": {
+        "tags": [
+          "categories"
+        ],
+        "summary": "DELETE /categories/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "categories"
+        ],
+        "summary": "GET /categories/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "categories"
+        ],
+        "summary": "PATCH /categories/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/chat/rooms": {
+      "get": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "GET /chat/rooms",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "POST /chat/rooms",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/chat/rooms/{id}/close": {
+      "patch": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "PATCH /chat/rooms/{id}/close",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/chat/rooms/{id}/join": {
+      "post": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "POST /chat/rooms/{id}/join",
+        "responses": {
+          "200": {
+            "description": "Join a chat room",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "success",
+                        "data"
+                      ],
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "const": true
+                        },
+                        "data": {},
+                        "meta": {
+                          "type": "object",
+                          "additionalProperties": true
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/ChatRoom"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chat/rooms/{id}/messages": {
+      "get": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "GET /chat/rooms/{id}/messages",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "POST /chat/rooms/{id}/messages",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "201": {
+            "description": "Send a chat message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "success",
+                        "data"
+                      ],
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "const": true
+                        },
+                        "data": {},
+                        "meta": {
+                          "type": "object",
+                          "additionalProperties": true
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/ChatMessage"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/community/boards": {
+      "get": {
+        "tags": [
+          "community"
+        ],
+        "summary": "GET /community/boards",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/community/posts": {
+      "get": {
+        "tags": [
+          "community"
+        ],
+        "summary": "GET /community/posts",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "community"
+        ],
+        "summary": "POST /community/posts",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/community/posts/{id}": {
+      "get": {
+        "tags": [
+          "community"
+        ],
+        "summary": "GET /community/posts/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/community/posts/{id}/comments": {
+      "post": {
+        "tags": [
+          "community"
+        ],
+        "summary": "POST /community/posts/{id}/comments",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/compare": {
+      "get": {
+        "tags": [
+          "compare"
+        ],
+        "summary": "GET /compare",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/compare/{productId}": {
+      "delete": {
+        "tags": [
+          "compare"
+        ],
+        "summary": "DELETE /compare/{productId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/compare/add": {
+      "post": {
+        "tags": [
+          "compare"
+        ],
+        "summary": "POST /compare/add",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/compare/detail": {
+      "get": {
+        "tags": [
+          "compare"
+        ],
+        "summary": "GET /compare/detail",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/crawler/admin/jobs": {
+      "get": {
+        "tags": [
+          "crawler"
+        ],
+        "summary": "GET /crawler/admin/jobs",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "crawler"
+        ],
+        "summary": "POST /crawler/admin/jobs",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/crawler/admin/jobs/{id}": {
+      "delete": {
+        "tags": [
+          "crawler"
+        ],
+        "summary": "DELETE /crawler/admin/jobs/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "crawler"
+        ],
+        "summary": "PATCH /crawler/admin/jobs/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/crawler/admin/jobs/{id}/run": {
+      "post": {
+        "tags": [
+          "crawler"
+        ],
+        "summary": "POST /crawler/admin/jobs/{id}/run",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/crawler/admin/monitoring": {
+      "get": {
+        "tags": [
+          "crawler"
+        ],
+        "summary": "GET /crawler/admin/monitoring",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/crawler/admin/runs": {
+      "get": {
+        "tags": [
+          "crawler"
+        ],
+        "summary": "GET /crawler/admin/runs",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/crawler/admin/triggers": {
+      "post": {
+        "tags": [
+          "crawler"
+        ],
+        "summary": "POST /crawler/admin/triggers",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/deals": {
+      "get": {
+        "tags": [
+          "deals"
+        ],
+        "summary": "GET /deals",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "deals"
+        ],
+        "summary": "POST /deals",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/deals/{id}": {
+      "delete": {
+        "tags": [
+          "deals"
+        ],
+        "summary": "DELETE /deals/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "deals"
+        ],
+        "summary": "GET /deals/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "deals"
+        ],
+        "summary": "PATCH /deals/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/docs-status": {
+      "get": {
+        "tags": [
+          "docs-status"
+        ],
+        "summary": "GET /docs-status",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/errors/codes": {
+      "get": {
+        "tags": [
+          "errors"
+        ],
+        "summary": "GET /errors/codes",
+        "responses": {
+          "200": {
+            "description": "Error code catalog",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "success",
+                        "data"
+                      ],
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "const": true
+                        },
+                        "data": {},
+                        "meta": {
+                          "type": "object",
+                          "additionalProperties": true
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "total",
+                            "items"
+                          ],
+                          "properties": {
+                            "total": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "example": 8
+                            },
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/ErrorCodeItem"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/errors/codes/{key}": {
+      "get": {
+        "tags": [
+          "errors"
+        ],
+        "summary": "GET /errors/codes/{key}",
+        "responses": {
+          "200": {
+            "description": "Single error code lookup",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "success",
+                        "data"
+                      ],
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "const": true
+                        },
+                        "data": {},
+                        "meta": {
+                          "type": "object",
+                          "additionalProperties": true
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "oneOf": [
+                            {
+                              "$ref": "#/components/schemas/ErrorCodeItem"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/faqs": {
+      "get": {
+        "tags": [
+          "faqs"
+        ],
+        "summary": "GET /faqs",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "faqs"
+        ],
+        "summary": "POST /faqs",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/fraud/alerts": {
+      "get": {
+        "tags": [
+          "fraud"
+        ],
+        "summary": "GET /fraud/alerts",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/fraud/alerts/{id}/approve": {
+      "patch": {
+        "tags": [
+          "fraud"
+        ],
+        "summary": "PATCH /fraud/alerts/{id}/approve",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/fraud/alerts/{id}/reject": {
+      "patch": {
+        "tags": [
+          "fraud"
+        ],
+        "summary": "PATCH /fraud/alerts/{id}/reject",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/friends": {
+      "get": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "GET /friends",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/friends/{userId}": {
+      "delete": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "DELETE /friends/{userId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/friends/block/{userId}": {
+      "delete": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "DELETE /friends/block/{userId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "POST /friends/block/{userId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/friends/feed": {
+      "get": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "GET /friends/feed",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/friends/request/{friendshipId}/accept": {
+      "patch": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "PATCH /friends/request/{friendshipId}/accept",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/friends/request/{friendshipId}/reject": {
+      "patch": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "PATCH /friends/request/{friendshipId}/reject",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/friends/request/{userId}": {
+      "post": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "POST /friends/request/{userId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/friends/requests/received": {
+      "get": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "GET /friends/requests/received",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/friends/requests/sent": {
+      "get": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "GET /friends/requests/sent",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "GET /health",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/i18n/convert": {
+      "get": {
+        "tags": [
+          "i18n"
+        ],
+        "summary": "GET /i18n/convert",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/i18n/exchange-rates": {
+      "get": {
+        "tags": [
+          "i18n"
+        ],
+        "summary": "GET /i18n/exchange-rates",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/i18n/translations": {
+      "get": {
+        "tags": [
+          "i18n"
+        ],
+        "summary": "GET /i18n/translations",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/images/{id}": {
+      "delete": {
+        "tags": [
+          "images"
+        ],
+        "summary": "DELETE /images/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/images/{id}/variants": {
+      "get": {
+        "tags": [
+          "images"
+        ],
+        "summary": "GET /images/{id}/variants",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/images/upload": {
+      "post": {
+        "tags": [
+          "images"
+        ],
+        "summary": "POST /images/upload",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/matching/{id}/approve": {
+      "patch": {
+        "tags": [
+          "matching"
+        ],
+        "summary": "PATCH /matching/{id}/approve",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/matching/{id}/reject": {
+      "patch": {
+        "tags": [
+          "matching"
+        ],
+        "summary": "PATCH /matching/{id}/reject",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/matching/auto-match": {
+      "post": {
+        "tags": [
+          "matching"
+        ],
+        "summary": "POST /matching/auto-match",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/matching/pending": {
+      "get": {
+        "tags": [
+          "matching"
+        ],
+        "summary": "GET /matching/pending",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/matching/stats": {
+      "get": {
+        "tags": [
+          "matching"
+        ],
+        "summary": "GET /matching/stats",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/media/{id}": {
+      "delete": {
+        "tags": [
+          "media"
+        ],
+        "summary": "DELETE /media/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/media/{id}/metadata": {
+      "get": {
+        "tags": [
+          "media"
+        ],
+        "summary": "GET /media/{id}/metadata",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/media/presigned-url": {
+      "post": {
+        "tags": [
+          "media"
+        ],
+        "summary": "POST /media/presigned-url",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/media/stream/{id}": {
+      "get": {
+        "tags": [
+          "media"
+        ],
+        "summary": "GET /media/stream/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/media/upload": {
+      "post": {
+        "tags": [
+          "media"
+        ],
+        "summary": "POST /media/upload",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/news": {
+      "get": {
+        "tags": [
+          "news"
+        ],
+        "summary": "GET /news",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "news"
+        ],
+        "summary": "POST /news",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/news/{id}": {
+      "delete": {
+        "tags": [
+          "news"
+        ],
+        "summary": "DELETE /news/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "news"
+        ],
+        "summary": "GET /news/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "news"
+        ],
+        "summary": "PATCH /news/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/news/categories": {
+      "get": {
+        "tags": [
+          "news"
+        ],
+        "summary": "GET /news/categories",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "news"
+        ],
+        "summary": "POST /news/categories",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/news/categories/{id}": {
+      "delete": {
+        "tags": [
+          "news"
+        ],
+        "summary": "DELETE /news/categories/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/notices": {
+      "get": {
+        "tags": [
+          "notices"
+        ],
+        "summary": "GET /notices",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/notices/{id}": {
+      "get": {
+        "tags": [
+          "notices"
+        ],
+        "summary": "GET /notices/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/orders": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "GET /orders",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "POST /orders",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{id}": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "GET /orders/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{id}/cancel": {
+      "post": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "POST /orders/{id}/cancel",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/payments": {
+      "post": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "POST /payments",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/payments/{id}": {
+      "get": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "GET /payments/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/payments/{id}/refund": {
+      "post": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "POST /payments/{id}/refund",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/pc-builds": {
+      "get": {
+        "tags": [
+          "pc-builds"
+        ],
+        "summary": "GET /pc-builds",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "pc-builds"
+        ],
+        "summary": "POST /pc-builds",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/pc-builds/{id}": {
+      "delete": {
+        "tags": [
+          "pc-builds"
+        ],
+        "summary": "DELETE /pc-builds/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "pc-builds"
+        ],
+        "summary": "GET /pc-builds/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "pc-builds"
+        ],
+        "summary": "PATCH /pc-builds/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/pc-builds/{id}/compatibility": {
+      "get": {
+        "tags": [
+          "pc-builds"
+        ],
+        "summary": "GET /pc-builds/{id}/compatibility",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/pc-builds/{id}/parts": {
+      "post": {
+        "tags": [
+          "pc-builds"
+        ],
+        "summary": "POST /pc-builds/{id}/parts",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/pc-builds/{id}/parts/{partId}": {
+      "delete": {
+        "tags": [
+          "pc-builds"
+        ],
+        "summary": "DELETE /pc-builds/{id}/parts/{partId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/pc-builds/{id}/share": {
+      "get": {
+        "tags": [
+          "pc-builds"
+        ],
+        "summary": "GET /pc-builds/{id}/share",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/pc-builds/popular": {
+      "get": {
+        "tags": [
+          "pc-builds"
+        ],
+        "summary": "GET /pc-builds/popular",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/pc-builds/shared/{shareCode}": {
+      "get": {
+        "tags": [
+          "pc-builds"
+        ],
+        "summary": "GET /pc-builds/shared/{shareCode}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/points/balance": {
+      "get": {
+        "tags": [
+          "points"
+        ],
+        "summary": "GET /points/balance",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/points/transactions": {
+      "get": {
+        "tags": [
+          "points"
+        ],
+        "summary": "GET /points/transactions",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/predictions/products/{productId}/price-trend": {
+      "get": {
+        "tags": [
+          "predictions"
+        ],
+        "summary": "GET /predictions/products/{productId}/price-trend",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/price-alerts": {
+      "get": {
+        "tags": [
+          "price-alerts"
+        ],
+        "summary": "GET /price-alerts",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "price-alerts"
+        ],
+        "summary": "POST /price-alerts",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/price-alerts/{id}": {
+      "delete": {
+        "tags": [
+          "price-alerts"
+        ],
+        "summary": "DELETE /price-alerts/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/prices/{id}": {
+      "delete": {
+        "tags": [
+          "prices"
+        ],
+        "summary": "DELETE /prices/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "prices"
+        ],
+        "summary": "PATCH /prices/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "GET /products",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "POST /products",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/products/{id}": {
+      "delete": {
+        "tags": [
+          "products"
+        ],
+        "summary": "DELETE /products/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "GET /products/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "products"
+        ],
+        "summary": "PATCH /products/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/products/{id}/images": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "POST /products/{id}/images",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/products/{id}/images/{imageId}": {
+      "delete": {
+        "tags": [
+          "products"
+        ],
+        "summary": "DELETE /products/{id}/images/{imageId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/products/{id}/options": {
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "POST /products/{id}/options",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/products/{id}/options/{optionId}": {
+      "delete": {
+        "tags": [
+          "products"
+        ],
+        "summary": "DELETE /products/{id}/options/{optionId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "products"
+        ],
+        "summary": "PATCH /products/{id}/options/{optionId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/products/{id}/price-history": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "GET /products/{id}/price-history",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/products/{id}/prices": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "GET /products/{id}/prices",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "POST /products/{id}/prices",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/products/{id}/real-price": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "GET /products/{id}/real-price",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/products/{id}/specs": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "GET /products/{id}/specs",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "products"
+        ],
+        "summary": "PUT /products/{id}/specs",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/products/{productId}/inquiries": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "GET /products/{productId}/inquiries",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "POST /products/{productId}/inquiries",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/products/{productId}/reviews": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "GET /products/{productId}/reviews",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "products"
+        ],
+        "summary": "POST /products/{productId}/reviews",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/push/preferences": {
+      "get": {
+        "tags": [
+          "push"
+        ],
+        "summary": "GET /push/preferences",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "push"
+        ],
+        "summary": "POST /push/preferences",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/push/subscriptions": {
+      "get": {
+        "tags": [
+          "push"
+        ],
+        "summary": "GET /push/subscriptions",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "push"
+        ],
+        "summary": "POST /push/subscriptions",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/push/subscriptions/unsubscribe": {
+      "post": {
+        "tags": [
+          "push"
+        ],
+        "summary": "POST /push/subscriptions/unsubscribe",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/query/products": {
+      "get": {
+        "tags": [
+          "query"
+        ],
+        "summary": "GET /query/products",
+        "responses": {
+          "200": {
+            "description": "Query product list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "success",
+                        "data"
+                      ],
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "const": true
+                        },
+                        "data": {},
+                        "meta": {
+                          "type": "object",
+                          "additionalProperties": true
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/QueryProductView"
+                          }
+                        },
+                        "meta": {
+                          "type": "object",
+                          "required": [
+                            "page",
+                            "limit",
+                            "total",
+                            "totalPages"
+                          ],
+                          "properties": {
+                            "page": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "example": 1
+                            },
+                            "limit": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "example": 20
+                            },
+                            "total": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "example": 1
+                            },
+                            "totalPages": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "example": 1
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/query/products/{productId}": {
+      "get": {
+        "tags": [
+          "query"
+        ],
+        "summary": "GET /query/products/{productId}",
+        "responses": {
+          "200": {
+            "description": "Single query product view",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "success",
+                        "data"
+                      ],
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "const": true
+                        },
+                        "data": {},
+                        "meta": {
+                          "type": "object",
+                          "additionalProperties": true
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/QueryProductView"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rankings/admin/recalculate": {
+      "post": {
+        "tags": [
+          "rankings"
+        ],
+        "summary": "POST /rankings/admin/recalculate",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/rankings/keywords/popular": {
+      "get": {
+        "tags": [
+          "rankings"
+        ],
+        "summary": "GET /rankings/keywords/popular",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/rankings/products/popular": {
+      "get": {
+        "tags": [
+          "rankings"
+        ],
+        "summary": "GET /rankings/products/popular",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/rankings/searches": {
+      "get": {
+        "tags": [
+          "rankings"
+        ],
+        "summary": "GET /rankings/searches",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/recommendations/personalized": {
+      "get": {
+        "tags": [
+          "recommendations"
+        ],
+        "summary": "GET /recommendations/personalized",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/recommendations/today": {
+      "get": {
+        "tags": [
+          "recommendations"
+        ],
+        "summary": "GET /recommendations/today",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/resilience/circuit-breakers": {
+      "get": {
+        "tags": [
+          "resilience"
+        ],
+        "summary": "GET /resilience/circuit-breakers",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/resilience/circuit-breakers/{name}": {
+      "get": {
+        "tags": [
+          "resilience"
+        ],
+        "summary": "GET /resilience/circuit-breakers/{name}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/resilience/circuit-breakers/{name}/reset": {
+      "post": {
+        "tags": [
+          "resilience"
+        ],
+        "summary": "POST /resilience/circuit-breakers/{name}/reset",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/resilience/circuit-breakers/policies": {
+      "get": {
+        "tags": [
+          "resilience"
+        ],
+        "summary": "GET /resilience/circuit-breakers/policies",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "summary": "GET /search",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/search/admin/index/outbox/requeue-failed": {
+      "post": {
+        "tags": [
+          "search"
+        ],
+        "summary": "POST /search/admin/index/outbox/requeue-failed",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/search/admin/index/outbox/summary": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "summary": "GET /search/admin/index/outbox/summary",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/search/admin/index/products/{id}/reindex": {
+      "post": {
+        "tags": [
+          "search"
+        ],
+        "summary": "POST /search/admin/index/products/{id}/reindex",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/search/admin/index/reindex": {
+      "post": {
+        "tags": [
+          "search"
+        ],
+        "summary": "POST /search/admin/index/reindex",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/search/admin/index/status": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "summary": "GET /search/admin/index/status",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/search/admin/weights": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "summary": "GET /search/admin/weights",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "search"
+        ],
+        "summary": "PATCH /search/admin/weights",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/search/autocomplete": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "summary": "GET /search/autocomplete",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/search/popular": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "summary": "GET /search/popular",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/search/preferences": {
+      "patch": {
+        "tags": [
+          "search"
+        ],
+        "summary": "PATCH /search/preferences",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/search/recent": {
+      "delete": {
+        "tags": [
+          "search"
+        ],
+        "summary": "DELETE /search/recent",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "summary": "GET /search/recent",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "search"
+        ],
+        "summary": "POST /search/recent",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/search/recent/{id}": {
+      "delete": {
+        "tags": [
+          "search"
+        ],
+        "summary": "DELETE /search/recent/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/seller-reviews/{id}": {
+      "delete": {
+        "tags": [
+          "seller-reviews"
+        ],
+        "summary": "DELETE /seller-reviews/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "seller-reviews"
+        ],
+        "summary": "PATCH /seller-reviews/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/sellers": {
+      "get": {
+        "tags": [
+          "sellers"
+        ],
+        "summary": "GET /sellers",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "sellers"
+        ],
+        "summary": "POST /sellers",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/sellers/{id}": {
+      "delete": {
+        "tags": [
+          "sellers"
+        ],
+        "summary": "DELETE /sellers/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "sellers"
+        ],
+        "summary": "GET /sellers/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "sellers"
+        ],
+        "summary": "PATCH /sellers/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/sellers/{id}/reviews": {
+      "get": {
+        "tags": [
+          "sellers"
+        ],
+        "summary": "GET /sellers/{id}/reviews",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "sellers"
+        ],
+        "summary": "POST /sellers/{id}/reviews",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/sellers/{id}/trust": {
+      "get": {
+        "tags": [
+          "sellers"
+        ],
+        "summary": "GET /sellers/{id}/trust",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/shortforms": {
+      "get": {
+        "tags": [
+          "shortforms"
+        ],
+        "summary": "GET /shortforms",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "shortforms"
+        ],
+        "summary": "POST /shortforms",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/shortforms/{id}": {
+      "delete": {
+        "tags": [
+          "shortforms"
+        ],
+        "summary": "DELETE /shortforms/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "shortforms"
+        ],
+        "summary": "GET /shortforms/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/shortforms/{id}/comments": {
+      "get": {
+        "tags": [
+          "shortforms"
+        ],
+        "summary": "GET /shortforms/{id}/comments",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "shortforms"
+        ],
+        "summary": "POST /shortforms/{id}/comments",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/shortforms/{id}/like": {
+      "post": {
+        "tags": [
+          "shortforms"
+        ],
+        "summary": "POST /shortforms/{id}/like",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/shortforms/{id}/transcode-status": {
+      "get": {
+        "tags": [
+          "shortforms"
+        ],
+        "summary": "GET /shortforms/{id}/transcode-status",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/shortforms/{id}/transcode/retry": {
+      "post": {
+        "tags": [
+          "shortforms"
+        ],
+        "summary": "POST /shortforms/{id}/transcode/retry",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/shortforms/ranking/list": {
+      "get": {
+        "tags": [
+          "shortforms"
+        ],
+        "summary": "GET /shortforms/ranking/list",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/shortforms/user/{userId}": {
+      "get": {
+        "tags": [
+          "shortforms"
+        ],
+        "summary": "GET /shortforms/user/{userId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/specs/compare": {
+      "post": {
+        "tags": [
+          "specs"
+        ],
+        "summary": "POST /specs/compare",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/specs/compare/scored": {
+      "post": {
+        "tags": [
+          "specs"
+        ],
+        "summary": "POST /specs/compare/scored",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/specs/definitions": {
+      "get": {
+        "tags": [
+          "specs"
+        ],
+        "summary": "GET /specs/definitions",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "specs"
+        ],
+        "summary": "POST /specs/definitions",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/specs/definitions/{id}": {
+      "delete": {
+        "tags": [
+          "specs"
+        ],
+        "summary": "DELETE /specs/definitions/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "specs"
+        ],
+        "summary": "PATCH /specs/definitions/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/specs/scores/{specDefId}": {
+      "put": {
+        "tags": [
+          "specs"
+        ],
+        "summary": "PUT /specs/scores/{specDefId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/support/tickets": {
+      "get": {
+        "tags": [
+          "support"
+        ],
+        "summary": "GET /support/tickets",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "support"
+        ],
+        "summary": "POST /support/tickets",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/support/tickets/{id}": {
+      "get": {
+        "tags": [
+          "support"
+        ],
+        "summary": "GET /support/tickets/{id}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/support/tickets/{id}/reply": {
+      "post": {
+        "tags": [
+          "support"
+        ],
+        "summary": "POST /support/tickets/{id}/reply",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/upload/image": {
+      "post": {
+        "tags": [
+          "upload"
+        ],
+        "summary": "POST /upload/image",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/used-market/categories/{id}/prices": {
+      "get": {
+        "tags": [
+          "used-market"
+        ],
+        "summary": "GET /used-market/categories/{id}/prices",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/used-market/pc-builds/{buildId}/estimate": {
+      "post": {
+        "tags": [
+          "used-market"
+        ],
+        "summary": "POST /used-market/pc-builds/{buildId}/estimate",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/used-market/products/{id}/price": {
+      "get": {
+        "tags": [
+          "used-market"
+        ],
+        "summary": "GET /used-market/products/{id}/price",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "GET /users",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/badges": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "GET /users/{id}/badges",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/profile": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "GET /users/{id}/profile",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/status": {
+      "patch": {
+        "tags": [
+          "users"
+        ],
+        "summary": "PATCH /users/{id}/status",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/users/me": {
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "DELETE /users/me",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "GET /users/me",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "users"
+        ],
+        "summary": "PATCH /users/me",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/users/me/profile": {
+      "patch": {
+        "tags": [
+          "users"
+        ],
+        "summary": "PATCH /users/me/profile",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/users/me/profile-image": {
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "DELETE /users/me/profile-image",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "POST /users/me/profile-image",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/wishlist": {
+      "get": {
+        "tags": [
+          "wishlist"
+        ],
+        "summary": "GET /wishlist",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/api/v1/wishlist/{productId}": {
+      "delete": {
+        "tags": [
+          "wishlist"
+        ],
+        "summary": "DELETE /wishlist/{productId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "wishlist"
+        ],
+        "summary": "POST /wishlist/{productId}",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/docs/openapi": {
+      "get": {
+        "tags": [
+          "docs"
+        ],
+        "summary": "GET /docs/openapi",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/docs/swagger": {
+      "get": {
+        "tags": [
+          "docs"
+        ],
+        "summary": "GET /docs/swagger",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/docs/swagger-ui/index.html": {
+      "get": {
+        "tags": [
+          "docs"
+        ],
+        "summary": "GET /docs/swagger-ui/index.html",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "GET /health",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    }
+  }
+}

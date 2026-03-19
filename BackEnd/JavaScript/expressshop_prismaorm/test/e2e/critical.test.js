@@ -47,6 +47,10 @@ test("GET /docs/openapi exposes OpenAPI document", async () => {
   assert.ok(result.body.paths["/api/v1/products"]);
   assert.ok(result.body.paths["/api/v1/errors/codes"]);
   assert.ok(result.body.paths["/api/v1/errors/codes/{key}"]);
+  assert.ok(result.body.paths["/api/v1/query/products"]);
+  assert.ok(result.body.paths["/api/v1/query/products/{productId}"]);
+  assert.ok(result.body.paths["/api/v1/admin/query/products/{productId}/sync"]);
+  assert.ok(result.body.paths["/api/v1/admin/query/products/rebuild"]);
 });
 
 test("GET /docs/swagger exposes Swagger UI page", async () => {
@@ -93,6 +97,80 @@ test("GET /api/v1/errors/codes/:key returns null for unknown keys", async () => 
   assert.equal(result.status, 200);
   assert.equal(result.body.success, true);
   assert.equal(result.body.data, null);
+});
+
+test("GET /api/v1/query/products returns public query product views", async () => {
+  const syncResult = await requestJson(
+    context.baseUrl,
+    "/api/v1/admin/query/products/1/sync",
+    {
+      method: "POST",
+      ...withBearer(context.adminToken),
+    },
+  );
+
+  assert.equal(syncResult.status, 200);
+  assert.equal(syncResult.body.success, true);
+
+  const result = await requestJson(context.baseUrl, "/api/v1/query/products?page=1&limit=5");
+
+  assert.equal(result.status, 200);
+  assert.equal(result.body.success, true);
+  assert.ok(Array.isArray(result.body.data));
+  assert.equal(typeof result.body.meta.total, "number");
+  assert.ok(result.body.data.some((item) => item.productId === 1));
+});
+
+test("GET /api/v1/query/products/:productId returns a synced query product view", async () => {
+  const syncResult = await requestJson(
+    context.baseUrl,
+    "/api/v1/admin/query/products/1/sync",
+    {
+      method: "POST",
+      ...withBearer(context.adminToken),
+    },
+  );
+
+  assert.equal(syncResult.status, 200);
+
+  const result = await requestJson(context.baseUrl, "/api/v1/query/products/1");
+
+  assert.equal(result.status, 200);
+  assert.equal(result.body.success, true);
+  assert.equal(result.body.data.productId, 1);
+  assert.equal(typeof result.body.data.name, "string");
+});
+
+test("POST /api/v1/admin/query/products/:productId/sync allows admin user", async () => {
+  const result = await requestJson(
+    context.baseUrl,
+    "/api/v1/admin/query/products/1/sync",
+    {
+      method: "POST",
+      ...withBearer(context.adminToken),
+    },
+  );
+
+  assert.equal(result.status, 200);
+  assert.equal(result.body.success, true);
+  assert.equal(result.body.data.productId, 1);
+  assert.equal(typeof result.body.data.syncedAt, "string");
+});
+
+test("POST /api/v1/admin/query/products/rebuild allows admin user", async () => {
+  const result = await requestJson(
+    context.baseUrl,
+    "/api/v1/admin/query/products/rebuild",
+    {
+      method: "POST",
+      ...withBearer(context.adminToken),
+    },
+  );
+
+  assert.equal(result.status, 200);
+  assert.equal(result.body.success, true);
+  assert.equal(typeof result.body.data.syncedCount, "number");
+  assert.ok(result.body.data.syncedCount >= 1);
 });
 
 test("GET /api/v1/users/me requires auth", async () => {

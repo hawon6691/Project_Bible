@@ -33,6 +33,7 @@ npm run test:e2e:critical
 npm run test:e2e:contract
 npm run test:e2e:admin-boundary
 npm run test:e2e:security-regression
+npm run test:e2e:ops
 npm run test:e2e:platform
 ```
 

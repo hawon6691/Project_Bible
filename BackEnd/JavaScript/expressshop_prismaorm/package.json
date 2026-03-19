@@ -12,6 +12,7 @@
     "test:e2e:contract": "node --env-file=.env --test test/e2e/contract.test.js",
     "test:e2e:admin-boundary": "node --env-file=.env --test test/e2e/admin-boundary.test.js",
     "test:e2e:security-regression": "node --env-file=.env --test test/e2e/security-regression.test.js",
+    "test:e2e:ops": "node --env-file=.env --test test/e2e/ops.test.js",
     "test:e2e:platform": "node --env-file=.env --test test/e2e/critical.test.js test/e2e/contract.test.js test/e2e/admin-boundary.test.js",
     "db:docker:up": "docker compose -f ../../Database/docker/docker-compose.yml up -d postgres redis elasticsearch",
     "db:docker:down": "docker compose -f ../../Database/docker/docker-compose.yml down",

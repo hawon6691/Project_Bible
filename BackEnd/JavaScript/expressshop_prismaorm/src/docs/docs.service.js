@@ -1,5 +1,56 @@
 import { getRouteCatalog } from "../routes/index.js";
 
+const SOCKET_EVENT_CATALOG = [
+  {
+    name: "joinRoom",
+    direction: "client->server",
+    payload: { roomId: "number" },
+    description: "Join an existing chat room after JWT-authenticated socket connection.",
+  },
+  {
+    name: "leaveRoom",
+    direction: "client->server",
+    payload: { roomId: "number" },
+    description: "Leave a previously joined chat room.",
+  },
+  {
+    name: "sendMessage",
+    direction: "client->server",
+    payload: { roomId: "number", content: "string" },
+    description: "Persist a chat message and broadcast newMessage to the room.",
+  },
+  {
+    name: "newMessage",
+    direction: "server->client",
+    payload: { id: "number", roomId: "number", senderId: "number", content: "string", createdAt: "date-time" },
+    description: "Broadcast when a room member sends a new message.",
+  },
+  {
+    name: "messageRead",
+    direction: "client->server",
+    payload: { roomId: "number", messageId: "number" },
+    description: "Emit that a specific chat message was read.",
+  },
+  {
+    name: "readReceipt",
+    direction: "server->client",
+    payload: { roomId: "number", messageId: "number", readBy: "number" },
+    description: "Broadcast read receipt to other room members.",
+  },
+  {
+    name: "typing",
+    direction: "client->server",
+    payload: { roomId: "number" },
+    description: "Emit typing status for a room.",
+  },
+  {
+    name: "userTyping",
+    direction: "server->client",
+    payload: { roomId: "number", userId: "number" },
+    description: "Broadcast typing state to other room members.",
+  },
+];
+
 const ERROR_CODE_ITEM_SCHEMA = {
   type: "object",
   required: ["key", "code", "message"],
@@ -365,7 +416,7 @@ export function buildOpenApiSpec(apiPrefix) {
       title: "PBShop JavaScript Express Prisma API",
       version: "0.1.0",
       description:
-        "Shared-document-based JavaScript Express Prisma backend for PBShop.",
+        "Shared-document-based JavaScript Express Prisma backend for PBShop. Recent parity work includes Error Code Catalog, Query API, Chat REST extensions, and Socket.IO chat events.",
     },
     servers: [
       {
@@ -388,6 +439,7 @@ export function buildOpenApiSpec(apiPrefix) {
         QueryProductView: QUERY_PRODUCT_VIEW_SCHEMA,
       },
     },
+    "x-socket-events": SOCKET_EVENT_CATALOG,
     paths,
   };
 }

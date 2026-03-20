@@ -5,5 +5,5 @@ export const mailConfig = registerAs('mail', () => ({
   port: parseInt(process.env.MAIL_PORT ?? '587', 10),
   user: process.env.MAIL_USER ?? '',
   password: process.env.MAIL_PASSWORD ?? '',
-  from: process.env.MAIL_FROM ?? 'NestShop <noreply@nestshop.com>',
+  from: process.env.MAIL_FROM ?? 'PBShop <noreply@pbshop.local>',
 }));

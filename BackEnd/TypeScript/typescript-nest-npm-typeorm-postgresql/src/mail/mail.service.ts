@@ -24,9 +24,9 @@ export class MailService {
   async sendVerificationEmail(to: string, code: string, name: string): Promise<void> {
     try {
       await this.transporter.sendMail({
-        from: this.configService.get<string>('MAIL_FROM', 'NestShop <noreply@nestshop.com>'),
+        from: this.configService.get<string>('MAIL_FROM', 'PBShop <noreply@pbshop.local>'),
         to,
-        subject: '[NestShop] 이메일 인증코드',
+        subject: '[PBShop] 이메일 인증코드',
         html: emailVerificationTemplate(code, name),
       });
       this.logger.log(`Verification email sent to ${to}`);
@@ -39,9 +39,9 @@ export class MailService {
   async sendPasswordResetEmail(to: string, code: string, name: string): Promise<void> {
     try {
       await this.transporter.sendMail({
-        from: this.configService.get<string>('MAIL_FROM', 'NestShop <noreply@nestshop.com>'),
+        from: this.configService.get<string>('MAIL_FROM', 'PBShop <noreply@pbshop.local>'),
         to,
-        subject: '[NestShop] 비밀번호 재설정 인증코드',
+        subject: '[PBShop] 비밀번호 재설정 인증코드',
         html: passwordResetTemplate(code, name),
       });
       this.logger.log(`Password reset email sent to ${to}`);

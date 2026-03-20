@@ -2,8 +2,8 @@
 
 ## 1. 경로
 
-- Maven JPA 프로젝트: `BackEnd/Java/springshop_maven_jpa`
-- Gradle 프로젝트: `BackEnd/Java/springshop_gradle`
+- Maven JPA 프로젝트: `BackEnd/Java/java-spring-maven-jpa-postgresql`
+- Gradle 프로젝트: `BackEnd/Java/java-spring-gradle-jpa-postgresql`
 
 ## 2. 전제
 
@@ -17,14 +17,14 @@
 ### Maven JPA
 
 ```bash
-cd BackEnd/Java/springshop_maven_jpa
+cd BackEnd/Java/java-spring-maven-jpa-postgresql
 mvnw.cmd spring-boot:run
 ```
 
 ### Gradle
 
 ```bash
-cd BackEnd/Java/springshop_gradle
+cd BackEnd/Java/java-spring-gradle-jpa-postgresql
 gradlew.bat bootRun
 ```
 
@@ -33,14 +33,14 @@ gradlew.bat bootRun
 ### Maven JPA
 
 ```bash
-cd BackEnd/Java/springshop_maven_jpa
+cd BackEnd/Java/java-spring-maven-jpa-postgresql
 mvnw.cmd test
 ```
 
 ### Gradle
 
 ```bash
-cd BackEnd/Java/springshop_gradle
+cd BackEnd/Java/java-spring-gradle-jpa-postgresql
 gradlew.bat test
 ```
 

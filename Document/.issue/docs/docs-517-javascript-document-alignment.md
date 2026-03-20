@@ -11,7 +11,7 @@ branch: "docs/#517/javascript-document-alignment"
 
 ## 🧾 문서 요약
 
-> JavaScript `expressshop_prismaorm`의 상태 문서와 갭 분석 문서를 실제 완료 상태 기준으로 정리합니다.
+> JavaScript `javascript-express-npm-prisma-postgresql`의 상태 문서와 갭 분석 문서를 실제 완료 상태 기준으로 정리합니다.
 
 JavaScript 트랙의 상태 문서와 갭 문서를 최신 구현/검증/CI 상태에 맞게 동기화한다.
 

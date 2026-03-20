@@ -1,6 +1,6 @@
 # JavaScript Completion Report
 
-대상: `BackEnd/JavaScript/expressshop_prismaorm`
+대상: `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql`
 
 ## 1. 완료 범위
 

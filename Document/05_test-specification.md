@@ -9,10 +9,10 @@
 
 - TypeScript
   - 프레임워크: `NestJS`
-  - 테스트 기준 경로: `BackEnd/TypeScript/nestshop_typeorm/test`
+  - 테스트 기준 경로: `BackEnd/TypeScript/typescript-nest-npm-typeorm-postgresql/test`
 - PHP
   - 프레임워크: `Laravel`
-  - 테스트 기준 경로: `BackEnd/PHP/laravelshop_eloquentorm/tests`
+  - 테스트 기준 경로: `BackEnd/PHP/php-laravel-composer-eloquent-postgresql/tests`
 
 ## 테스트 계층
 

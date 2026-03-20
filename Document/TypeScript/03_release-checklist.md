@@ -1,6 +1,6 @@
 # Nestshop 1차 릴리스 체크리스트
 
-> 범위: `BackEnd/TypeScript/nestshop_typeorm`
+> 범위: `BackEnd/TypeScript/typescript-nest-npm-typeorm-postgresql`
 > 목적: 배포 전/배포 직후 품질 게이트를 표준화하고 운영 리스크를 최소화한다.
 
 ---

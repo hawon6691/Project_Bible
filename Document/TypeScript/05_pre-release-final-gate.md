@@ -1,6 +1,6 @@
 # Nestshop 배포 직전 최종 게이트
 
-> 대상: `BackEnd/TypeScript/nestshop_typeorm`  
+> 대상: `BackEnd/TypeScript/typescript-nest-npm-typeorm-postgresql`  
 > 목적: 배포 직전 수동 CI 실행 및 결과 판정을 표준화한다.
 
 ---

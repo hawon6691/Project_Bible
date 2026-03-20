@@ -34,10 +34,10 @@ branch: "chore/#433/javascript-express-prisma-initial-setup"
 
 ## ✅ 산출물
 
-- `BackEnd/JavaScript/expressshop_prismaorm/package.json`
-- `BackEnd/JavaScript/expressshop_prismaorm/.env.example`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/app.js`
-- `BackEnd/JavaScript/expressshop_prismaorm/README.md`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/package.json`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/.env.example`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/app.js`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/README.md`
 - `Document/JavaScript/README.md`
 - `Document/JavaScript/00_next-steps-checklist.md`
 

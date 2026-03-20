@@ -1,6 +1,6 @@
 # JavaScript Requirements / API Gap Analysis
 
-대상: `BackEnd/JavaScript/expressshop_prismaorm`
+대상: `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql`
 
 ## 기능 기준
 

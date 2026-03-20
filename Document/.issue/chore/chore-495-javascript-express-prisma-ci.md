@@ -23,7 +23,7 @@ branch: "chore/#495/javascript-express-prisma-ci"
 
 ## 📋 요구사항
 
-- [x] `.github/workflows/javascript-express-prisma-ci.yml` GitHub Actions 워크플로 추가
+- [x] `.github/workflows/javascript-express-npm-prisma-postgresql-ci.yml` GitHub Actions 워크플로 추가
 - [x] `push` / `pull_request` 기준 자동 critical E2E 실행 구성 추가
 - [x] `workflow_dispatch` 수동 실행 경로 추가
 - [x] CI에서 PostgreSQL service 컨테이너 구성 추가
@@ -36,8 +36,8 @@ branch: "chore/#495/javascript-express-prisma-ci"
 
 ## ✅ 산출물
 
-- `Project_Bible/.github/workflows/javascript-express-prisma-ci.yml`
-- `Project_Bible/BackEnd/JavaScript/expressshop_prismaorm/README.md`
+- `Project_Bible/.github/workflows/javascript-express-npm-prisma-postgresql-ci.yml`
+- `Project_Bible/BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/README.md`
 
 ## 검증 메모
 

@@ -3,7 +3,7 @@
 ## 대상
 
 - 트랙: Java
-- 기준 구현체: `BackEnd/Java/springshop_maven_jpa`
+- 기준 구현체: `BackEnd/Java/java-spring-maven-jpa-postgresql`
 
 ## 목적
 

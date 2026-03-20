@@ -1,6 +1,6 @@
 # JavaScript Next Steps Checklist
 
-`BackEnd/JavaScript/expressshop_prismaorm` 구현은 공통 문서 기준 핵심 완료선을 정리했고, 현재는 선택적 고도화 단계에 들어갔다.
+`BackEnd/JavaScript/javascript-express-npm-prisma-postgresql` 구현은 공통 문서 기준 핵심 완료선을 정리했고, 현재는 선택적 고도화 단계에 들어갔다.
 
 기준 문서
 - `Document/01_requirements.md`

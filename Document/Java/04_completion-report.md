@@ -3,7 +3,7 @@
 ## 개요
 
 - 트랙: Java
-- 기준 구현체: `BackEnd/Java/springshop_maven_jpa`
+- 기준 구현체: `BackEnd/Java/java-spring-maven-jpa-postgresql`
 - 기준 빌드: Maven JPA
 - 상태: 완료
 

@@ -2,7 +2,7 @@
 
 JavaScript 전용 문서 폴더입니다.
 
-- 구현체: `BackEnd/JavaScript/expressshop_prismaorm`
+- 구현체: `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql`
 - 기준 스택: `Express + Prisma ORM`
 - 진행 순서 문서: `00_next-steps-checklist.md`
 - 현재 구현 상태: `03_implementation-status.md`

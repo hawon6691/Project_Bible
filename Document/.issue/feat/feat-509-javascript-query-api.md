@@ -11,7 +11,7 @@ assignees: ""
 
 ## ✨ 기능 요약
 
-> `BackEnd/JavaScript/expressshop_prismaorm`에 읽기 모델 기반 `Query API`를 추가하고, OpenAPI 문서와 critical E2E 검증에 연결했습니다.
+> `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql`에 읽기 모델 기반 `Query API`를 추가하고, OpenAPI 문서와 critical E2E 검증에 연결했습니다.
 
 ## 📋 요구사항
 

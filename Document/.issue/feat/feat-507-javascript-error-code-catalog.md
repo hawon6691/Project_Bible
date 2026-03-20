@@ -11,7 +11,7 @@ assignees: ""
 
 ## ✨ 기능 요약
 
-> `BackEnd/JavaScript/expressshop_prismaorm`에 공개 `Error Code Catalog` API를 추가하고, OpenAPI 문서와 critical E2E 검증에 연결했습니다.
+> `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql`에 공개 `Error Code Catalog` API를 추가하고, OpenAPI 문서와 critical E2E 검증에 연결했습니다.
 
 ## 📋 요구사항
 

@@ -35,25 +35,25 @@ branch: "chore/#443/javascript-express-prisma-structure-hardening"
 
 ## ✅ 산출물
 
-- `BackEnd/JavaScript/expressshop_prismaorm/src/routes/index.js`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/prisma.js`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/middleware/validate.js`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/auth/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/users/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/categories/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/products/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/cart/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/addresses/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/orders/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/payments/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/reviews/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/wishlist/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/points/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/boards/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/inquiries/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/faqs/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/notices/*`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/tickets/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/routes/index.js`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/prisma.js`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/middleware/validate.js`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/auth/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/users/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/categories/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/products/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/cart/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/addresses/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/orders/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/payments/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/reviews/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/wishlist/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/points/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/boards/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/inquiries/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/faqs/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/notices/*`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/tickets/*`
 
 ## 검증 메모
 

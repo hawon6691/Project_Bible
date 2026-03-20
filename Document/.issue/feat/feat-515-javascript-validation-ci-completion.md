@@ -11,7 +11,7 @@ branch: "feat/#515/javascript-validation-ci-completion"
 
 ## ✨ 기능 요약
 
-> JavaScript `expressshop_prismaorm` 트랙의 검증 자산, CI 게이트, 상태 문서, README/OpenAPI 보강을 완료선 기준으로 정리합니다.
+> JavaScript `javascript-express-npm-prisma-postgresql` 트랙의 검증 자산, CI 게이트, 상태 문서, README/OpenAPI 보강을 완료선 기준으로 정리합니다.
 
 JavaScript 트랙의 릴리즈 준비도를 높이기 위한 검증/CI 확장 작업을 반영한다.
 

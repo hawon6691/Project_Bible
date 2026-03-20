@@ -25,7 +25,7 @@ branch: "chore/#425/java-maven-jpa-project-rename"
 
 - [x] Java CI 워크플로 이름을 `java-maven-jpa-ci` 기준으로 정리
 - [x] 워크플로 표시명과 concurrency group 수정
-- [x] Java Maven JPA 프로젝트 폴더명을 `springshop_maven_jpa`로 변경
+- [x] Java Maven JPA 프로젝트 폴더명을 `java-spring-maven-jpa-postgresql`로 변경
 - [x] `BackEnd/Java/README.md` 경로 및 명칭 수정
 - [x] Java 문서 세트의 구현체 경로 표기 수정
 - [x] Java 완료 이슈 문서의 명칭 및 경로 표기 수정
@@ -33,8 +33,8 @@ branch: "chore/#425/java-maven-jpa-project-rename"
 
 ## ✅ 산출물
 
-- `.github/workflows/java-maven-jpa-ci.yml`
-- `BackEnd/Java/springshop_maven_jpa`
+- `.github/workflows/java-spring-maven-jpa-postgresql-ci.yml`
+- `BackEnd/Java/java-spring-maven-jpa-postgresql`
 - `BackEnd/Java/README.md`
 - `Document/Java/01_folder-structure.md`
 - `Document/Java/02_runbook.md`
@@ -47,8 +47,8 @@ branch: "chore/#425/java-maven-jpa-project-rename"
 
 ## 검증 메모
 
-- 프로젝트 폴더명이 `springshop_maven_jpa`로 변경됨
-- 워크플로 파일명이 `java-maven-jpa-ci.yml`로 정리됨
+- 프로젝트 폴더명이 `java-spring-maven-jpa-postgresql`로 변경됨
+- 워크플로 파일명이 `java-spring-maven-jpa-postgresql-ci.yml`로 정리됨
 - 문서와 README의 경로 참조가 새 이름 기준으로 수정됨
 - 기존 `springshop_maven` 참조가 남지 않도록 검색 확인함
 

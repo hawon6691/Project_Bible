@@ -36,16 +36,16 @@ branch: "chore/#435/javascript-express-prisma-setup-ready"
 
 ## ✅ 산출물
 
-- `BackEnd/JavaScript/expressshop_prismaorm/.env`
-- `BackEnd/JavaScript/expressshop_prismaorm/package.json`
-- `BackEnd/JavaScript/expressshop_prismaorm/package-lock.json`
-- `BackEnd/JavaScript/expressshop_prismaorm/prisma/schema.prisma`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/app.js`
-- `BackEnd/JavaScript/expressshop_prismaorm/src/prisma.js`
-- `BackEnd/JavaScript/expressshop_prismaorm/scripts/db-check.ps1`
-- `BackEnd/JavaScript/expressshop_prismaorm/scripts/db-init.ps1`
-- `BackEnd/JavaScript/expressshop_prismaorm/scripts/db-reset.ps1`
-- `BackEnd/JavaScript/expressshop_prismaorm/README.md`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/.env`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/package.json`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/package-lock.json`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/prisma/schema.prisma`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/app.js`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/prisma.js`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/scripts/db-check.ps1`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/scripts/db-init.ps1`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/scripts/db-reset.ps1`
+- `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/README.md`
 
 ## 검증 메모
 

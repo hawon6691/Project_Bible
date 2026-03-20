@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -74,6 +75,8 @@ class PredictionDealRecommendationRankingApiTest extends ApiIntegrationSupport {
         Seller seller = createSeller("PB 스토어", "pb-store");
         createPriceEntry(product, seller, new BigDecimal("1590000"));
         createPriceEntry(product, seller, new BigDecimal("1550000"));
+        OffsetDateTime dealStartAt = OffsetDateTime.now().minusDays(1).withNano(0);
+        OffsetDateTime dealEndAt = OffsetDateTime.now().plusDays(1).withNano(0);
 
         mockMvc.perform(get("/api/v1/predictions/products/" + product.getId() + "/price-trend")
                         .param("days", "30"))
@@ -94,10 +97,10 @@ class PredictionDealRecommendationRankingApiTest extends ApiIntegrationSupport {
                                   "discountRate": 10,
                                   "stock": 20,
                                   "bannerUrl": "/deals/pb-laptop.png",
-                                  "startAt": "2026-03-12T00:00:00Z",
-                                  "endAt": "2026-03-20T00:00:00Z"
+                                  "startAt": "%s",
+                                  "endAt": "%s"
                                 }
-                                """.formatted(product.getId())))
+                                """.formatted(product.getId(), dealStartAt, dealEndAt)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.product.id").value(product.getId()))
                 .andExpect(jsonPath("$.data.title").value("노트북 특가"))

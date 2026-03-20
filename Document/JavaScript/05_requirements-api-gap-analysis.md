@@ -4,7 +4,7 @@
 
 ## 기능 기준
 
-- 주요 REST API 갭은 대부분 정리되었다.
+- 주요 REST API와 실시간 채팅 갭은 정리되었다.
 - 최근 닫힌 갭
   - `GET /errors/codes`
   - `GET /errors/codes/:key`
@@ -18,34 +18,26 @@
 
 ## 문서 기준 잔여 갭
 
-- JavaScript 전용 구현 상태 문서 부재
-- README에 최근 추가 API/실시간 이벤트 설명 부족
-- OpenAPI에 Socket.IO 이벤트 설명 확장 필요
+- 치명적 문서 갭은 정리되었다.
+- 현재 남은 문서 작업은 선택 사항이다.
+  - `01_folder-structure.md`
+  - `02_runbook.md`
+  - `05_pre-release-final-gate.md`
+  - `language-api-specification.md`
 
 ## 테스트 기준 잔여 갭
 
-- 공통 `05_test-specification.md` 대비 테스트 축이 부족하다.
-- 현재 부족 항목
-  - `AuthSearchE2E`
-  - `QueueAdminE2E`
-  - `ObservabilityE2E`
-  - `RateLimitRegressionE2E`
-  - 도메인 통합 테스트 묶음
-  - 성능 자산
-  - 스크립트 자산
+- 공통 명세 기준 핵심 테스트 축은 정리되었다.
+- 현재 남은 작업은 확장 성능 자산 중심이다.
+  - `soak.perf`
+  - `spike-search.perf`
+  - `price-compare.perf`
 
 ## CI 기준 잔여 갭
 
-- 공통 `06_ci-specification.md` 대비 다음 게이트가 부족하다.
-  - `quality`
-  - `contract-doc`
-  - `perf-smoke`
-  - `migration-validation-manual`
-  - `migration-roundtrip-manual`
-  - `security-regression-manual`
-  - `admin-boundary-manual`
-  - `release-gate`
+- 공통 CI 명세 기준 핵심 게이트는 정리되었다.
+- 현재 잔여 갭은 게이트 추가가 아니라 수동 잡 실실행 이력 축적이다.
 
 ## 결론
 
-JavaScript 트랙의 현재 남은 갭은 기능보다 검증/문서/CI 축에 집중되어 있다.
+JavaScript 트랙에는 현재 치명적 기능/API/테스트/CI 갭이 없으며, 남은 작업은 문서 확장과 성능/운영 고도화 영역이다.

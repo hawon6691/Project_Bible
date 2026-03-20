@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.pbshop</groupId>
-	<artifactId>springshop-maven</artifactId>
+	<artifactId>java-spring-maven-jpa-postgresql</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>pbshop-springshop-maven</name>
+	<name>pbshop-java-spring-maven-jpa-postgresql</name>
 	<description>PBShop Java Spring Boot Maven JPA reference backend</description>
 	<url/>
 	<licenses>

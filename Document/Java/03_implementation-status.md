@@ -60,7 +60,7 @@
 
 ## 5. CI 상태
 
-`java-maven-jpa-ci.yml` 기준으로 다음 구성이 준비되어 있다.
+`java-spring-maven-jpa-postgresql-ci.yml` 기준으로 다음 구성이 준비되어 있다.
 
 - 자동: `quality`
 - 자동: `platform-e2e`

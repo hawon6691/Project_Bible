@@ -1,16 +1,16 @@
-name: PBShop JavaScript Express Prisma CI
+name: PBShop javascript-express-npm-prisma-postgresql CI
 
 on:
   pull_request:
     branches: [main, develop]
     paths:
       - 'BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/**'
-      - '.github/workflows/javascript-express-prisma-ci.yml'
+      - '.github/workflows/javascript-express-npm-prisma-postgresql-ci.yml'
   push:
     branches: [main, develop]
     paths:
       - 'BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/**'
-      - '.github/workflows/javascript-express-prisma-ci.yml'
+      - '.github/workflows/javascript-express-npm-prisma-postgresql-ci.yml'
   workflow_dispatch:
     inputs:
       target_ref:
@@ -45,7 +45,7 @@ on:
         type: boolean
 
 concurrency:
-  group: javascript-express-prisma-ci-${{ github.ref }}
+  group: javascript-express-npm-prisma-postgresql-ci-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -111,7 +111,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: javascript-express-prisma-quality
+          name: javascript-express-npm-prisma-postgresql-quality
           path: |
             BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/quality.log
             BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/quality-check.json
@@ -193,7 +193,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: javascript-express-prisma-critical-e2e
+          name: javascript-express-npm-prisma-postgresql-critical-e2e
           path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/critical-e2e.log
           if-no-files-found: warn
 
@@ -271,7 +271,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: javascript-express-prisma-contract-doc
+          name: javascript-express-npm-prisma-postgresql-contract-doc
           path: |
             BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/openapi.json
             BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/routes.snapshot.json
@@ -352,7 +352,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: javascript-express-prisma-perf-smoke
+          name: javascript-express-npm-prisma-postgresql-perf-smoke
           path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/perf-smoke-summary.json
           if-no-files-found: warn
 
@@ -432,7 +432,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: javascript-express-prisma-migration-validation
+          name: javascript-express-npm-prisma-postgresql-migration-validation
           path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/migration-validation.json
           if-no-files-found: warn
 
@@ -512,7 +512,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: javascript-express-prisma-migration-roundtrip
+          name: javascript-express-npm-prisma-postgresql-migration-roundtrip
           path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/migration-roundtrip.json
           if-no-files-found: warn
 
@@ -594,7 +594,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: javascript-express-prisma-security-regression
+          name: javascript-express-npm-prisma-postgresql-security-regression
           path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/security-regression.log
           if-no-files-found: warn
 
@@ -676,7 +676,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: javascript-express-prisma-admin-boundary
+          name: javascript-express-npm-prisma-postgresql-admin-boundary
           path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/admin-boundary.log
           if-no-files-found: warn
 
@@ -756,7 +756,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: javascript-express-prisma-release-gate
+          name: javascript-express-npm-prisma-postgresql-release-gate
           path: |
             BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/release-gate-summary.json
             BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/migration-validation.json

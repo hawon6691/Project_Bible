@@ -1,15 +1,15 @@
-name: PBShop Java Maven JPA CI
+name: PBShop java-spring-maven-jpa-postgresql CI
 
 on:
   pull_request:
     paths:
-      - ".github/workflows/java-maven-jpa-ci.yml"
+      - ".github/workflows/java-spring-maven-jpa-postgresql-ci.yml"
       - "BackEnd/Java/java-spring-maven-jpa-postgresql/**"
   push:
     branches:
       - main
     paths:
-      - ".github/workflows/java-maven-jpa-ci.yml"
+      - ".github/workflows/java-spring-maven-jpa-postgresql-ci.yml"
       - "BackEnd/Java/java-spring-maven-jpa-postgresql/**"
   workflow_dispatch:
     inputs:
@@ -38,7 +38,7 @@ on:
           - live-smoke
 
 concurrency:
-  group: java-maven-jpa-ci-${{ github.ref }}
+  group: java-spring-maven-jpa-postgresql-ci-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:

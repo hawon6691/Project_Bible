@@ -47,7 +47,7 @@ npm run test:script:validate-migrations
 
 ## CI
 
-- GitHub Actions workflow: `.github/workflows/javascript-express-prisma-ci.yml`
+- GitHub Actions workflow: `.github/workflows/javascript-express-npm-prisma-postgresql-ci.yml`
 - 자동 잡: `quality`, `critical-e2e`, `contract-doc`, `perf-smoke`
 - 수동 잡: `migration-validation-manual`, `migration-roundtrip-manual`, `security-regression-manual`, `admin-boundary-manual`, `release-gate`
 - Shared PostgreSQL SQL을 올린 뒤 `npm run prisma:generate`, `npm run test:e2e:critical`, `npm run test:contract:doc`, `npm run test:perf:smoke`를 실행합니다.

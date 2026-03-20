@@ -54,7 +54,7 @@ branch: "docs/#423/java-maven-jpa-completion-alignment"
 - `Document/Java/04_completion-report.md`
 - `Document/Java/05_pre-release-final-gate.md`
 - `Document/Java/06_requirements-api-gap-analysis.md`
-- `.github/workflows/java-maven-jpa-ci.yml`
+- `.github/workflows/java-spring-maven-jpa-postgresql-ci.yml`
 
 ## 검증 메모
 

@@ -92,7 +92,7 @@ vendor/bin/pint --test
 
 GitHub Actions:
 
-- `.github/workflows/php-eloquentorm-ci.yml`
+- `.github/workflows/php-laravel-composer-eloquent-postgresql-ci.yml`
 
 검사 단계:
 

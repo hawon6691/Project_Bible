@@ -24,7 +24,7 @@ branch: "chore/#429/php-eloquentorm-project-rename"
 ## 📋 요구사항
 
 - [x] PHP 프로젝트 폴더명을 `php-laravel-composer-eloquent-postgresql`으로 변경
-- [x] CI 파일명을 `php-eloquentorm-ci.yml`로 변경
+- [x] CI 파일명을 `php-laravel-composer-eloquent-postgresql-ci.yml`로 변경
 - [x] workflow 표시명을 `PBShop PHP Eloquent ORM CI`로 수정
 - [x] concurrency group을 `php-eloquentorm-ci` 기준으로 수정
 - [x] workflow 내부 경로 및 artifact 경로 수정
@@ -36,7 +36,7 @@ branch: "chore/#429/php-eloquentorm-project-rename"
 
 ## ✅ 산출물
 
-- `.github/workflows/php-eloquentorm-ci.yml`
+- `.github/workflows/php-laravel-composer-eloquent-postgresql-ci.yml`
 - `BackEnd/PHP/php-laravel-composer-eloquent-postgresql`
 - `BackEnd/PHP/README.md`
 - `README.md`
@@ -50,7 +50,7 @@ branch: "chore/#429/php-eloquentorm-project-rename"
 ## 검증 메모
 
 - 프로젝트 폴더명이 `php-laravel-composer-eloquent-postgresql`으로 변경됨
-- CI 파일명이 `php-eloquentorm-ci.yml`로 정리됨
+- CI 파일명이 `php-laravel-composer-eloquent-postgresql-ci.yml`로 정리됨
 - workflow 내부 경로가 새 폴더 기준으로 수정됨
 - README와 문서의 구현체 경로가 새 이름 기준으로 수정됨
 - 기존 `BackEnd/PHP/laravelshop`, `php-laravel-ci`, `PBShop PHP Laravel CI` 참조가 남지 않도록 검색 확인함

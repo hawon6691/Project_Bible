@@ -1,16 +1,16 @@
-name: PBShop PHP Eloquent ORM CI
+name: PBShop php-laravel-composer-eloquent-postgresql CI
 
 on:
   pull_request:
     branches: [main, develop]
     paths:
       - 'BackEnd/PHP/php-laravel-composer-eloquent-postgresql/**'
-      - '.github/workflows/php-eloquentorm-ci.yml'
+      - '.github/workflows/php-laravel-composer-eloquent-postgresql-ci.yml'
   push:
     branches: [main, develop]
     paths:
       - 'BackEnd/PHP/php-laravel-composer-eloquent-postgresql/**'
-      - '.github/workflows/php-eloquentorm-ci.yml'
+      - '.github/workflows/php-laravel-composer-eloquent-postgresql-ci.yml'
   workflow_dispatch:
     inputs:
       target_ref:

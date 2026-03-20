@@ -1,16 +1,16 @@
-name: PBShop TypeScript TypeORM CI
+name: PBShop typescript-nest-npm-typeorm-postgresql CI
 
 on:
   pull_request:
     branches: [main, develop]
     paths:
       - 'BackEnd/TypeScript/typescript-nest-npm-typeorm-postgresql/**'
-      - '.github/workflows/typescript-typeorm-ci.yml'
+      - '.github/workflows/typescript-nest-npm-typeorm-postgresql-ci.yml'
   push:
     branches: [main, develop]
     paths:
       - 'BackEnd/TypeScript/typescript-nest-npm-typeorm-postgresql/**'
-      - '.github/workflows/typescript-typeorm-ci.yml'
+      - '.github/workflows/typescript-nest-npm-typeorm-postgresql-ci.yml'
   workflow_dispatch:
     inputs:
       target_ref:
@@ -90,7 +90,7 @@ on:
         type: string
 
 concurrency:
-  group: typescript-typeorm-ci-${{ github.ref }}
+  group: typescript-nest-npm-typeorm-postgresql-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

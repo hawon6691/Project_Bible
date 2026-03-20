@@ -24,7 +24,7 @@ branch: "chore/#427/typescript-typeorm-project-rename"
 ## 📋 요구사항
 
 - [x] TypeScript 프로젝트 폴더명을 `typescript-nest-npm-typeorm-postgresql`으로 변경
-- [x] CI 파일명을 `typescript-typeorm-ci.yml`로 변경
+- [x] CI 파일명을 `typescript-nest-npm-typeorm-postgresql-ci.yml`로 변경
 - [x] workflow 표시명을 `PBShop TypeScript TypeORM CI`로 수정
 - [x] concurrency group을 `typescript-typeorm-ci` 기준으로 수정
 - [x] workflow 내부 `working-directory` 및 artifact 경로 수정
@@ -37,7 +37,7 @@ branch: "chore/#427/typescript-typeorm-project-rename"
 
 ## ✅ 산출물
 
-- `.github/workflows/typescript-typeorm-ci.yml`
+- `.github/workflows/typescript-nest-npm-typeorm-postgresql-ci.yml`
 - `BackEnd/TypeScript/typescript-nest-npm-typeorm-postgresql`
 - `BackEnd/TypeScript/README.md`
 - `README.md`
@@ -55,7 +55,7 @@ branch: "chore/#427/typescript-typeorm-project-rename"
 ## 검증 메모
 
 - 프로젝트 폴더명이 `typescript-nest-npm-typeorm-postgresql`으로 변경됨
-- CI 파일명이 `typescript-typeorm-ci.yml`로 정리됨
+- CI 파일명이 `typescript-nest-npm-typeorm-postgresql-ci.yml`로 정리됨
 - workflow 내부 경로가 새 폴더 기준으로 수정됨
 - README와 문서의 구현체 경로가 새 이름 기준으로 수정됨
 - 기존 `typescript-nest-ci`, `BackEnd/TypeScript/nestshop` 참조가 남지 않도록 검색 확인함

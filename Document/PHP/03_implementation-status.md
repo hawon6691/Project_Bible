@@ -82,7 +82,7 @@
 - `php artisan route:list`
 - `php artisan test`
 - `vendor/bin/pint`
-- GitHub Actions용 `php-eloquentorm-ci.yml` 추가
+- GitHub Actions용 `php-laravel-composer-eloquent-postgresql-ci.yml` 추가
 - `php artisan l5-swagger:generate`
 - `storage/api-docs/api-docs.json` 생성 확인
 - `storage/api-docs/api-docs.yaml` 생성 확인

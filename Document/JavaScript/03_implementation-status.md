@@ -1,6 +1,6 @@
 # JavaScript Implementation Status
 
-대상 구현체: `BackEnd/JavaScript/expressshop_prismaorm`
+대상 구현체: `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql`
 
 ## 현재 상태
 

@@ -20,12 +20,13 @@
 ```text
 Project_Bible/
 ├─ BackEnd/
-│  ├─ TypeScript/nestshop_typeorm
-│  ├─ Java/springshop
-│  ├─ JavaScript/expressshop_prismaorm
+│  ├─ TypeScript/typescript-nest-npm-typeorm-postgresql
+│  ├─ Java/java-spring-maven-jpa-postgresql
+│  ├─ Java/java-spring-gradle-jpa-postgresql
+│  ├─ JavaScript/javascript-express-npm-prisma-postgresql
 │  ├─ Python/djangoshop
-│  ├─ Kotlin/ktorshop
-│  └─ PHP/laravelshop
+│  ├─ Kotlin/kotlin-ktor-gradle-exposeddao-postgresql
+│  └─ PHP/php-laravel-composer-eloquent-postgresql
 ├─ Database/
 │  ├─ docker/docker-compose.yml
 │  ├─ postgresql/

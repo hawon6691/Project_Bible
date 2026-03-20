@@ -37,7 +37,7 @@ branch: "chore/#495/javascript-express-prisma-ci"
 ## ✅ 산출물
 
 - `Project_Bible/.github/workflows/javascript-express-prisma-ci.yml`
-- `Project_Bible/BackEnd/JavaScript/expressshop_prismaorm/README.md`
+- `Project_Bible/BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/README.md`
 
 ## 검증 메모
 

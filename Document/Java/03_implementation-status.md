@@ -3,7 +3,7 @@
 ## 1. 범위
 
 본 문서는 Java Maven JPA 트랙의 구현 상태를 정리한다.
-기준 구현 위치는 `BackEnd/Java/springshop_maven_jpa`이며, Gradle 트랙은 본 완료 상태에 포함하지 않는다.
+기준 구현 위치는 `BackEnd/Java/java-spring-maven-jpa-postgresql`이며, Gradle 트랙은 본 완료 상태에 포함하지 않는다.
 
 ## 2. 구현 상태 요약
 

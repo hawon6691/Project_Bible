@@ -2,7 +2,7 @@
 
 ## 1. 기준
 
-- 기준 구현체: `BackEnd/PHP/laravelshop_eloquentorm`
+- 기준 구현체: `BackEnd/PHP/php-laravel-composer-eloquent-postgresql`
 - 기준 문서:
   - `Document/01_requirements.md`
   - `Document/02_api-specification.md`

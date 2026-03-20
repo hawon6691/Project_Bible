@@ -11,7 +11,7 @@ assignees: ""
 
 ## ✨ 기능 요약
 
-> `BackEnd/JavaScript/expressshop_prismaorm`의 채팅 REST API에 빠져 있던 채팅방 입장과 메시지 전송 엔드포인트를 추가하고, OpenAPI 문서와 critical E2E 검증에 연결했습니다.
+> `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql`의 채팅 REST API에 빠져 있던 채팅방 입장과 메시지 전송 엔드포인트를 추가하고, OpenAPI 문서와 critical E2E 검증에 연결했습니다.
 
 ## 📋 요구사항
 

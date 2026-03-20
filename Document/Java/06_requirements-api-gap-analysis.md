@@ -7,7 +7,7 @@
 - `Document/01_requirements.md`
 - `Document/02_api-specification.md`
 
-대상 구현체는 `BackEnd/Java/springshop_maven_jpa`이다.
+대상 구현체는 `BackEnd/Java/java-spring-maven-jpa-postgresql`이다.
 
 ## 2. 점검 결과 요약
 

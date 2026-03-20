@@ -1,10 +1,10 @@
 # TypeScript Bible
 
-`nestshop_typeorm` 실행/검증 매뉴얼입니다.
+`typescript-nest-npm-typeorm-postgresql` 실행/검증 매뉴얼입니다.
 
 ## 1. 경로
 
-- 백엔드 앱: `BackEnd/TypeScript/nestshop_typeorm`
+- 백엔드 앱: `BackEnd/TypeScript/typescript-nest-npm-typeorm-postgresql`
 - 공용 인프라: `Database/docker/docker-compose.yml`
 - TypeScript 문서: `Document/TypeScript/`
 
@@ -24,7 +24,7 @@ docker compose -f Database/docker/docker-compose.yml up -d
 ### 3.2 백엔드 실행
 
 ```bash
-cd BackEnd/TypeScript/nestshop_typeorm
+cd BackEnd/TypeScript/typescript-nest-npm-typeorm-postgresql
 npm ci
 npm run migration:run
 npm start
@@ -46,7 +46,7 @@ npm run dev
 ## 4. 주요 검증 명령
 
 ```bash
-cd BackEnd/TypeScript/nestshop_typeorm
+cd BackEnd/TypeScript/typescript-nest-npm-typeorm-postgresql
 npx tsc -p tsconfig.json --noEmit --incremental false
 npm run test:e2e:critical
 ```

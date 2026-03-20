@@ -11,7 +11,7 @@ branch: "chore/#427/typescript-typeorm-project-rename"
 
 ## 🛠️ 작업 요약
 
-> TypeScript 구현체와 CI 이름을 `nestshop_typeorm`, `typescript-typeorm-ci` 기준으로 정리한다.
+> TypeScript 구현체와 CI 이름을 `typescript-nest-npm-typeorm-postgresql`, `typescript-typeorm-ci` 기준으로 정리한다.
 
 ## 🎯 목적 및 배경
 
@@ -23,7 +23,7 @@ branch: "chore/#427/typescript-typeorm-project-rename"
 
 ## 📋 요구사항
 
-- [x] TypeScript 프로젝트 폴더명을 `nestshop_typeorm`으로 변경
+- [x] TypeScript 프로젝트 폴더명을 `typescript-nest-npm-typeorm-postgresql`으로 변경
 - [x] CI 파일명을 `typescript-typeorm-ci.yml`로 변경
 - [x] workflow 표시명을 `PBShop TypeScript TypeORM CI`로 수정
 - [x] concurrency group을 `typescript-typeorm-ci` 기준으로 수정
@@ -32,13 +32,13 @@ branch: "chore/#427/typescript-typeorm-project-rename"
 - [x] 루트 README의 TypeScript 백엔드 경로 수정
 - [x] TypeScript 문서 세트의 구현체 경로 수정
 - [x] 공통 CI/테스트/ERD 문서의 TypeScript 구현체 경로 수정
-- [x] `package.json`, `package-lock.json` 이름을 `nestshop_typeorm`으로 수정
+- [x] `package.json`, `package-lock.json` 이름을 `typescript-nest-npm-typeorm-postgresql`으로 수정
 - [x] 이전 `typescript-nest-ci`, `BackEnd/TypeScript/nestshop` 참조 제거 확인
 
 ## ✅ 산출물
 
 - `.github/workflows/typescript-typeorm-ci.yml`
-- `BackEnd/TypeScript/nestshop_typeorm`
+- `BackEnd/TypeScript/typescript-nest-npm-typeorm-postgresql`
 - `BackEnd/TypeScript/README.md`
 - `README.md`
 - `Document/06_ci-specification.md`
@@ -49,12 +49,12 @@ branch: "chore/#427/typescript-typeorm-project-rename"
 - `Document/TypeScript/03_release-checklist.md`
 - `Document/TypeScript/04_completion-report.md`
 - `Document/TypeScript/05_pre-release-final-gate.md`
-- `BackEnd/TypeScript/nestshop_typeorm/package.json`
-- `BackEnd/TypeScript/nestshop_typeorm/package-lock.json`
+- `BackEnd/TypeScript/typescript-nest-npm-typeorm-postgresql/package.json`
+- `BackEnd/TypeScript/typescript-nest-npm-typeorm-postgresql/package-lock.json`
 
 ## 검증 메모
 
-- 프로젝트 폴더명이 `nestshop_typeorm`으로 변경됨
+- 프로젝트 폴더명이 `typescript-nest-npm-typeorm-postgresql`으로 변경됨
 - CI 파일명이 `typescript-typeorm-ci.yml`로 정리됨
 - workflow 내부 경로가 새 폴더 기준으로 수정됨
 - README와 문서의 구현체 경로가 새 이름 기준으로 수정됨

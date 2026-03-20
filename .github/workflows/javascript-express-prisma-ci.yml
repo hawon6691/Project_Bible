@@ -4,12 +4,12 @@ on:
   pull_request:
     branches: [main, develop]
     paths:
-      - 'BackEnd/JavaScript/expressshop_prismaorm/**'
+      - 'BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/**'
       - '.github/workflows/javascript-express-prisma-ci.yml'
   push:
     branches: [main, develop]
     paths:
-      - 'BackEnd/JavaScript/expressshop_prismaorm/**'
+      - 'BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/**'
       - '.github/workflows/javascript-express-prisma-ci.yml'
   workflow_dispatch:
     inputs:
@@ -52,7 +52,7 @@ permissions:
   contents: read
 
 env:
-  WORKDIR: BackEnd/JavaScript/expressshop_prismaorm
+  WORKDIR: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql
   DATABASE_URL: postgresql://project_bible:project_bible@127.0.0.1:5432/pbdb?schema=public
 
 jobs:
@@ -94,7 +94,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: BackEnd/JavaScript/expressshop_prismaorm/package-lock.json
+          cache-dependency-path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -113,8 +113,8 @@ jobs:
         with:
           name: javascript-express-prisma-quality
           path: |
-            BackEnd/JavaScript/expressshop_prismaorm/test-results/quality.log
-            BackEnd/JavaScript/expressshop_prismaorm/test-results/quality-check.json
+            BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/quality.log
+            BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/quality-check.json
           if-no-files-found: warn
 
   critical-e2e:
@@ -147,7 +147,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: BackEnd/JavaScript/expressshop_prismaorm/package-lock.json
+          cache-dependency-path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -194,7 +194,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: javascript-express-prisma-critical-e2e
-          path: BackEnd/JavaScript/expressshop_prismaorm/test-results/critical-e2e.log
+          path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/critical-e2e.log
           if-no-files-found: warn
 
   contract-doc:
@@ -227,7 +227,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: BackEnd/JavaScript/expressshop_prismaorm/package-lock.json
+          cache-dependency-path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -273,9 +273,9 @@ jobs:
         with:
           name: javascript-express-prisma-contract-doc
           path: |
-            BackEnd/JavaScript/expressshop_prismaorm/test-results/openapi.json
-            BackEnd/JavaScript/expressshop_prismaorm/test-results/routes.snapshot.json
-            BackEnd/JavaScript/expressshop_prismaorm/test-results/contract-doc-summary.json
+            BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/openapi.json
+            BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/routes.snapshot.json
+            BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/contract-doc-summary.json
           if-no-files-found: warn
 
   perf-smoke:
@@ -308,7 +308,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: BackEnd/JavaScript/expressshop_prismaorm/package-lock.json
+          cache-dependency-path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -353,7 +353,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: javascript-express-prisma-perf-smoke
-          path: BackEnd/JavaScript/expressshop_prismaorm/test-results/perf-smoke-summary.json
+          path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/perf-smoke-summary.json
           if-no-files-found: warn
 
   migration-validation-manual:
@@ -388,7 +388,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: BackEnd/JavaScript/expressshop_prismaorm/package-lock.json
+          cache-dependency-path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -433,7 +433,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: javascript-express-prisma-migration-validation
-          path: BackEnd/JavaScript/expressshop_prismaorm/test-results/migration-validation.json
+          path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/migration-validation.json
           if-no-files-found: warn
 
   migration-roundtrip-manual:
@@ -468,7 +468,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: BackEnd/JavaScript/expressshop_prismaorm/package-lock.json
+          cache-dependency-path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -513,7 +513,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: javascript-express-prisma-migration-roundtrip
-          path: BackEnd/JavaScript/expressshop_prismaorm/test-results/migration-roundtrip.json
+          path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/migration-roundtrip.json
           if-no-files-found: warn
 
   security-regression-manual:
@@ -548,7 +548,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: BackEnd/JavaScript/expressshop_prismaorm/package-lock.json
+          cache-dependency-path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -595,7 +595,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: javascript-express-prisma-security-regression
-          path: BackEnd/JavaScript/expressshop_prismaorm/test-results/security-regression.log
+          path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/security-regression.log
           if-no-files-found: warn
 
   admin-boundary-manual:
@@ -630,7 +630,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: BackEnd/JavaScript/expressshop_prismaorm/package-lock.json
+          cache-dependency-path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -677,7 +677,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: javascript-express-prisma-admin-boundary
-          path: BackEnd/JavaScript/expressshop_prismaorm/test-results/admin-boundary.log
+          path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/admin-boundary.log
           if-no-files-found: warn
 
   release-gate:
@@ -712,7 +712,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: BackEnd/JavaScript/expressshop_prismaorm/package-lock.json
+          cache-dependency-path: BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
@@ -758,11 +758,11 @@ jobs:
         with:
           name: javascript-express-prisma-release-gate
           path: |
-            BackEnd/JavaScript/expressshop_prismaorm/test-results/release-gate-summary.json
-            BackEnd/JavaScript/expressshop_prismaorm/test-results/migration-validation.json
-            BackEnd/JavaScript/expressshop_prismaorm/test-results/contract-doc-summary.json
-            BackEnd/JavaScript/expressshop_prismaorm/test-results/openapi.json
-            BackEnd/JavaScript/expressshop_prismaorm/test-results/routes.snapshot.json
+            BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/release-gate-summary.json
+            BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/migration-validation.json
+            BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/contract-doc-summary.json
+            BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/openapi.json
+            BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test-results/routes.snapshot.json
           if-no-files-found: warn
 
       - name: Write Release Gate Summary

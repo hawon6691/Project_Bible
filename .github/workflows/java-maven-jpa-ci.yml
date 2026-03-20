@@ -4,13 +4,13 @@ on:
   pull_request:
     paths:
       - ".github/workflows/java-maven-jpa-ci.yml"
-      - "BackEnd/Java/springshop_maven_jpa/**"
+      - "BackEnd/Java/java-spring-maven-jpa-postgresql/**"
   push:
     branches:
       - main
     paths:
       - ".github/workflows/java-maven-jpa-ci.yml"
-      - "BackEnd/Java/springshop_maven_jpa/**"
+      - "BackEnd/Java/java-spring-maven-jpa-postgresql/**"
   workflow_dispatch:
     inputs:
       target_ref:
@@ -46,7 +46,7 @@ permissions:
 
 env:
   JAVA_VERSION: "21"
-  WORKDIR: BackEnd/Java/springshop_maven_jpa
+  WORKDIR: BackEnd/Java/java-spring-maven-jpa-postgresql
 
 jobs:
   validate-dispatch-inputs:

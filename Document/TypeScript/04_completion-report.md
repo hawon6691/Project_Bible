@@ -1,6 +1,6 @@
 # Nestshop 1차 완성 보고서
 
-> 대상: `BackEnd/TypeScript/nestshop_typeorm`
+> 대상: `BackEnd/TypeScript/typescript-nest-npm-typeorm-postgresql`
 > 기준 시점: 이슈 `#113` ~ `#211`
 
 ---

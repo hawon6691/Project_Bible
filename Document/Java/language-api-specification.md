@@ -9,7 +9,7 @@
 
 - 프레임워크: Spring Boot
 - 빌드 기준: Maven JPA
-- 기본 구현 위치: `BackEnd/Java/springshop_maven_jpa`
+- 기본 구현 위치: `BackEnd/Java/java-spring-maven-jpa-postgresql`
 - 검증 기준: integration test, e2e test, Flyway validation, Swagger/OpenAPI, CI workflow
 
 ## 3. 공통 계약 원칙

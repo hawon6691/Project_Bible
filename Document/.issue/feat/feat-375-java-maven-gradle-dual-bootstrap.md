@@ -11,7 +11,7 @@ branch: "feat/#375/java-maven-gradle-dual-bootstrap"
 
 ## 📋 요구사항
 - [x] 기존 `springshop` Maven 프로젝트를 `springshop_maven`으로 재정렬
-- [x] 동일 기준의 `springshop_gradle` 프로젝트 추가 생성
+- [x] 동일 기준의 `java-spring-gradle-jpa-postgresql` 프로젝트 추가 생성
 - [x] 두 프로젝트 모두 PBShop 기본값 반영
   - [x] 포트 `8000`
   - [x] MySQL 기본 DB 환경 변수
@@ -27,7 +27,7 @@ branch: "feat/#375/java-maven-gradle-dual-bootstrap"
 
 ## 📂 영향 범위
 - `BackEnd/Java/springshop_maven/*`
-- `BackEnd/Java/springshop_gradle/*`
+- `BackEnd/Java/java-spring-gradle-jpa-postgresql/*`
 - `BackEnd/Java/README.md`
 
 ## ✅ 완료 기준

@@ -11,7 +11,7 @@ assignees: ""
 
 ## ✨ 기능 요약
 
-> `BackEnd/JavaScript/expressshop_prismaorm`에 JWT 인증 기반 `Socket.IO` 채팅 이벤트를 추가하고, critical E2E에서 실시간 이벤트 흐름을 검증했습니다.
+> `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql`에 JWT 인증 기반 `Socket.IO` 채팅 이벤트를 추가하고, critical E2E에서 실시간 이벤트 흐름을 검증했습니다.
 
 ## 📋 요구사항
 

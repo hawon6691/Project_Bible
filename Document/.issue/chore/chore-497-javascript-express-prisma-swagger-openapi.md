@@ -36,13 +36,13 @@ branch: "chore/#497/javascript-express-prisma-swagger-openapi"
 
 ## ✅ 산출물
 
-- `Project_Bible/BackEnd/JavaScript/expressshop_prismaorm/src/docs/docs.service.js`
-- `Project_Bible/BackEnd/JavaScript/expressshop_prismaorm/src/docs/docs.controller.js`
-- `Project_Bible/BackEnd/JavaScript/expressshop_prismaorm/src/app.js`
-- `Project_Bible/BackEnd/JavaScript/expressshop_prismaorm/src/routes/index.js`
-- `Project_Bible/BackEnd/JavaScript/expressshop_prismaorm/src/health/health.service.js`
-- `Project_Bible/BackEnd/JavaScript/expressshop_prismaorm/test/e2e/critical.test.js`
-- `Project_Bible/BackEnd/JavaScript/expressshop_prismaorm/README.md`
+- `Project_Bible/BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/docs/docs.service.js`
+- `Project_Bible/BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/docs/docs.controller.js`
+- `Project_Bible/BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/app.js`
+- `Project_Bible/BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/routes/index.js`
+- `Project_Bible/BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/src/health/health.service.js`
+- `Project_Bible/BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/test/e2e/critical.test.js`
+- `Project_Bible/BackEnd/JavaScript/javascript-express-npm-prisma-postgresql/README.md`
 
 ## 검증 메모
 

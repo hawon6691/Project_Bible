@@ -3,7 +3,7 @@
 ## 전체 구조
 
 ```bash
-nestshop_typeorm/
+typescript-nest-npm-typeorm-postgresql/
 ├── .env                          # 환경변수 (DB, JWT, Redis, Elasticsearch 등)
 ├── .env.example                  # 환경변수 예시
 ├── .eslintrc.js                  # ESLint 설정

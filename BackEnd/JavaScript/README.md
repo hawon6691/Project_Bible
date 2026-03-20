@@ -1,10 +1,10 @@
 # JavaScript Bible
 
-`expressshop_prismaorm` 실행/검증 매뉴얼입니다.
+`javascript-express-npm-prisma-postgresql` 실행/검증 매뉴얼입니다.
 
 ## 1. 경로
 
-- 백엔드 앱: `BackEnd/JavaScript/expressshop_prismaorm`
+- 백엔드 앱: `BackEnd/JavaScript/javascript-express-npm-prisma-postgresql`
 - JavaScript 문서: `Document/JavaScript/`
 
 ## 2. 사전 준비
@@ -15,7 +15,7 @@
 ## 3. 실행 순서
 
 ```bash
-cd BackEnd/JavaScript/expressshop_prismaorm
+cd BackEnd/JavaScript/javascript-express-npm-prisma-postgresql
 npm install
 cp .env.example .env
 npm run prisma:generate

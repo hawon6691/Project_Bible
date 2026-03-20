@@ -17,7 +17,7 @@ const dbConfig = {
   port: Number(process.env.DB_PORT ?? 5432),
   user: process.env.DB_USERNAME ?? 'postgres',
   password: process.env.DB_PASSWORD ?? 'postgres',
-  database: process.env.DB_DATABASE ?? 'nestshop',
+  database: process.env.DB_DATABASE ?? 'pbdb',
 };
 
 async function getMigrationCount(client) {

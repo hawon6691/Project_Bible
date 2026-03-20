@@ -50,7 +50,7 @@ async function bootstrap() {
 
   // Swagger
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('NestShop API')
+    .setTitle('PBShop API')
     .setDescription('Danawa-style price comparison shopping mall API')
     .setVersion('1.0')
     .addBearerAuth()

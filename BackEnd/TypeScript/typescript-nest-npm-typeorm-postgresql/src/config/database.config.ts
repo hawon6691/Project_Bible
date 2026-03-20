@@ -6,7 +6,7 @@ export const databaseConfig = registerAs('database', () => ({
   port: parseInt(process.env.DB_PORT ?? '5432', 10),
   username: process.env.DB_USERNAME ?? 'postgres',
   password: process.env.DB_PASSWORD ?? 'postgres',
-  database: process.env.DB_DATABASE ?? 'nestshop',
+  database: process.env.DB_DATABASE ?? 'pbdb',
   synchronize: process.env.DB_SYNCHRONIZE === 'true',
   logging: process.env.DB_LOGGING === 'true',
 }));

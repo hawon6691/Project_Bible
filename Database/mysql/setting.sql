@@ -35,3 +35,7 @@ SHOW GRANTS FOR 'project_bible'@'%';
 SHOW GRANTS FOR 'project_bible'@'localhost';
 
 use shop37;
+
+show tables;
+
+select * from shop_option_value;

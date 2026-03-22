@@ -1,8 +1,8 @@
-package com.pbshop.ktorshop_exposeddao
+package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql
 
-import com.pbshop.ktorshop_exposeddao.config.PbShopConfig
-import com.pbshop.ktorshop_exposeddao.plugins.configureRouting
-import com.pbshop.ktorshop_exposeddao.plugins.configureSerialization
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config.PbShopConfig
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureRouting
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureSerialization
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.callloging.CallLogging

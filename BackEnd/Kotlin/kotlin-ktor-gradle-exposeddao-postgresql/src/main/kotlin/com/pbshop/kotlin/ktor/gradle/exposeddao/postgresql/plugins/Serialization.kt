@@ -1,4 +1,4 @@
-package com.pbshop.ktorshop_exposeddao.plugins
+package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins
 
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application

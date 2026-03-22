@@ -1,9 +1,9 @@
-package com.pbshop.ktorshop_exposeddao.plugins
+package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins
 
-import com.pbshop.ktorshop_exposeddao.config.PbShopConfig
-import com.pbshop.ktorshop_exposeddao.model.ApiEnvelope
-import com.pbshop.ktorshop_exposeddao.model.DocsStatusPayload
-import com.pbshop.ktorshop_exposeddao.model.HealthPayload
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config.PbShopConfig
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.model.ApiEnvelope
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.model.DocsStatusPayload
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.model.HealthPayload
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.call

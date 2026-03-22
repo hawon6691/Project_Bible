@@ -1,4 +1,4 @@
-package com.pbshop.ktorshop_exposeddao.model
+package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.model
 
 import kotlinx.serialization.Serializable
 

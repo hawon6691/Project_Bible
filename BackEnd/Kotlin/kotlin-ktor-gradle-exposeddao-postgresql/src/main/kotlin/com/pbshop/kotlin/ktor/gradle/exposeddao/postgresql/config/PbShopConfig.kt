@@ -1,4 +1,4 @@
-package com.pbshop.ktorshop_exposeddao.config
+package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config
 
 import io.ktor.server.config.ApplicationConfig
 

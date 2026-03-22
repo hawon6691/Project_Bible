@@ -4,7 +4,7 @@ export async function getHealth() {
   await pingDatabase();
   return {
     status: "UP",
-    app: process.env.APP_NAME ?? "javascript-express-prisma",
+    app: process.env.APP_NAME ?? "pbshop-javascript-express-npm-prisma-postgresql",
     database: "reachable",
   };
 }

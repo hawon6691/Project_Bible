@@ -1,13 +1,13 @@
-package com.pbshop.springshop;
+package com.pbshop.java.spring.gradle.jpa.postgresql;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SpringshopGradleApplication {
+public class JavaSpringGradleJpaPostgresqlApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SpringshopGradleApplication.class, args);
+		SpringApplication.run(JavaSpringGradleJpaPostgresqlApplication.class, args);
 	}
 
 }

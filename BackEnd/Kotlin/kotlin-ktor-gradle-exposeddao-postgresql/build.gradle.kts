@@ -13,7 +13,7 @@ repositories {
 }
 
 application {
-    mainClass.set("com.pbshop.ktorshop_exposeddao.ApplicationKt")
+    mainClass.set("com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.ApplicationKt")
 }
 
 kotlin {

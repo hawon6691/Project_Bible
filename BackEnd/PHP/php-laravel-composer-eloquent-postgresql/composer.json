@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "pbshop/php-laravel-composer-eloquent-postgresql",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "PBShop PHP Laravel Eloquent ORM backend.",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {

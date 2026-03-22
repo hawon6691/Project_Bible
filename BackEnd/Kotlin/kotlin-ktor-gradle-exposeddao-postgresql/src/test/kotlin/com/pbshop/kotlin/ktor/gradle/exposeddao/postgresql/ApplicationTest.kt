@@ -1,4 +1,4 @@
-package com.pbshop.ktorshop_exposeddao
+package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql
 
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText

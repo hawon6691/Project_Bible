@@ -15,6 +15,7 @@ class ApplicationTest {
 
         assertEquals(HttpStatusCode.OK, response.status)
         assertTrue(response.bodyAsText().contains("\"status\": \"UP\""))
+        assertTrue(response.bodyAsText().contains("\"baselineTrack\": \"kotlin-ktor-gradle-exposeddao-postgresql\""))
     }
 
     @Test
@@ -22,6 +23,16 @@ class ApplicationTest {
         val response = client.get("/api/v1/docs-status")
 
         assertEquals(HttpStatusCode.OK, response.status)
-        assertTrue(response.bodyAsText().contains("OpenAPI and Swagger are planned"))
+        assertTrue(response.bodyAsText().contains("\"docsPath\": \"/docs\""))
+        assertTrue(response.bodyAsText().contains("aligned /docs path"))
+    }
+
+    @Test
+    fun `root endpoint exposes baseline metadata`() = testApplication {
+        val response = client.get("/")
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertTrue(response.bodyAsText().contains("\"apiPrefix\": \"/api/v1\""))
+        assertTrue(response.bodyAsText().contains("\"baselineTrack\": \"kotlin-ktor-gradle-exposeddao-postgresql\""))
     }
 }

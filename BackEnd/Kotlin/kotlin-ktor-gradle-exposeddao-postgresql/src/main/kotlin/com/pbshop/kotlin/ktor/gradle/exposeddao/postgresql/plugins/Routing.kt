@@ -22,6 +22,8 @@ fun Application.configureRouting(config: PbShopConfig) {
                     data = mapOf(
                         "service" to config.appName,
                         "apiPrefix" to config.apiPrefix,
+                        "baselineTrack" to config.baselineTrack,
+                        "docsPath" to config.docsPath,
                     ),
                 ),
             )
@@ -35,6 +37,7 @@ fun Application.configureRouting(config: PbShopConfig) {
                     data = HealthPayload(
                         status = "UP",
                         app = config.appName,
+                        baselineTrack = config.baselineTrack,
                     ),
                 ),
             )
@@ -45,28 +48,30 @@ fun Application.configureRouting(config: PbShopConfig) {
                 call.respond(
                     HttpStatusCode.OK,
                     ApiEnvelope(
-                        success = true,
-                        data = HealthPayload(
-                            status = "UP",
-                            app = config.appName,
-                        ),
+                    success = true,
+                    data = HealthPayload(
+                        status = "UP",
+                        app = config.appName,
+                        baselineTrack = config.baselineTrack,
                     ),
-                )
-            }
+                ),
+            )
+        }
 
             get("/docs-status") {
                 call.respond(
                     HttpStatusCode.OK,
                     ApiEnvelope(
-                        success = true,
-                        data = DocsStatusPayload(
-                            openapiEnabled = false,
-                            swaggerEnabled = false,
-                            message = "OpenAPI and Swagger are planned for the next Kotlin milestone.",
-                        ),
+                    success = true,
+                    data = DocsStatusPayload(
+                        openapiEnabled = false,
+                        swaggerEnabled = false,
+                        docsPath = config.docsPath,
+                        message = "OpenAPI and Swagger will be exposed at the aligned /docs path in a later Kotlin milestone.",
                     ),
-                )
-            }
+                ),
+            )
         }
     }
+}
 }

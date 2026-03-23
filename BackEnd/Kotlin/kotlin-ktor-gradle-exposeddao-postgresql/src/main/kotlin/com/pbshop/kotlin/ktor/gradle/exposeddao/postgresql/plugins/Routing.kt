@@ -1,31 +1,39 @@
 package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins
 
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.api.EndpointDefinition
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.api.buildOpenApiDocument
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.api.buildSwaggerHtml
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.api.pbShopEndpoints
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.respondStub
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.respondSuccess
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.AuthController
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.AuthRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.AuthService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.builder.BuilderController
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.builder.BuilderRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.builder.BuilderService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.catalog.CatalogController
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.catalog.CatalogRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.catalog.CatalogService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.commerce.CommerceController
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.commerce.CommerceRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.commerce.CommerceService
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config.PbShopConfig
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.model.ComponentCheckPayload
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.model.DbCheckPayload
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.model.DocsStatusPayload
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.model.HealthChecksPayload
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.model.HealthPayload
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.security.requireAnyRole
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.discovery.DiscoveryController
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.discovery.DiscoveryRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.discovery.DiscoveryService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.docs.pbShopEndpointSpecs
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.engagement.EngagementController
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.engagement.EngagementRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.engagement.EngagementService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.media.MediaController
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.media.MediaRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.media.MediaService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.ops.OpsController
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.ops.OpsRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.ops.OpsService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.platform.HealthService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.platform.PlatformController
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.platform.PlatformService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserController
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserService
 import io.ktor.server.application.Application
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
-import io.ktor.server.response.respondText
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.delete
-import io.ktor.server.routing.get
-import io.ktor.server.routing.patch
-import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 
@@ -33,131 +41,58 @@ fun Application.configureRouting(
     config: PbShopConfig,
     dbHealthService: DbHealthService,
 ) {
-    val endpoints = pbShopEndpoints()
-    val openApiDocument = buildOpenApiDocument(config, endpoints)
-    val swaggerHtml = buildSwaggerHtml(config)
+    val endpointSpecs = pbShopEndpointSpecs()
+    val platformController =
+        PlatformController(
+            platformService = PlatformService(config, endpointSpecs),
+            healthService = HealthService(config, dbHealthService),
+        )
+    val authController = AuthController(AuthService(AuthRepository()))
+    val userController = UserController(UserService(UserRepository()))
+    val catalogController = CatalogController(CatalogService(CatalogRepository()))
+    val commerceController = CommerceController(CommerceService(CommerceRepository()))
+    val engagementController = EngagementController(EngagementService(EngagementRepository()))
+    val discoveryController = DiscoveryController(DiscoveryService(DiscoveryRepository()))
+    val mediaController = MediaController(MediaService(MediaRepository()))
+    val builderController = BuilderController(BuilderService(BuilderRepository()))
+    val opsController = OpsController(OpsService(OpsRepository()))
 
     routing {
-        get("/") {
-            call.respondSuccess(
-                data =
-                    mapOf(
-                        "service" to config.appName,
-                        "apiPrefix" to config.apiPrefix,
-                        "baselineTrack" to config.baselineTrack,
-                        "docsPath" to config.docsPath,
-                        "environment" to config.environment,
-                        "routeCount" to endpoints.size,
-                    ),
-            )
-        }
-
-        get("/health") {
-            call.respondHealth(config, dbHealthService)
-        }
-
-        get("${config.docsPath}/openapi") {
-            call.respondSuccess(data = openApiDocument)
-        }
-
-        get("${config.docsPath}/swagger") {
-            call.respondText(
-                text = swaggerHtml,
-                contentType = ContentType.Text.Html,
-                status = HttpStatusCode.OK,
-            )
+        with(platformController) {
+            registerPublicRoutes()
         }
 
         route(config.apiPrefix) {
-            get("/health") {
-                call.respondHealth(config, dbHealthService)
+            with(platformController) {
+                registerApiRoutes()
             }
-
-            get("/docs-status") {
-                call.respondSuccess(
-                    data =
-                        DocsStatusPayload(
-                            openapiEnabled = true,
-                            swaggerEnabled = true,
-                            docsPath = config.docsPath,
-                            message = "OpenAPI JSON and Swagger HTML are exposed on the aligned /docs path.",
-                        ),
-                )
+            with(authController) {
+                register()
             }
-
-            endpoints.forEach { endpoint ->
-                registerEndpoint(endpoint)
+            with(userController) {
+                register()
+            }
+            with(catalogController) {
+                register()
+            }
+            with(commerceController) {
+                register()
+            }
+            with(engagementController) {
+                register()
+            }
+            with(discoveryController) {
+                register()
+            }
+            with(mediaController) {
+                register()
+            }
+            with(builderController) {
+                register()
+            }
+            with(opsController) {
+                register()
             }
         }
-    }
-}
-
-private suspend fun ApplicationCall.respondHealth(
-    config: PbShopConfig,
-    dbHealthService: DbHealthService,
-) {
-    val dbCheck = dbHealthService.check()
-    val httpStatus = if (dbCheck.isUp) HttpStatusCode.OK else HttpStatusCode.ServiceUnavailable
-
-    respondSuccess(
-        status = httpStatus,
-        data =
-            HealthPayload(
-                status = if (dbCheck.isUp) "UP" else "DOWN",
-                app = config.appName,
-                baselineTrack = config.baselineTrack,
-                checks =
-                    HealthChecksPayload(
-                        db =
-                            DbCheckPayload(
-                                status = dbCheck.status,
-                                engine = dbCheck.engine,
-                                database = dbCheck.database,
-                                message = dbCheck.message,
-                            ),
-                        redis =
-                            ComponentCheckPayload(
-                                status = "NOT_CONFIGURED",
-                                message = "Redis integration is stubbed in the Kotlin baseline track.",
-                            ),
-                        elasticsearch =
-                            ComponentCheckPayload(
-                                status = "NOT_CONFIGURED",
-                                message = "Elasticsearch integration is stubbed in the Kotlin baseline track.",
-                            ),
-                    ),
-            ),
-    )
-}
-
-private fun Route.registerEndpoint(endpoint: EndpointDefinition) {
-    when (endpoint.method) {
-        HttpMethod.Get ->
-            get(endpoint.path) {
-                call.authorize(endpoint)
-                call.respondStub(endpoint.handler(call))
-            }
-        HttpMethod.Post ->
-            post(endpoint.path) {
-                call.authorize(endpoint)
-                call.respondStub(endpoint.handler(call))
-            }
-        HttpMethod.Patch ->
-            patch(endpoint.path) {
-                call.authorize(endpoint)
-                call.respondStub(endpoint.handler(call))
-            }
-        HttpMethod.Delete ->
-            delete(endpoint.path) {
-                call.authorize(endpoint)
-                call.respondStub(endpoint.handler(call))
-            }
-        else -> error("Unsupported method in endpoint catalog: ${endpoint.method.value}")
-    }
-}
-
-private fun ApplicationCall.authorize(endpoint: EndpointDefinition) {
-    if (endpoint.roles.isNotEmpty()) {
-        requireAnyRole(*endpoint.roles.toTypedArray())
     }
 }

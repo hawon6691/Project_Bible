@@ -22,6 +22,8 @@ data class StubResponse(
     val meta: Any? = null,
 )
 
+typealias EndpointResponse = StubResponse
+
 suspend fun ApplicationCall.respondSuccess(
     status: HttpStatusCode = HttpStatusCode.OK,
     data: Any?,
@@ -45,6 +47,10 @@ suspend fun ApplicationCall.respondStub(stubResponse: StubResponse) {
         data = stubResponse.data,
         meta = stubResponse.meta,
     )
+}
+
+suspend fun ApplicationCall.respondEndpoint(endpointResponse: EndpointResponse) {
+    respondStub(endpointResponse)
 }
 
 suspend fun ApplicationCall.respondFailure(

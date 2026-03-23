@@ -11,6 +11,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.JdbcDbHealthServic
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureHttp
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureRouting
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureSerialization
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.ExposedDaoProductRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.ProductRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.ExposedDaoUserRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserRepository
 import io.ktor.server.application.Application
@@ -34,6 +36,7 @@ fun Application.module() {
         authRepository = ExposedDaoAuthRepository(databaseFactory),
         userRepository = ExposedDaoUserRepository(databaseFactory),
         categoryRepository = ExposedDaoCategoryRepository(databaseFactory),
+        productRepository = ExposedDaoProductRepository(databaseFactory),
     )
 }
 
@@ -42,6 +45,7 @@ fun Application.module(
     authRepository: AuthRepository,
     userRepository: UserRepository,
     categoryRepository: CategoryRepository,
+    productRepository: ProductRepository,
 ) {
     val config = PbShopConfig.from(environment.config)
 
@@ -51,5 +55,5 @@ fun Application.module(
 
     configureSerialization()
     configureHttp(config)
-    configureRouting(config, dbHealthService, authRepository, userRepository, categoryRepository)
+    configureRouting(config, dbHealthService, authRepository, userRepository, categoryRepository, productRepository)
 }

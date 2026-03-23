@@ -7,11 +7,11 @@
 
 - Gradle Wrapper 기반 Kotlin/Ktor 부트스트랩
 - 공통 JSON 응답 envelope
-- 기본 라우트
-  - `GET /health`
-  - `GET /api/v1/health`
-  - `GET /api/v1/docs-status`
-- 서버 테스트 기반 최소 검증
+- Request ID / 보안 헤더 / 인메모리 rate limit
+- 공통 PostgreSQL bootstrap / seed / smoke
+- 공통 명세 기준 다중 API slice 라우트 카탈로그
+- OpenAPI JSON / Swagger HTML 문서 경로
+- 운영/도메인 Kotlin 테스트 자산
 - Kotlin 기준 트랙 메타데이터 노출
 
 ## Baseline Decisions
@@ -20,7 +20,7 @@
 - 기준 스택: `Ktor + Gradle + Exposed DAO + PostgreSQL`
 - 기본 포트: `8000`
 - 기본 API prefix: `/api/v1`
-- 문서 경로: `/docs` 예정
+- 문서 경로: `/docs`
 - 공통 DB 기준: `Database/postgresql/*`, `Database/docker/docker-compose.yml`
 - 후속 트랙 착수 조건: 이 프로젝트의 API, 테스트, CI, 문서 완료
 
@@ -40,12 +40,34 @@ Windows에서는 아래를 사용합니다.
 - Health: `http://127.0.0.1:8000/health`
 - Versioned Health: `http://127.0.0.1:8000/api/v1/health`
 - Docs status: `http://127.0.0.1:8000/api/v1/docs-status`
+- OpenAPI: `http://127.0.0.1:8000/docs/openapi`
+- Swagger: `http://127.0.0.1:8000/docs/swagger`
 
 ## Test
 
 ```bash
 ./gradlew test
 ```
+
+### Performance Assets
+
+```bash
+node test/performance/smoke.perf.js test-results/perf-smoke-summary.json
+node test/performance/assert-summary.js test-results/perf-smoke-summary.json
+```
+
+### Script Assets
+
+```bash
+bash test/scripts/analyze-stability.sh
+bash test/scripts/live-smoke.sh
+```
+
+## Docs
+
+- OpenAPI JSON: `/docs/openapi`
+- Swagger HTML: `/docs/swagger`
+- Export artifacts: `./gradlew docsExport`
 
 ## Next
 

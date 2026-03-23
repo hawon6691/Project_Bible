@@ -4,6 +4,7 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config.PbShopConfig
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DatabaseFactory
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.JdbcDbHealthService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureHttp
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureRouting
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureSerialization
 import io.ktor.server.application.Application
@@ -35,5 +36,6 @@ fun Application.module(dbHealthService: DbHealthService) {
     }
 
     configureSerialization()
+    configureHttp(config)
     configureRouting(config, dbHealthService)
 }

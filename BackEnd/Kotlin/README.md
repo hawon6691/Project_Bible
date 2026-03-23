@@ -20,7 +20,7 @@ Kotlin 트랙은 아래 공통 자산을 기준으로 맞춘다.
 - ERD: `Document/03_erd.md`
 - PostgreSQL 스키마: `Database/postgresql/postgres_table.sql`
 - PostgreSQL 샘플 데이터: `Database/postgresql/sample_data.sql`
-- PostgreSQL 설정: `Database/postgresql/setting.sql`
+- PostgreSQL 수동 설정 참고: `Database/postgresql/setting.sql`
 - 공용 Docker 인프라: `Database/docker/docker-compose.yml`
 
 ## 3. 운영 기본값

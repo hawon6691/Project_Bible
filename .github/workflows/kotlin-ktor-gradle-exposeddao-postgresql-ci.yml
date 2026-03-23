@@ -1,0 +1,406 @@
+name: PBShop kotlin-ktor-gradle-exposeddao-postgresql CI
+
+on:
+  pull_request:
+    paths:
+      - "BackEnd/Kotlin/kotlin-ktor-gradle-exposeddao-postgresql/**"
+      - "Document/Kotlin/**"
+      - ".github/workflows/kotlin-ktor-gradle-exposeddao-postgresql-ci.yml"
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "BackEnd/Kotlin/kotlin-ktor-gradle-exposeddao-postgresql/**"
+      - "Document/Kotlin/**"
+      - ".github/workflows/kotlin-ktor-gradle-exposeddao-postgresql-ci.yml"
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: "Git ref to validate"
+        required: false
+        default: "main"
+      manual_suite:
+        description: "Manual gate to run"
+        required: true
+        type: choice
+        options:
+          - release-gate
+          - contract-e2e
+          - migration-validation
+          - migration-roundtrip
+          - security-regression
+          - admin-boundary
+          - rate-limit-regression
+          - dependency-failure
+          - stability-check
+          - perf-smoke
+          - perf-extended
+          - live-smoke
+
+concurrency:
+  group: kotlin-ktor-gradle-exposeddao-postgresql-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  WORKDIR: BackEnd/Kotlin/kotlin-ktor-gradle-exposeddao-postgresql
+  JAVA_VERSION: "21"
+
+jobs:
+  validate-dispatch-inputs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate workflow_dispatch inputs
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]; then
+            exit 0
+          fi
+          if [[ -z "${{ inputs.target_ref }}" ]]; then
+            echo "target_ref is required for workflow_dispatch"
+            exit 1
+          fi
+          case "${{ inputs.manual_suite }}" in
+            release-gate|contract-e2e|migration-validation|migration-roundtrip|security-regression|admin-boundary|rate-limit-regression|dependency-failure|stability-check|perf-smoke|perf-extended|live-smoke)
+              ;;
+            *)
+              echo "unsupported manual_suite: ${{ inputs.manual_suite }}"
+              exit 1
+              ;;
+          esac
+
+  quality:
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compile and test
+        run: bash ./gradlew compileKotlin test
+
+  api-regression:
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Run domain and ops regression tests
+        run: |
+          bash ./gradlew test \
+            --tests '*AuthApiTest' \
+            --tests '*UserApiTest' \
+            --tests '*CategoryApiTest' \
+            --tests '*ProductApiTest' \
+            --tests '*SpecSellerPriceApiTest' \
+            --tests '*CartAddressApiTest' \
+            --tests '*OrderPaymentApiTest' \
+            --tests '*ReviewWishlistPointApiTest' \
+            --tests '*CommunityInquirySupportApiTest' \
+            --tests '*ActivityChatPushApiTest' \
+            --tests '*PredictionDealRecommendationRankingApiTest' \
+            --tests '*FraudTrustI18nImageBadgeApiTest' \
+            --tests '*PcFriendShortformMediaNewsMatchingApiTest' \
+            --tests '*AnalyticsUsedMarketAutoAuctionCompareApiTest' \
+            --tests '*HealthRouteTest' \
+            --tests '*OpsApiTest'
+
+  db-integration:
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: project_bible
+          POSTGRES_PASSWORD: project_bible
+          POSTGRES_DB: pbdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U project_bible -d pbdb"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Run DB bootstrap and smoke
+        run: bash ./gradlew dbInit dbSmoke
+
+  contract-doc:
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Export docs and run contract tests
+        run: |
+          bash ./gradlew docsExport test \
+            --tests '*ContractPublicApiE2ETest' \
+            --tests '*SwaggerDocsE2ETest' \
+            --tests '*PublicApiE2ETest'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-openapi-artifacts
+          path: |
+            ${{ env.WORKDIR }}/build/docs/openapi.json
+            ${{ env.WORKDIR }}/build/docs/swagger.html
+
+  perf-smoke:
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run perf smoke assets
+        run: |
+          mkdir -p test-results
+          node test/performance/smoke.perf.js test-results/perf-smoke-summary.json
+          node test/performance/assert-summary.js test-results/perf-smoke-summary.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-perf-smoke
+          path: ${{ env.WORKDIR }}/test-results/perf-smoke-summary.json
+
+  release-gate:
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'release-gate'
+    needs: [quality, api-regression, db-integration, contract-doc, perf-smoke]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Kotlin release gate passed."
+
+  contract-e2e-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'contract-e2e'
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+      - uses: gradle/actions/setup-gradle@v4
+      - run: bash ./gradlew test --tests '*ContractPublicApiE2ETest' --tests '*SwaggerDocsE2ETest'
+
+  migration-validation-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'migration-validation'
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: project_bible
+          POSTGRES_PASSWORD: project_bible
+          POSTGRES_DB: pbdb
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+      - uses: gradle/actions/setup-gradle@v4
+      - run: bash test/scripts/validate-migrations.sh
+
+  migration-roundtrip-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'migration-roundtrip'
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: project_bible
+          POSTGRES_PASSWORD: project_bible
+          POSTGRES_DB: pbdb
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+      - uses: gradle/actions/setup-gradle@v4
+      - run: bash test/scripts/migration-roundtrip.sh
+
+  security-regression-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'security-regression'
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+      - uses: gradle/actions/setup-gradle@v4
+      - run: bash ./gradlew test --tests '*SecurityRegressionE2ETest'
+
+  admin-boundary-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'admin-boundary'
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+      - uses: gradle/actions/setup-gradle@v4
+      - run: bash ./gradlew test --tests '*AdminAuthorizationBoundaryE2ETest' --tests '*AdminPlatformE2ETest'
+
+  rate-limit-regression-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'rate-limit-regression'
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+      - uses: gradle/actions/setup-gradle@v4
+      - run: bash ./gradlew test --tests '*RateLimitRegressionE2ETest'
+
+  dependency-failure-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'dependency-failure'
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+      - uses: gradle/actions/setup-gradle@v4
+      - run: bash ./gradlew test --tests '*OpsDashboardDependencyFailuresE2ETest'
+
+  stability-check-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'stability-check'
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash test/scripts/analyze-stability.sh test-results/stability-summary.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-stability-summary
+          path: ${{ env.WORKDIR }}/test-results/stability-summary.json
+
+  perf-smoke-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'perf-smoke'
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: |
+          mkdir -p test-results
+          node test/performance/smoke.perf.js test-results/perf-smoke-summary.json
+          node test/performance/assert-summary.js test-results/perf-smoke-summary.json
+
+  perf-extended-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'perf-extended'
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: |
+          mkdir -p test-results
+          node test/performance/price-compare.perf.js test-results/perf-price-compare-summary.json
+          node test/performance/search-ranking.perf.js test-results/perf-search-ranking-summary.json
+          node test/performance/soak.perf.js test-results/perf-soak-summary.json
+          node test/performance/spike-search.perf.js test-results/perf-spike-search-summary.json
+
+  live-smoke-manual:
+    if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'live-smoke'
+    needs: validate-dispatch-inputs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash test/scripts/live-smoke.sh

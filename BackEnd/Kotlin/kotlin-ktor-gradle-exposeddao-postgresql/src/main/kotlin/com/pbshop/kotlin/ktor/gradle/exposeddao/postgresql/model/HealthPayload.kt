@@ -21,6 +21,8 @@ data class DocsStatusPayload(
 @Serializable
 data class HealthChecksPayload(
     val db: DbCheckPayload,
+    val redis: ComponentCheckPayload,
+    val elasticsearch: ComponentCheckPayload,
 )
 
 @Serializable
@@ -28,5 +30,11 @@ data class DbCheckPayload(
     val status: String,
     val engine: String,
     val database: String,
+    val message: String? = null,
+)
+
+@Serializable
+data class ComponentCheckPayload(
+    val status: String,
     val message: String? = null,
 )

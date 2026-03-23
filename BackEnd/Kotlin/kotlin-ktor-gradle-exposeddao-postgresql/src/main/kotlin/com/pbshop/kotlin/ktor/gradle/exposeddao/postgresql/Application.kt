@@ -9,6 +9,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.JdbcDbHealthServic
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureHttp
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureRouting
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureSerialization
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.JdbcUserRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserRepository
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.callloging.CallLogging
@@ -28,12 +30,14 @@ fun Application.module() {
             config = config.database,
         ),
         authRepository = JdbcAuthRepository(databaseFactory),
+        userRepository = JdbcUserRepository(databaseFactory),
     )
 }
 
 fun Application.module(
     dbHealthService: DbHealthService,
     authRepository: AuthRepository,
+    userRepository: UserRepository,
 ) {
     val config = PbShopConfig.from(environment.config)
 
@@ -43,5 +47,5 @@ fun Application.module(
 
     configureSerialization()
     configureHttp(config)
-    configureRouting(config, dbHealthService, authRepository)
+    configureRouting(config, dbHealthService, authRepository, userRepository)
 }

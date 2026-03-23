@@ -2,6 +2,7 @@ package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql
 
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
@@ -44,7 +45,29 @@ class UserApiTest {
         val response = client.get("/api/v1/users/me") { pbHeaders(role = "USER", clientId = "user-me") }
 
         assertEquals(HttpStatusCode.OK, response.status)
-        assertTrue(response.bodyAsText().contains("\"email\": \"user@pbshop.dev\""))
+        assertTrue(response.bodyAsText().contains("\"email\": \"user1@nestshop.com\""))
+        assertTrue(response.bodyAsText().contains("\"point\": 53000"))
+    }
+
+    @Test
+    fun user_profile_and_admin_user_routes_follow_the_contract() = testApplication {
+        installPbShopApp()
+
+        val profileUpdate =
+            client.patch("/api/v1/users/me/profile") {
+                pbHeaders(role = "USER", clientId = "user-profile")
+                header("Content-Type", "application/json")
+                setBody("""{"nickname":"hongpro","bio":"업데이트된 소개"}""")
+            }
+        val publicProfile = client.get("/api/v1/users/4/profile") { pbHeaders(clientId = "user-public-profile") }
+        val adminList = client.get("/api/v1/users?page=1&limit=2&search=user&status=ACTIVE&role=USER") { pbHeaders(role = "ADMIN", clientId = "user-admin-list") }
+
+        assertEquals(HttpStatusCode.OK, profileUpdate.status)
+        assertEquals(HttpStatusCode.OK, publicProfile.status)
+        assertEquals(HttpStatusCode.OK, adminList.status)
+        assertTrue(profileUpdate.bodyAsText().contains("\"nickname\": \"hongpro\""))
+        assertTrue(publicProfile.bodyAsText().contains("\"nickname\": \"hongpro\""))
+        assertTrue(adminList.bodyAsText().contains("\"totalCount\""))
     }
 }
 

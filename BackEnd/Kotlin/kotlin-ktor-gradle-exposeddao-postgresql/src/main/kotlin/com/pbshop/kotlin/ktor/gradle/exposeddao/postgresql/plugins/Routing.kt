@@ -166,6 +166,7 @@ fun Application.configureRouting(
     authRepository: AuthRepository,
     userRepository: UserRepository,
     categoryRepository: CategoryRepository,
+    productRepository: ProductRepository,
 ) {
     val endpointSpecs = pbShopEndpointSpecs()
     val platformController = PlatformController(PlatformService(config, endpointSpecs))
@@ -175,7 +176,7 @@ fun Application.configureRouting(
     val authController = AuthController(AuthService(authRepository))
     val userController = UserController(UserService(userRepository))
     val categoryController = CategoryController(CategoryService(categoryRepository))
-    val productController = ProductController(ProductService(ProductRepository()))
+    val productController = ProductController(ProductService(productRepository))
     val specController = SpecController(SpecService(SpecRepository()))
     val sellerController = SellerController(SellerService(SellerRepository()))
     val priceController = PriceController(PriceService(PriceRepository()))

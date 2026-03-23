@@ -7,8 +7,17 @@ import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.http.ContentType
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -116,16 +125,107 @@ class CategoryApiTest {
 
 class ProductApiTest {
     @Test
-    fun products_list_and_detail_routes_return_stubbed_catalog_data() = testApplication {
+    fun product_list_and_detail_routes_follow_the_actual_contract() = testApplication {
         installPbShopApp()
 
-        val listResponse = client.get("/api/v1/products") { pbHeaders(clientId = "products-list") }
+        val listResponse = client.get("/api/v1/products?categoryId=2&sort=price_asc&specs={\"CPU\":\"Intel i7-14700H\"}") { pbHeaders(clientId = "products-list") }
         val detailResponse = client.get("/api/v1/products/1") { pbHeaders(clientId = "products-detail") }
 
         assertEquals(HttpStatusCode.OK, listResponse.status)
         assertEquals(HttpStatusCode.OK, detailResponse.status)
         assertTrue(listResponse.bodyAsText().contains("\"totalPages\""))
-        assertTrue(detailResponse.bodyAsText().contains("\"PB GalaxyBook 4 Pro\""))
+        assertTrue(listResponse.bodyAsText().contains("\"게이밍 노트북 A15\""))
+        assertTrue(detailResponse.bodyAsText().contains("\"options\""))
+        assertTrue(detailResponse.bodyAsText().contains("\"priceEntries\""))
+    }
+
+    @Test
+    fun admin_product_mutation_option_and_image_routes_follow_the_contract() = testApplication {
+        installPbShopApp()
+
+        val create =
+            client.post("/api/v1/products") {
+                pbHeaders(role = "ADMIN", clientId = "product-create")
+                header("Content-Type", "application/json")
+                setBody(
+                    """
+                    {
+                      "name":"태블릿 Pro 11",
+                      "description":"고해상도 태블릿",
+                      "price":850000,
+                      "discountPrice":790000,
+                      "stock":12,
+                      "status":"ON_SALE",
+                      "categoryId":2,
+                      "thumbnailUrl":"https://img.example.com/tablet-thumb.jpg",
+                      "options":[{"name":"색상","values":["블랙","실버"]}],
+                      "images":[{"url":"https://img.example.com/tablet-main.jpg","isMain":true,"sortOrder":1}]
+                    }
+                    """.trimIndent(),
+                )
+            }
+        val createPayload = Json.parseToJsonElement(create.bodyAsText()).jsonObject["data"]!!.jsonObject
+        val productId = createPayload["id"]!!.jsonPrimitive.content.toInt()
+        val initialOptionId = createPayload["options"]!!.jsonArray.first().jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val update =
+            client.patch("/api/v1/products/$productId") {
+                pbHeaders(role = "ADMIN", clientId = "product-update")
+                header("Content-Type", "application/json")
+                setBody("""{"name":"태블릿 Pro 11 2026","stock":15,"options":[{"name":"저장공간","values":["128GB","256GB"]}]}""")
+            }
+        val updatedPayload = Json.parseToJsonElement(update.bodyAsText()).jsonObject["data"]!!.jsonObject
+        val replacedOptionId = updatedPayload["options"]!!.jsonArray.first().jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val addOption =
+            client.post("/api/v1/products/$productId/options") {
+                pbHeaders(role = "ADMIN", clientId = "product-option-create")
+                header("Content-Type", "application/json")
+                setBody("""{"name":"보증","values":["기본","2년"]}""")
+            }
+        val addedOptionId = Json.parseToJsonElement(addOption.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val updateOption =
+            client.patch("/api/v1/products/$productId/options/$replacedOptionId") {
+                pbHeaders(role = "ADMIN", clientId = "product-option-update")
+                header("Content-Type", "application/json")
+                setBody("""{"name":"색상","values":["블루","실버"]}""")
+            }
+        val uploadImage =
+            client.post("/api/v1/products/$productId/images") {
+                pbHeaders(role = "ADMIN", clientId = "product-image-upload")
+                setBody(
+                    MultiPartFormDataContent(
+                        formData {
+                            append("isMain", "true")
+                            append("sortOrder", "2")
+                            append(
+                                "file",
+                                "fake-image".encodeToByteArray(),
+                                Headers.build {
+                                    append(HttpHeaders.ContentDisposition, "filename=tablet-side.jpg")
+                                    append(HttpHeaders.ContentType, ContentType.Image.JPEG.toString())
+                                },
+                            )
+                        },
+                    ),
+                )
+            }
+        val uploadedImageId = Json.parseToJsonElement(uploadImage.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val deleteImage = client.delete("/api/v1/products/$productId/images/$uploadedImageId") { pbHeaders(role = "ADMIN", clientId = "product-image-delete") }
+        val deleteOption = client.delete("/api/v1/products/$productId/options/$addedOptionId") { pbHeaders(role = "ADMIN", clientId = "product-option-delete") }
+        val deleteProduct = client.delete("/api/v1/products/$productId") { pbHeaders(role = "ADMIN", clientId = "product-delete") }
+
+        assertEquals(HttpStatusCode.Created, create.status)
+        assertEquals(HttpStatusCode.OK, update.status)
+        assertEquals(HttpStatusCode.Created, addOption.status)
+        assertEquals(HttpStatusCode.OK, updateOption.status)
+        assertEquals(HttpStatusCode.Created, uploadImage.status)
+        assertEquals(HttpStatusCode.OK, deleteImage.status)
+        assertEquals(HttpStatusCode.OK, deleteOption.status)
+        assertEquals(HttpStatusCode.OK, deleteProduct.status)
+        assertTrue(create.bodyAsText().contains("\"태블릿 Pro 11\""))
+        assertTrue(update.bodyAsText().contains("\"태블릿 Pro 11 2026\""))
+        assertTrue(addOption.bodyAsText().contains("\"보증\""))
+        assertTrue(uploadImage.bodyAsText().contains("tablet-side.jpg"))
+        assertTrue(initialOptionId > 0)
     }
 }
 

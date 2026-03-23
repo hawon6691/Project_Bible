@@ -19,7 +19,7 @@ branch: "feat/#529/kotlin-ktor-exposeddao-db-connection-and-postgresql-bootstrap
 - [x] Kotlin 설정에 PostgreSQL 기본 연결값과 `engine`, `database`, 풀 설정을 추가한다.
 - [x] `DatabaseFactory`를 추가해 HikariCP와 Exposed `Database.connect` 초기화 흐름을 고정한다.
 - [x] `DbHealthService`를 추가해 DB 연결 확인과 health 메타 조회를 제공한다.
-- [x] `dbBootstrap`, `dbSeed`, `dbInit`, `dbSmoke` Gradle 작업을 추가하고 공통 SQL 자산 `setting.sql`, `postgres_table.sql`, `sample_data.sql` 적용 흐름을 연결한다.
+- [x] `dbBootstrap`, `dbSeed`, `dbInit`, `dbSmoke` Gradle 작업을 추가하고 자동 bootstrap은 `postgres_table.sql`, `sample_data.sql` 기준으로 연결하며 `setting.sql`은 수동 설정 참고 자산으로 유지한다.
 - [x] bootstrap 재실행 가능성을 위해 `postgres_table.sql` 적용 전 `public` 스키마 초기화 흐름을 추가한다.
 - [x] `/health`, `/api/v1/health` 응답에 `checks.db`를 추가하고 DB 성공 시 `200`, 실패 시 `503`을 반환하도록 정리한다.
 - [x] Kotlin 테스트에서 DB health `UP/DOWN` 분기와 baseline 메타데이터를 검증한다.

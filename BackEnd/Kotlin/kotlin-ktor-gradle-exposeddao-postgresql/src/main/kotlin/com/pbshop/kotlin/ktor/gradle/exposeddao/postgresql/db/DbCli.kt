@@ -45,7 +45,7 @@ private class DbCli(
             .normalize()
 
     fun bootstrap() {
-        runSqlFile("setting.sql")
+        noteManualSqlReference("setting.sql")
         resetPublicSchema()
         runSqlFile("postgres_table.sql")
         println("PBShop PostgreSQL bootstrap completed.")
@@ -159,6 +159,15 @@ private class DbCli(
         }
 
         println("Applied SQL file: $sqlFile")
+    }
+
+    private fun noteManualSqlReference(fileName: String) {
+        val sqlFile = sqlDir.resolve(fileName)
+        require(Files.exists(sqlFile)) {
+            "SQL file not found: $sqlFile"
+        }
+
+        println("Manual SQL reference retained but skipped during automated bootstrap: $sqlFile")
     }
 
     private fun resetPublicSchema() {

@@ -1,12 +1,13 @@
-package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.api
+package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.docs
 
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config.PbShopConfig
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.EndpointSpec
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.toJsonElement
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config.PbShopConfig
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.security.PbRole
 
 fun buildOpenApiDocument(
     config: PbShopConfig,
-    endpoints: List<EndpointDefinition>,
+    endpoints: List<EndpointSpec>,
 ) =
     mapOf(
         "openapi" to "3.0.3",
@@ -50,7 +51,7 @@ fun buildOpenApiDocument(
 
 private fun buildPaths(
     config: PbShopConfig,
-    endpoints: List<EndpointDefinition>,
+    endpoints: List<EndpointSpec>,
 ): Map<String, Any?> {
     val paths = linkedMapOf<String, MutableMap<String, Any?>>()
 
@@ -66,7 +67,7 @@ private fun buildPaths(
             mapOf(
                 "tags" to listOf(tag),
                 "summary" to summary,
-                "responses" to mapOf("200" to mapOf("description" to "PBShop envelope response")),
+                "responses" to mapOf(methodResponseCode(method) to mapOf("description" to "PBShop envelope response")),
                 "x-required-roles" to roles.map { it.name },
             )
     }
@@ -89,6 +90,12 @@ private fun buildPaths(
 
     return paths
 }
+
+private fun methodResponseCode(method: String): String =
+    when (method) {
+        "post" -> "201"
+        else -> "200"
+    }
 
 fun buildSwaggerHtml(config: PbShopConfig): String =
     """

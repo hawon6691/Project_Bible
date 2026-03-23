@@ -1,8 +1,5 @@
 package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.docs
 
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.api.buildOpenApiDocument
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.api.buildSwaggerHtml
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.api.pbShopEndpoints
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config.PbShopConfig
 import com.typesafe.config.ConfigFactory
 import io.ktor.server.config.HoconApplicationConfig
@@ -34,7 +31,7 @@ fun main(args: Array<String>) {
 
     Files.writeString(
         outputDir.resolve("openapi.json"),
-        json.encodeToString(buildOpenApiDocument(config, pbShopEndpoints())),
+        json.encodeToString(buildOpenApiDocument(config, pbShopEndpointSpecs())),
     )
     Files.writeString(
         outputDir.resolve("swagger.html"),

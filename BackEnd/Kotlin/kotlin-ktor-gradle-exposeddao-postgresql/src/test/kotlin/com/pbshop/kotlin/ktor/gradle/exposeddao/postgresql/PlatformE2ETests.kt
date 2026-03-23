@@ -2,7 +2,9 @@ package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql
 
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthCheckResult
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
@@ -43,7 +45,12 @@ class AuthSearchE2ETest {
     fun auth_and_search_routes_can_run_in_the_same_flow() = testApplication {
         installPbShopApp()
 
-        val login = client.post("/api/v1/auth/login") { pbHeaders(clientId = "auth-search-login") }
+        val login =
+            client.post("/api/v1/auth/login") {
+                pbHeaders(clientId = "auth-search-login")
+                header("Content-Type", "application/json")
+                setBody("""{"email":"user1@nestshop.com","password":"Password1!"}""")
+            }
         val search = client.get("/api/v1/search") { pbHeaders(clientId = "auth-search-query") }
 
         assertEquals(HttpStatusCode.OK, login.status)
@@ -162,11 +169,21 @@ class RateLimitRegressionE2ETest {
         installPbShopApp(generalPerMinute = 5, authPerMinute = 2)
 
         repeat(2) { index ->
-            val response = client.post("/api/v1/auth/login") { pbHeaders(clientId = "rate-limit-auth", requestId = "rate-$index") }
+            val response =
+                client.post("/api/v1/auth/login") {
+                    pbHeaders(clientId = "rate-limit-auth", requestId = "rate-$index")
+                    header("Content-Type", "application/json")
+                    setBody("""{"email":"user1@nestshop.com","password":"Password1!"}""")
+                }
             assertEquals(HttpStatusCode.OK, response.status)
         }
 
-        val limited = client.post("/api/v1/auth/login") { pbHeaders(clientId = "rate-limit-auth", requestId = "rate-final") }
+        val limited =
+            client.post("/api/v1/auth/login") {
+                pbHeaders(clientId = "rate-limit-auth", requestId = "rate-final")
+                header("Content-Type", "application/json")
+                setBody("""{"email":"user1@nestshop.com","password":"Password1!"}""")
+            }
 
         assertEquals(HttpStatusCode.TooManyRequests, limited.status)
         assertTrue(limited.bodyAsText().contains("\"COMMON_004\""))

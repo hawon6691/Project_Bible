@@ -163,13 +163,14 @@ import io.ktor.server.routing.routing
 fun Application.configureRouting(
     config: PbShopConfig,
     dbHealthService: DbHealthService,
+    authRepository: AuthRepository,
 ) {
     val endpointSpecs = pbShopEndpointSpecs()
     val platformController = PlatformController(PlatformService(config, endpointSpecs))
     val healthController = HealthController(HealthService(config, dbHealthService))
     val docsController = DocsController(DocsService(config, endpointSpecs))
 
-    val authController = AuthController(AuthService(AuthRepository()))
+    val authController = AuthController(AuthService(authRepository))
     val userController = UserController(UserService(UserRepository()))
     val categoryController = CategoryController(CategoryService(CategoryRepository()))
     val productController = ProductController(ProductService(ProductRepository()))

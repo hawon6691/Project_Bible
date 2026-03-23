@@ -1,5 +1,7 @@
 package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql
 
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.AuthRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.JdbcAuthRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config.PbShopConfig
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DatabaseFactory
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
@@ -25,10 +27,14 @@ fun Application.module() {
             databaseFactory = databaseFactory,
             config = config.database,
         ),
+        authRepository = JdbcAuthRepository(databaseFactory),
     )
 }
 
-fun Application.module(dbHealthService: DbHealthService) {
+fun Application.module(
+    dbHealthService: DbHealthService,
+    authRepository: AuthRepository,
+) {
     val config = PbShopConfig.from(environment.config)
 
     install(CallLogging) {
@@ -37,5 +43,5 @@ fun Application.module(dbHealthService: DbHealthService) {
 
     configureSerialization()
     configureHttp(config)
-    configureRouting(config, dbHealthService)
+    configureRouting(config, dbHealthService, authRepository)
 }

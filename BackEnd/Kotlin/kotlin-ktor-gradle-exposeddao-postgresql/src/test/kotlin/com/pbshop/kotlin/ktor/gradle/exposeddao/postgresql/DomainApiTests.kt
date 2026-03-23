@@ -1,7 +1,9 @@
 package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql
 
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
@@ -14,8 +16,18 @@ class AuthApiTest {
     fun signup_and_login_routes_follow_the_contract() = testApplication {
         installPbShopApp()
 
-        val signup = client.post("/api/v1/auth/signup") { pbHeaders(clientId = "auth-signup") }
-        val login = client.post("/api/v1/auth/login") { pbHeaders(clientId = "auth-login") }
+        val signup =
+            client.post("/api/v1/auth/signup") {
+                pbHeaders(clientId = "auth-signup")
+                header("Content-Type", "application/json")
+                setBody("""{"email":"fresh-user@nestshop.com","password":"Password1!","name":"새사용자","phone":"010-9999-8888"}""")
+            }
+        val login =
+            client.post("/api/v1/auth/login") {
+                pbHeaders(clientId = "auth-login")
+                header("Content-Type", "application/json")
+                setBody("""{"email":"user1@nestshop.com","password":"Password1!"}""")
+            }
 
         assertEquals(HttpStatusCode.Created, signup.status)
         assertEquals(HttpStatusCode.OK, login.status)

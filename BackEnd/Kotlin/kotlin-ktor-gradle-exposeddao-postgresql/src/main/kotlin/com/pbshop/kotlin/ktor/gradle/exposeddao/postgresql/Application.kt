@@ -1,9 +1,9 @@
 package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql
 
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.AuthRepository
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.JdbcAuthRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.ExposedDaoAuthRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.CategoryRepository
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.JdbcCategoryRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.ExposedDaoCategoryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config.PbShopConfig
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DatabaseFactory
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
@@ -11,7 +11,7 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.JdbcDbHealthServic
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureHttp
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureRouting
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureSerialization
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.JdbcUserRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.ExposedDaoUserRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserRepository
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -31,9 +31,9 @@ fun Application.module() {
             databaseFactory = databaseFactory,
             config = config.database,
         ),
-        authRepository = JdbcAuthRepository(databaseFactory),
-        userRepository = JdbcUserRepository(databaseFactory),
-        categoryRepository = JdbcCategoryRepository(databaseFactory),
+        authRepository = ExposedDaoAuthRepository(databaseFactory),
+        userRepository = ExposedDaoUserRepository(databaseFactory),
+        categoryRepository = ExposedDaoCategoryRepository(databaseFactory),
     )
 }
 

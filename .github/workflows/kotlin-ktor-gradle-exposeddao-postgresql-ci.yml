@@ -84,7 +84,7 @@ jobs:
           cache: gradle
       - uses: gradle/actions/setup-gradle@v4
       - name: Compile and test
-        run: ./gradlew compileKotlin test
+        run: bash ./gradlew compileKotlin test
 
   api-regression:
     needs: validate-dispatch-inputs
@@ -102,7 +102,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Run domain and ops regression tests
         run: |
-          ./gradlew test \
+          bash ./gradlew test \
             --tests '*AuthApiTest' \
             --tests '*UserApiTest' \
             --tests '*CategoryApiTest' \
@@ -149,7 +149,7 @@ jobs:
           cache: gradle
       - uses: gradle/actions/setup-gradle@v4
       - name: Run DB bootstrap and smoke
-        run: ./gradlew dbInit dbSmoke
+        run: bash ./gradlew dbInit dbSmoke
 
   contract-doc:
     needs: validate-dispatch-inputs
@@ -167,7 +167,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Export docs and run contract tests
         run: |
-          ./gradlew docsExport test \
+          bash ./gradlew docsExport test \
             --tests '*ContractPublicApiE2ETest' \
             --tests '*SwaggerDocsE2ETest' \
             --tests '*PublicApiE2ETest'
@@ -221,7 +221,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: gradle
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew test --tests '*ContractPublicApiE2ETest' --tests '*SwaggerDocsE2ETest'
+      - run: bash ./gradlew test --tests '*ContractPublicApiE2ETest' --tests '*SwaggerDocsE2ETest'
 
   migration-validation-manual:
     if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'migration-validation'
@@ -290,7 +290,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: gradle
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew test --tests '*SecurityRegressionE2ETest'
+      - run: bash ./gradlew test --tests '*SecurityRegressionE2ETest'
 
   admin-boundary-manual:
     if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'admin-boundary'
@@ -307,7 +307,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: gradle
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew test --tests '*AdminAuthorizationBoundaryE2ETest' --tests '*AdminPlatformE2ETest'
+      - run: bash ./gradlew test --tests '*AdminAuthorizationBoundaryE2ETest' --tests '*AdminPlatformE2ETest'
 
   rate-limit-regression-manual:
     if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'rate-limit-regression'
@@ -324,7 +324,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: gradle
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew test --tests '*RateLimitRegressionE2ETest'
+      - run: bash ./gradlew test --tests '*RateLimitRegressionE2ETest'
 
   dependency-failure-manual:
     if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'dependency-failure'
@@ -341,7 +341,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: gradle
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew test --tests '*OpsDashboardDependencyFailuresE2ETest'
+      - run: bash ./gradlew test --tests '*OpsDashboardDependencyFailuresE2ETest'
 
   stability-check-manual:
     if: github.event_name == 'workflow_dispatch' && inputs.manual_suite == 'stability-check'

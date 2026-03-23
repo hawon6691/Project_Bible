@@ -2,6 +2,8 @@ package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql
 
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.AuthRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.InMemoryAuthRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.CategoryRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.InMemoryCategoryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthCheckResult
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.InMemoryUserRepository
@@ -18,6 +20,7 @@ internal fun ApplicationTestBuilder.installPbShopApp(
         ),
     authRepository: AuthRepository = InMemoryAuthRepository.seeded(),
     userRepository: UserRepository = InMemoryUserRepository.seeded(),
+    categoryRepository: CategoryRepository = InMemoryCategoryRepository.seeded(),
     generalPerMinute: Int = 60,
     authPerMinute: Int = 10,
 ) {
@@ -30,6 +33,7 @@ internal fun ApplicationTestBuilder.installPbShopApp(
             dbHealthService = FakeDbHealthService(dbResult),
             authRepository = authRepository,
             userRepository = userRepository,
+            categoryRepository = categoryRepository,
         )
     }
 }

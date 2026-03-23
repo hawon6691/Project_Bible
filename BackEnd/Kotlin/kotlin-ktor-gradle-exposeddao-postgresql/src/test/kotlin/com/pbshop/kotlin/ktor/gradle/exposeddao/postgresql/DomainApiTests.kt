@@ -1,6 +1,7 @@
 package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql
 
 import io.ktor.client.request.get
+import io.ktor.client.request.delete
 import io.ktor.client.request.header
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
@@ -79,7 +80,37 @@ class CategoryApiTest {
         val response = client.get("/api/v1/categories") { pbHeaders(clientId = "categories") }
 
         assertEquals(HttpStatusCode.OK, response.status)
-        assertTrue(response.bodyAsText().contains("\"Laptop\""))
+        assertTrue(response.bodyAsText().contains("\"컴퓨터\""))
+        assertTrue(response.bodyAsText().contains("\"노트북\""))
+    }
+
+    @Test
+    fun category_detail_and_admin_mutation_routes_follow_the_contract() = testApplication {
+        installPbShopApp()
+
+        val detail = client.get("/api/v1/categories/2") { pbHeaders(clientId = "category-detail") }
+        val create =
+            client.post("/api/v1/categories") {
+                pbHeaders(role = "ADMIN", clientId = "category-create")
+                header("Content-Type", "application/json")
+                setBody("""{"name":"태블릿","sortOrder":3}""")
+            }
+        val update =
+            client.patch("/api/v1/categories/6") {
+                pbHeaders(role = "ADMIN", clientId = "category-update")
+                header("Content-Type", "application/json")
+                setBody("""{"name":"프리미엄 태블릿","sortOrder":4}""")
+            }
+        val delete = client.delete("/api/v1/categories/6") { pbHeaders(role = "ADMIN", clientId = "category-delete") }
+
+        assertEquals(HttpStatusCode.OK, detail.status)
+        assertEquals(HttpStatusCode.Created, create.status)
+        assertEquals(HttpStatusCode.OK, update.status)
+        assertEquals(HttpStatusCode.OK, delete.status)
+        assertTrue(detail.bodyAsText().contains("\"노트북\""))
+        assertTrue(create.bodyAsText().contains("\"태블릿\""))
+        assertTrue(update.bodyAsText().contains("\"프리미엄 태블릿\""))
+        assertTrue(delete.bodyAsText().contains("카테고리가 삭제되었습니다"))
     }
 }
 

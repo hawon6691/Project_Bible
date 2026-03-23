@@ -28,6 +28,8 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm:2.3.12")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:2.3.12")
     implementation("io.ktor:ktor-server-call-logging-jvm:2.3.12")
+    implementation("io.ktor:ktor-server-default-headers-jvm:2.3.12")
+    implementation("io.ktor:ktor-server-status-pages-jvm:2.3.12")
     implementation("com.zaxxer:HikariCP:5.1.0")
     implementation("org.jetbrains.exposed:exposed-core:0.52.0")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.52.0")
@@ -56,6 +58,16 @@ registerDbTask("dbBootstrap", "Apply PBShop PostgreSQL bootstrap SQL.", "bootstr
 registerDbTask("dbSeed", "Apply PBShop PostgreSQL sample data SQL.", "seed")
 registerDbTask("dbInit", "Apply PBShop PostgreSQL bootstrap and sample data SQL.", "init")
 registerDbTask("dbSmoke", "Run PBShop PostgreSQL smoke validation.", "smoke")
+
+tasks.register<JavaExec>("docsExport") {
+    group = "pbshop"
+    description = "Export PBShop OpenAPI and Swagger assets."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.docs.DocsCliKt")
+    args("docs")
+    workingDir = projectDir
+    dependsOn(tasks.named("classes"))
+}
 
 tasks.test {
     useJUnit()

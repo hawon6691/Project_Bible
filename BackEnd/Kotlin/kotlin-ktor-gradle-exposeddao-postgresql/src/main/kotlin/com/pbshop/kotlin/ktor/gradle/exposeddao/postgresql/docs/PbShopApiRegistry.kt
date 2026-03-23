@@ -1,26 +1,106 @@
 package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.docs
 
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.activity.activityOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.address.addressOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.adminsettings.adminSettingsOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.analytics.analyticsOperations
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.authOperations
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.builder.builderOperations
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.catalog.catalogOperations
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.commerce.commerceOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auction.auctionOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auto.autoOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.badge.badgeOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.cart.cartOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.categoryOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.chat.chatOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.community.communityOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.compare.compareOperations
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.EndpointSpec
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.StubOperation
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.discovery.discoveryOperations
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.engagement.engagementOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.crawler.crawlerOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.deal.dealOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.errorcode.errorCodeOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.friend.friendOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.fraud.fraudOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.i18n.i18nOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.image.imageOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.inquiryOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.matching.matchingOperations
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.media.mediaOperations
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.ops.opsOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.news.newsOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.observability.observabilityOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.opsdashboard.opsDashboardOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.orderOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.paymentOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.pcbuilder.pcBuilderOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.point.pointOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.prediction.predictionOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.price.priceOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.productOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.push.pushOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.query.queryOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.queueadmin.queueAdminOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.ranking.rankingOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.recommendation.recommendationOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.resilience.resilienceOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.review.reviewOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.search.searchOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.sellerOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.shortform.shortformOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.specOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.support.supportOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.trust.trustOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.usedmarket.usedMarketOperations
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.userOperations
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.wishlist.wishlistOperations
 
 fun pbShopEndpointOperations(): List<StubOperation> =
     authOperations() +
         userOperations() +
-        catalogOperations() +
-        commerceOperations() +
-        engagementOperations() +
-        discoveryOperations() +
+        categoryOperations() +
+        productOperations() +
+        specOperations() +
+        sellerOperations() +
+        priceOperations() +
+        cartOperations() +
+        addressOperations() +
+        orderOperations() +
+        paymentOperations() +
+        reviewOperations() +
+        wishlistOperations() +
+        pointOperations() +
+        communityOperations() +
+        inquiryOperations() +
+        supportOperations() +
+        activityOperations() +
+        chatOperations() +
+        pushOperations() +
+        rankingOperations() +
+        recommendationOperations() +
+        dealOperations() +
+        searchOperations() +
+        crawlerOperations() +
+        predictionOperations() +
+        trustOperations() +
+        i18nOperations() +
+        imageOperations() +
         mediaOperations() +
-        builderOperations() +
-        opsOperations()
+        badgeOperations() +
+        pcBuilderOperations() +
+        friendOperations() +
+        shortformOperations() +
+        newsOperations() +
+        matchingOperations() +
+        fraudOperations() +
+        analyticsOperations() +
+        usedMarketOperations() +
+        autoOperations() +
+        auctionOperations() +
+        compareOperations() +
+        adminSettingsOperations() +
+        resilienceOperations() +
+        errorCodeOperations() +
+        queueAdminOperations() +
+        opsDashboardOperations() +
+        observabilityOperations() +
+        queryOperations()
 
 fun pbShopEndpointSpecs(): List<EndpointSpec> = pbShopEndpointOperations().map { it.spec }

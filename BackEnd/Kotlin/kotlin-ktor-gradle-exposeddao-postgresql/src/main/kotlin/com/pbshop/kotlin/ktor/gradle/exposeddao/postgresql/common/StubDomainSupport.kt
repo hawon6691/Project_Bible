@@ -27,3 +27,8 @@ open class StubDomainService(
         request: EndpointRequest,
     ): EndpointResponse = repository.execute(endpointKey, request)
 }
+
+fun List<StubOperation>.filterByTags(vararg tags: String): List<StubOperation> {
+    val tagSet = tags.toSet()
+    return filter { it.spec.tag in tagSet }
+}

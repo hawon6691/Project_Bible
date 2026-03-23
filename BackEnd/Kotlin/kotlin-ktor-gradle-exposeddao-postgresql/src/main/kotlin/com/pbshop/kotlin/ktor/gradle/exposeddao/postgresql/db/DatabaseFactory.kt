@@ -4,6 +4,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config.DatabaseConfig
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.Transaction
 import java.sql.Connection
 import javax.sql.DataSource
 
@@ -46,6 +48,13 @@ class DatabaseFactory(
         initialize()
         return checkNotNull(dataSource) { "Database data source is not initialized." }
     }
+
+    fun database(): Database {
+        initialize()
+        return checkNotNull(database) { "Exposed database is not initialized." }
+    }
+
+    fun <T> withTransaction(block: Transaction.() -> T): T = transaction(database(), block)
 
     fun <T> withConnection(block: (Connection) -> T): T =
         dataSource().connection.use(block)

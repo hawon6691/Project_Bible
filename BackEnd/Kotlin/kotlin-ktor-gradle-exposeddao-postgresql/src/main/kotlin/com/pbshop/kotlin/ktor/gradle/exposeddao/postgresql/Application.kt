@@ -16,6 +16,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.ExposedDaoOrder
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.OrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.ExposedDaoPaymentRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.PaymentRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.point.ExposedDaoPointRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.point.PointRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureHttp
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureRouting
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureSerialization
@@ -23,12 +25,16 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.price.ExposedDaoPrice
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.price.PriceRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.ExposedDaoProductRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.ProductRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.review.ExposedDaoReviewRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.review.ReviewRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.ExposedDaoSellerRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.SellerRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.ExposedDaoSpecRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.SpecRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.ExposedDaoUserRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.wishlist.ExposedDaoWishlistRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.wishlist.WishlistRepository
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.callloging.CallLogging
@@ -58,6 +64,9 @@ fun Application.module() {
         addressRepository = ExposedDaoAddressRepository(databaseFactory),
         orderRepository = ExposedDaoOrderRepository(databaseFactory),
         paymentRepository = ExposedDaoPaymentRepository(databaseFactory),
+        reviewRepository = ExposedDaoReviewRepository(databaseFactory),
+        wishlistRepository = ExposedDaoWishlistRepository(databaseFactory),
+        pointRepository = ExposedDaoPointRepository(databaseFactory),
     )
 }
 
@@ -74,6 +83,9 @@ fun Application.module(
     addressRepository: AddressRepository,
     orderRepository: OrderRepository,
     paymentRepository: PaymentRepository,
+    reviewRepository: ReviewRepository,
+    wishlistRepository: WishlistRepository,
+    pointRepository: PointRepository,
 ) {
     val config = PbShopConfig.from(environment.config)
 
@@ -97,5 +109,8 @@ fun Application.module(
         addressRepository,
         orderRepository,
         paymentRepository,
+        reviewRepository,
+        wishlistRepository,
+        pointRepository,
     )
 }

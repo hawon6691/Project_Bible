@@ -482,16 +482,108 @@ class OrderPaymentApiTest {
 
 class ReviewWishlistPointApiTest {
     @Test
-    fun review_wishlist_and_point_routes_are_grouped_for_regression() = testApplication {
+    fun review_wishlist_and_point_routes_follow_the_actual_contract() = testApplication {
         installPbShopApp()
 
-        val reviewResponse = client.post("/api/v1/products/1/reviews") { pbHeaders(role = "USER", clientId = "review") }
-        val wishlistResponse = client.get("/api/v1/wishlist") { pbHeaders(role = "USER", clientId = "wishlist") }
-        val pointResponse = client.get("/api/v1/points/balance") { pbHeaders(role = "USER", clientId = "points") }
+        val orderCreate =
+            client.post("/api/v1/orders") {
+                pbHeaders(role = "USER", clientId = "review-order-create")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody(
+                    """
+                    {
+                      "addressId": 1,
+                      "items": [
+                        { "productId": 3, "sellerId": 1, "quantity": 1, "selectedOptions": "기본" }
+                      ],
+                      "fromCart": false,
+                      "usePoint": 0,
+                      "memo": "리뷰 테스트 주문"
+                    }
+                    """.trimIndent(),
+                )
+            }
+        val orderId = Json.parseToJsonElement(orderCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val reviewCreate =
+            client.post("/api/v1/products/3/reviews") {
+                pbHeaders(role = "USER", clientId = "review-create")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"orderId":$orderId,"rating":5,"content":"화면이 정말 선명하고 가볍습니다!"}""")
+            }
+        val reviewId = Json.parseToJsonElement(reviewCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val reviewList = client.get("/api/v1/products/3/reviews?page=1&limit=10") { pbHeaders(clientId = "review-list") }
+        val reviewUpdate =
+            client.patch("/api/v1/reviews/$reviewId") {
+                pbHeaders(role = "USER", clientId = "review-update")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"rating":4,"content":"수정된 리뷰입니다."}""")
+            }
+        val wishlistList =
+            client.get("/api/v1/wishlist?page=1&limit=10") {
+                pbHeaders(role = "USER", clientId = "wishlist-list")
+                header("X-User-Id", "4")
+            }
+        val wishlistToggleOn =
+            client.post("/api/v1/wishlist/3") {
+                pbHeaders(role = "USER", clientId = "wishlist-toggle-on")
+                header("X-User-Id", "4")
+            }
+        val wishlistToggleOff =
+            client.post("/api/v1/wishlist/3") {
+                pbHeaders(role = "USER", clientId = "wishlist-toggle-off")
+                header("X-User-Id", "4")
+            }
+        val wishlistDelete =
+            client.delete("/api/v1/wishlist/2") {
+                pbHeaders(role = "USER", clientId = "wishlist-delete")
+                header("X-User-Id", "4")
+            }
+        val pointBalance =
+            client.get("/api/v1/points/balance") {
+                pbHeaders(role = "USER", clientId = "points-balance")
+                header("X-User-Id", "4")
+            }
+        val pointTransactions =
+            client.get("/api/v1/points/transactions?page=1&limit=10&type=USE") {
+                pbHeaders(role = "USER", clientId = "points-transactions")
+                header("X-User-Id", "4")
+            }
+        val pointGrant =
+            client.post("/api/v1/admin/points/grant") {
+                pbHeaders(role = "ADMIN", clientId = "points-grant")
+                header("Content-Type", "application/json")
+                setBody("""{"userId":4,"amount":1000,"description":"이벤트 지급"}""")
+            }
+        val reviewDelete =
+            client.delete("/api/v1/reviews/$reviewId") {
+                pbHeaders(role = "USER", clientId = "review-delete")
+                header("X-User-Id", "4")
+            }
 
-        assertEquals(HttpStatusCode.Created, reviewResponse.status)
-        assertEquals(HttpStatusCode.OK, wishlistResponse.status)
-        assertEquals(HttpStatusCode.OK, pointResponse.status)
+        assertEquals(HttpStatusCode.Created, orderCreate.status)
+        assertEquals(HttpStatusCode.Created, reviewCreate.status)
+        assertEquals(HttpStatusCode.OK, reviewList.status)
+        assertEquals(HttpStatusCode.OK, reviewUpdate.status)
+        assertEquals(HttpStatusCode.OK, wishlistList.status)
+        assertEquals(HttpStatusCode.OK, wishlistToggleOn.status)
+        assertEquals(HttpStatusCode.OK, wishlistToggleOff.status)
+        assertEquals(HttpStatusCode.OK, wishlistDelete.status)
+        assertEquals(HttpStatusCode.OK, pointBalance.status)
+        assertEquals(HttpStatusCode.OK, pointTransactions.status)
+        assertEquals(HttpStatusCode.Created, pointGrant.status)
+        assertEquals(HttpStatusCode.OK, reviewDelete.status)
+        assertTrue(reviewCreate.bodyAsText().contains("\"awardedPoint\": 500"))
+        assertTrue(reviewList.bodyAsText().contains("\"rating\""))
+        assertTrue(reviewUpdate.bodyAsText().contains("수정된 리뷰입니다"))
+        assertTrue(wishlistList.bodyAsText().contains("\"productId\""))
+        assertTrue(wishlistToggleOn.bodyAsText().contains("\"wishlisted\": true"))
+        assertTrue(wishlistToggleOff.bodyAsText().contains("\"wishlisted\": false"))
+        assertTrue(pointBalance.bodyAsText().contains("\"balance\""))
+        assertTrue(pointTransactions.bodyAsText().contains("\"type\": \"USE\""))
+        assertTrue(pointGrant.bodyAsText().contains("\"ADMIN_GRANT\""))
     }
 }
 

@@ -2,12 +2,20 @@ package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql
 
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.AuthRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.ExposedDaoAuthRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.address.AddressRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.address.ExposedDaoAddressRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.cart.CartRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.cart.ExposedDaoCartRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.CategoryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.ExposedDaoCategoryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config.PbShopConfig
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DatabaseFactory
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.JdbcDbHealthService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.ExposedDaoOrderRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.OrderRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.ExposedDaoPaymentRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.PaymentRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureHttp
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureRouting
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureSerialization
@@ -46,6 +54,10 @@ fun Application.module() {
         specRepository = ExposedDaoSpecRepository(databaseFactory),
         sellerRepository = ExposedDaoSellerRepository(databaseFactory),
         priceRepository = ExposedDaoPriceRepository(databaseFactory),
+        cartRepository = ExposedDaoCartRepository(databaseFactory),
+        addressRepository = ExposedDaoAddressRepository(databaseFactory),
+        orderRepository = ExposedDaoOrderRepository(databaseFactory),
+        paymentRepository = ExposedDaoPaymentRepository(databaseFactory),
     )
 }
 
@@ -58,6 +70,10 @@ fun Application.module(
     specRepository: SpecRepository,
     sellerRepository: SellerRepository,
     priceRepository: PriceRepository,
+    cartRepository: CartRepository,
+    addressRepository: AddressRepository,
+    orderRepository: OrderRepository,
+    paymentRepository: PaymentRepository,
 ) {
     val config = PbShopConfig.from(environment.config)
 
@@ -67,5 +83,19 @@ fun Application.module(
 
     configureSerialization()
     configureHttp(config)
-    configureRouting(config, dbHealthService, authRepository, userRepository, categoryRepository, productRepository, specRepository, sellerRepository, priceRepository)
+    configureRouting(
+        config,
+        dbHealthService,
+        authRepository,
+        userRepository,
+        categoryRepository,
+        productRepository,
+        specRepository,
+        sellerRepository,
+        priceRepository,
+        cartRepository,
+        addressRepository,
+        orderRepository,
+        paymentRepository,
+    )
 }

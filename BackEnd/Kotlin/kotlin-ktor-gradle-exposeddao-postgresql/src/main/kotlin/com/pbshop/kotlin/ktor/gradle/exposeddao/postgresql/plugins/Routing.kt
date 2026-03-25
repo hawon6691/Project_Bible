@@ -170,6 +170,10 @@ fun Application.configureRouting(
     specRepository: SpecRepository,
     sellerRepository: SellerRepository,
     priceRepository: PriceRepository,
+    cartRepository: CartRepository,
+    addressRepository: AddressRepository,
+    orderRepository: OrderRepository,
+    paymentRepository: PaymentRepository,
 ) {
     val endpointSpecs = pbShopEndpointSpecs()
     val platformController = PlatformController(PlatformService(config, endpointSpecs))
@@ -183,10 +187,20 @@ fun Application.configureRouting(
     val specController = SpecController(SpecService(specRepository))
     val sellerController = SellerController(SellerService(sellerRepository))
     val priceController = PriceController(PriceService(priceRepository))
-    val cartController = CartController(CartService(CartRepository()))
-    val addressController = AddressController(AddressService(AddressRepository()))
-    val orderController = OrderController(OrderService(OrderRepository()))
-    val paymentController = PaymentController(PaymentService(PaymentRepository()))
+    val cartController = CartController(CartService(cartRepository))
+    val addressController = AddressController(AddressService(addressRepository))
+    val orderController =
+        OrderController(
+            OrderService(
+                repository = orderRepository,
+                addressRepository = addressRepository,
+                cartRepository = cartRepository,
+                productRepository = productRepository,
+                sellerRepository = sellerRepository,
+                priceRepository = priceRepository,
+            ),
+        )
+    val paymentController = PaymentController(PaymentService(paymentRepository, orderRepository))
     val reviewController = ReviewController(ReviewService(ReviewRepository()))
     val wishlistController = WishlistController(WishlistService(WishlistRepository()))
     val pointController = PointController(PointService(PointRepository()))

@@ -589,16 +589,199 @@ class ReviewWishlistPointApiTest {
 
 class CommunityInquirySupportApiTest {
     @Test
-    fun community_inquiry_and_support_routes_are_available() = testApplication {
+    fun community_inquiry_and_support_routes_follow_the_actual_contract() = testApplication {
         installPbShopApp()
 
-        val communityResponse = client.get("/api/v1/boards/1/posts") { pbHeaders(clientId = "community") }
-        val inquiryResponse = client.post("/api/v1/products/1/inquiries") { pbHeaders(role = "USER", clientId = "inquiry") }
-        val supportResponse = client.post("/api/v1/support/tickets") { pbHeaders(role = "USER", clientId = "support") }
+        val boardList = client.get("/api/v1/boards") { pbHeaders(clientId = "community-boards") }
+        val postList = client.get("/api/v1/boards/1/posts?page=1&limit=10&sort=newest") { pbHeaders(clientId = "community-post-list") }
+        val postCreate =
+            client.post("/api/v1/boards/1/posts") {
+                pbHeaders(role = "USER", clientId = "community-post-create")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"title":"새 커뮤니티 글","content":"커뮤니티 실구현 테스트 본문입니다."}""")
+            }
+        val postId = Json.parseToJsonElement(postCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val postUpdate =
+            client.patch("/api/v1/posts/$postId") {
+                pbHeaders(role = "USER", clientId = "community-post-update")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"title":"수정된 커뮤니티 글"}""")
+            }
+        val likeToggle =
+            client.post("/api/v1/posts/$postId/like") {
+                pbHeaders(role = "USER", clientId = "community-like")
+                header("X-User-Id", "4")
+            }
+        val commentCreate =
+            client.post("/api/v1/posts/$postId/comments") {
+                pbHeaders(role = "USER", clientId = "community-comment-create")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"content":"좋은 글 감사합니다."}""")
+            }
+        val commentId = Json.parseToJsonElement(commentCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val commentList = client.get("/api/v1/posts/$postId/comments") { pbHeaders(clientId = "community-comment-list") }
+        val commentDelete =
+            client.delete("/api/v1/comments/$commentId") {
+                pbHeaders(role = "USER", clientId = "community-comment-delete")
+                header("X-User-Id", "4")
+            }
+        val postDetail = client.get("/api/v1/posts/$postId") { pbHeaders(clientId = "community-post-detail") }
+        val postDelete =
+            client.delete("/api/v1/posts/$postId") {
+                pbHeaders(role = "USER", clientId = "community-post-delete")
+                header("X-User-Id", "4")
+            }
 
-        assertEquals(HttpStatusCode.OK, communityResponse.status)
-        assertEquals(HttpStatusCode.Created, inquiryResponse.status)
-        assertEquals(HttpStatusCode.Created, supportResponse.status)
+        val inquiryCreate =
+            client.post("/api/v1/products/1/inquiries") {
+                pbHeaders(role = "USER", clientId = "inquiry-create")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"title":"확장 슬롯 문의","content":"추가 SSD 슬롯이 있나요?","isSecret":false}""")
+            }
+        val inquiryId = Json.parseToJsonElement(inquiryCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val inquiryList = client.get("/api/v1/products/1/inquiries?page=1&limit=10") { pbHeaders(clientId = "inquiry-list") }
+        val inquiryMine =
+            client.get("/api/v1/inquiries/me?page=1&limit=10") {
+                pbHeaders(role = "USER", clientId = "inquiry-my")
+                header("X-User-Id", "4")
+            }
+        val inquiryAnswer =
+            client.post("/api/v1/inquiries/$inquiryId/answer") {
+                pbHeaders(role = "ADMIN", clientId = "inquiry-answer")
+                header("Content-Type", "application/json")
+                setBody("""{"answer":"네, 하단 슬롯 1개를 추가로 지원합니다."}""")
+            }
+        val inquiryDelete =
+            client.delete("/api/v1/inquiries/$inquiryId") {
+                pbHeaders(role = "USER", clientId = "inquiry-delete")
+                header("X-User-Id", "4")
+            }
+
+        val supportCreate =
+            client.post("/api/v1/support/tickets") {
+                pbHeaders(role = "USER", clientId = "support-create")
+                header("X-User-Id", "4")
+                setBody(
+                    MultiPartFormDataContent(
+                        formData {
+                            append("category", "ORDER")
+                            append("title", "주문 상태 문의")
+                            append("content", "주문한 상품의 출고 일정을 알고 싶습니다.")
+                            append(
+                                "attachments",
+                                "fake-ticket-image".encodeToByteArray(),
+                                Headers.build {
+                                    append(HttpHeaders.ContentDisposition, "filename=ticket-proof.png")
+                                    append(HttpHeaders.ContentType, ContentType.Image.PNG.toString())
+                                },
+                            )
+                        },
+                    ),
+                )
+            }
+        val ticketId = Json.parseToJsonElement(supportCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val supportList =
+            client.get("/api/v1/support/tickets?page=1&limit=10") {
+                pbHeaders(role = "USER", clientId = "support-list")
+                header("X-User-Id", "4")
+            }
+        val supportDetail =
+            client.get("/api/v1/support/tickets/$ticketId") {
+                pbHeaders(role = "USER", clientId = "support-detail")
+                header("X-User-Id", "4")
+            }
+        val supportReply =
+            client.post("/api/v1/support/tickets/$ticketId/reply") {
+                pbHeaders(role = "ADMIN", clientId = "support-reply")
+                header("X-User-Id", "1")
+                header("Content-Type", "application/json")
+                setBody("""{"content":"내일 오전에 출고될 예정입니다."}""")
+            }
+        val supportAdminList = client.get("/api/v1/admin/support/tickets?page=1&limit=10&status=OPEN") { pbHeaders(role = "ADMIN", clientId = "support-admin-list") }
+        val supportStatus =
+            client.patch("/api/v1/admin/support/tickets/$ticketId/status") {
+                pbHeaders(role = "ADMIN", clientId = "support-status")
+                header("Content-Type", "application/json")
+                setBody("""{"status":"RESOLVED"}""")
+            }
+
+        val faqList = client.get("/api/v1/faqs?category=ORDER&search=주문") { pbHeaders(clientId = "faq-list") }
+        val faqCreate =
+            client.post("/api/v1/faqs") {
+                pbHeaders(role = "ADMIN", clientId = "faq-create")
+                header("Content-Type", "application/json")
+                setBody("""{"category":"ACCOUNT","question":"휴면 계정은 언제 해제되나요?","answer":"로그인 후 즉시 해제됩니다.","sortOrder":3,"isActive":true}""")
+            }
+        val faqId = Json.parseToJsonElement(faqCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val faqUpdate =
+            client.patch("/api/v1/faqs/$faqId") {
+                pbHeaders(role = "ADMIN", clientId = "faq-update")
+                header("Content-Type", "application/json")
+                setBody("""{"answer":"본인 인증 후 즉시 해제됩니다.","isActive":true}""")
+            }
+        val faqDelete = client.delete("/api/v1/faqs/$faqId") { pbHeaders(role = "ADMIN", clientId = "faq-delete") }
+
+        val noticeList = client.get("/api/v1/notices?page=1&limit=10") { pbHeaders(clientId = "notice-list") }
+        val noticeCreate =
+            client.post("/api/v1/notices") {
+                pbHeaders(role = "ADMIN", clientId = "notice-create")
+                header("Content-Type", "application/json")
+                setBody("""{"title":"신규 이벤트 안내","content":"봄맞이 할인 이벤트가 시작됩니다.","isPinned":true}""")
+            }
+        val noticeId = Json.parseToJsonElement(noticeCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val noticeDetail = client.get("/api/v1/notices/$noticeId") { pbHeaders(clientId = "notice-detail") }
+        val noticeUpdate =
+            client.patch("/api/v1/notices/$noticeId") {
+                pbHeaders(role = "ADMIN", clientId = "notice-update")
+                header("Content-Type", "application/json")
+                setBody("""{"title":"수정된 이벤트 안내","isPinned":false}""")
+            }
+        val noticeDelete = client.delete("/api/v1/notices/$noticeId") { pbHeaders(role = "ADMIN", clientId = "notice-delete") }
+
+        assertEquals(HttpStatusCode.OK, boardList.status)
+        assertEquals(HttpStatusCode.OK, postList.status)
+        assertEquals(HttpStatusCode.Created, postCreate.status)
+        assertEquals(HttpStatusCode.OK, postUpdate.status)
+        assertEquals(HttpStatusCode.OK, likeToggle.status)
+        assertEquals(HttpStatusCode.Created, commentCreate.status)
+        assertEquals(HttpStatusCode.OK, commentList.status)
+        assertEquals(HttpStatusCode.OK, commentDelete.status)
+        assertEquals(HttpStatusCode.OK, postDetail.status)
+        assertEquals(HttpStatusCode.OK, postDelete.status)
+        assertEquals(HttpStatusCode.Created, inquiryCreate.status)
+        assertEquals(HttpStatusCode.OK, inquiryList.status)
+        assertEquals(HttpStatusCode.OK, inquiryMine.status)
+        assertEquals(HttpStatusCode.OK, inquiryAnswer.status)
+        assertEquals(HttpStatusCode.OK, inquiryDelete.status)
+        assertEquals(HttpStatusCode.Created, supportCreate.status)
+        assertEquals(HttpStatusCode.OK, supportList.status)
+        assertEquals(HttpStatusCode.OK, supportDetail.status)
+        assertEquals(HttpStatusCode.Created, supportReply.status)
+        assertEquals(HttpStatusCode.OK, supportAdminList.status)
+        assertEquals(HttpStatusCode.OK, supportStatus.status)
+        assertEquals(HttpStatusCode.OK, faqList.status)
+        assertEquals(HttpStatusCode.Created, faqCreate.status)
+        assertEquals(HttpStatusCode.OK, faqUpdate.status)
+        assertEquals(HttpStatusCode.OK, faqDelete.status)
+        assertEquals(HttpStatusCode.OK, noticeList.status)
+        assertEquals(HttpStatusCode.Created, noticeCreate.status)
+        assertEquals(HttpStatusCode.OK, noticeDetail.status)
+        assertEquals(HttpStatusCode.OK, noticeUpdate.status)
+        assertEquals(HttpStatusCode.OK, noticeDelete.status)
+        assertTrue(boardList.bodyAsText().contains("\"자유게시판\""))
+        assertTrue(postUpdate.bodyAsText().contains("수정된 커뮤니티 글"))
+        assertTrue(likeToggle.bodyAsText().contains("\"liked\""))
+        assertTrue(inquiryAnswer.bodyAsText().contains("\"status\": \"ANSWERED\""))
+        assertTrue(supportCreate.bodyAsText().contains("\"ticketNumber\""))
+        assertTrue(supportDetail.bodyAsText().contains("\"replies\""))
+        assertTrue(supportStatus.bodyAsText().contains("\"RESOLVED\""))
+        assertTrue(faqUpdate.bodyAsText().contains("본인 인증 후 즉시 해제됩니다"))
+        assertTrue(noticeDetail.bodyAsText().contains("\"viewCount\""))
+        assertTrue(noticeUpdate.bodyAsText().contains("수정된 이벤트 안내"))
     }
 }
 

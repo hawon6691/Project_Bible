@@ -177,6 +177,9 @@ fun Application.configureRouting(
     reviewRepository: ReviewRepository,
     wishlistRepository: WishlistRepository,
     pointRepository: PointRepository,
+    communityRepository: CommunityRepository,
+    inquiryRepository: InquiryRepository,
+    supportRepository: SupportRepository,
 ) {
     val endpointSpecs = pbShopEndpointSpecs()
     val platformController = PlatformController(PlatformService(config, endpointSpecs))
@@ -207,9 +210,9 @@ fun Application.configureRouting(
     val reviewController = ReviewController(ReviewService(reviewRepository, orderRepository))
     val wishlistController = WishlistController(WishlistService(wishlistRepository))
     val pointController = PointController(PointService(pointRepository))
-    val communityController = CommunityController(CommunityService(CommunityRepository()))
-    val inquiryController = InquiryController(InquiryService(InquiryRepository()))
-    val supportController = SupportController(SupportService(SupportRepository()))
+    val communityController = CommunityController(CommunityService(communityRepository))
+    val inquiryController = InquiryController(InquiryService(inquiryRepository))
+    val supportController = SupportController(SupportService(supportRepository))
     val activityController = ActivityController(ActivityService(ActivityRepository()))
     val chatController = ChatController(ChatService(ChatRepository()))
     val pushController = PushController(PushService(PushRepository()))

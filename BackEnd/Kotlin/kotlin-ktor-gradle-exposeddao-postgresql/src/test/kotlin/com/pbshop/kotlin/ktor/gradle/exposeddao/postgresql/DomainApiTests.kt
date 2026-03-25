@@ -316,28 +316,167 @@ class SpecSellerPriceApiTest {
 
 class CartAddressApiTest {
     @Test
-    fun cart_and_address_routes_require_user_role() = testApplication {
+    fun cart_and_address_routes_follow_the_actual_contract() = testApplication {
         installPbShopApp()
 
-        val cartResponse = client.get("/api/v1/cart") { pbHeaders(role = "USER", clientId = "cart") }
-        val addressResponse = client.get("/api/v1/addresses") { pbHeaders(role = "USER", clientId = "address") }
+        val cartList =
+            client.get("/api/v1/cart") {
+                pbHeaders(role = "USER", clientId = "cart-list")
+                header("X-User-Id", "4")
+            }
+        val cartCreate =
+            client.post("/api/v1/cart") {
+                pbHeaders(role = "USER", clientId = "cart-create")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"productId":3,"sellerId":1,"quantity":2,"selectedOptions":"기본"}""")
+            }
+        val createdCartItemId = Json.parseToJsonElement(cartCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val cartUpdate =
+            client.patch("/api/v1/cart/$createdCartItemId") {
+                pbHeaders(role = "USER", clientId = "cart-update")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"quantity":3}""")
+            }
+        val cartDelete =
+            client.delete("/api/v1/cart/$createdCartItemId") {
+                pbHeaders(role = "USER", clientId = "cart-delete")
+                header("X-User-Id", "4")
+            }
+        val cartClear =
+            client.delete("/api/v1/cart") {
+                pbHeaders(role = "USER", clientId = "cart-clear")
+                header("X-User-Id", "4")
+            }
 
-        assertEquals(HttpStatusCode.OK, cartResponse.status)
-        assertEquals(HttpStatusCode.OK, addressResponse.status)
+        val addressList =
+            client.get("/api/v1/addresses") {
+                pbHeaders(role = "USER", clientId = "address-list")
+                header("X-User-Id", "4")
+            }
+        val addressCreate =
+            client.post("/api/v1/addresses") {
+                pbHeaders(role = "USER", clientId = "address-create")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"label":"부모님댁","recipientName":"홍길동","phone":"01099998888","zipCode":"13579","address":"서울시 송파구 올림픽로 300","addressDetail":"35층","isDefault":false}""")
+            }
+        val createdAddressId = Json.parseToJsonElement(addressCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val addressUpdate =
+            client.patch("/api/v1/addresses/$createdAddressId") {
+                pbHeaders(role = "USER", clientId = "address-update")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"label":"새 배송지","isDefault":true}""")
+            }
+        val addressDelete =
+            client.delete("/api/v1/addresses/$createdAddressId") {
+                pbHeaders(role = "USER", clientId = "address-delete")
+                header("X-User-Id", "4")
+            }
+
+        assertEquals(HttpStatusCode.OK, cartList.status)
+        assertEquals(HttpStatusCode.Created, cartCreate.status)
+        assertEquals(HttpStatusCode.OK, cartUpdate.status)
+        assertEquals(HttpStatusCode.OK, cartDelete.status)
+        assertEquals(HttpStatusCode.OK, cartClear.status)
+        assertEquals(HttpStatusCode.OK, addressList.status)
+        assertEquals(HttpStatusCode.Created, addressCreate.status)
+        assertEquals(HttpStatusCode.OK, addressUpdate.status)
+        assertEquals(HttpStatusCode.OK, addressDelete.status)
+        assertTrue(cartList.bodyAsText().contains("\"게이밍 노트북 A15\""))
+        assertTrue(cartUpdate.bodyAsText().contains("\"quantity\": 3"))
+        assertTrue(addressList.bodyAsText().contains("\"recipientName\": \"홍길동\""))
+        assertTrue(addressUpdate.bodyAsText().contains("\"isDefault\": true"))
     }
 }
 
 class OrderPaymentApiTest {
     @Test
-    fun order_and_payment_routes_expose_expected_state_payloads() = testApplication {
+    fun order_and_payment_routes_follow_the_actual_contract() = testApplication {
         installPbShopApp()
 
-        val orderResponse = client.post("/api/v1/orders") { pbHeaders(role = "USER", clientId = "order") }
-        val paymentResponse = client.post("/api/v1/payments") { pbHeaders(role = "USER", clientId = "payment") }
+        val orderCreate =
+            client.post("/api/v1/orders") {
+                pbHeaders(role = "USER", clientId = "order-create")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody(
+                    """
+                    {
+                      "addressId": 1,
+                      "items": [
+                        { "productId": 1, "sellerId": 1, "quantity": 1, "selectedOptions": "RAM:16GB,SSD:1TB" }
+                      ],
+                      "fromCart": false,
+                      "usePoint": 5000,
+                      "memo": "부재 시 문 앞"
+                    }
+                    """.trimIndent(),
+                )
+            }
+        val createdOrderId = Json.parseToJsonElement(orderCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val orderList =
+            client.get("/api/v1/orders?page=1&limit=10") {
+                pbHeaders(role = "USER", clientId = "order-list")
+                header("X-User-Id", "4")
+            }
+        val orderDetail =
+            client.get("/api/v1/orders/$createdOrderId") {
+                pbHeaders(role = "USER", clientId = "order-detail")
+                header("X-User-Id", "4")
+            }
+        val adminList =
+            client.get("/api/v1/admin/orders?page=1&limit=10") {
+                pbHeaders(role = "ADMIN", clientId = "order-admin-list")
+            }
+        val adminUpdate =
+            client.patch("/api/v1/admin/orders/$createdOrderId/status") {
+                pbHeaders(role = "ADMIN", clientId = "order-admin-update")
+                header("Content-Type", "application/json")
+                setBody("""{"status":"SHIPPING"}""")
+            }
+        val paymentCreate =
+            client.post("/api/v1/payments") {
+                pbHeaders(role = "USER", clientId = "payment-create")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"orderId":$createdOrderId,"method":"CARD"}""")
+            }
+        val paymentId = Json.parseToJsonElement(paymentCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val paymentDetail =
+            client.get("/api/v1/payments/$paymentId") {
+                pbHeaders(role = "USER", clientId = "payment-detail")
+                header("X-User-Id", "4")
+            }
+        val paymentRefund =
+            client.post("/api/v1/payments/$paymentId/refund") {
+                pbHeaders(role = "USER", clientId = "payment-refund")
+                header("X-User-Id", "4")
+            }
+        val orderCancel =
+            client.post("/api/v1/orders/$createdOrderId/cancel") {
+                pbHeaders(role = "USER", clientId = "order-cancel")
+                header("X-User-Id", "4")
+            }
 
-        assertEquals(HttpStatusCode.Created, orderResponse.status)
-        assertEquals(HttpStatusCode.Created, paymentResponse.status)
-        assertTrue(orderResponse.bodyAsText().contains("\"ORDER_PLACED\""))
+        assertEquals(HttpStatusCode.Created, orderCreate.status)
+        assertEquals(HttpStatusCode.OK, orderList.status)
+        assertEquals(HttpStatusCode.OK, orderDetail.status)
+        assertEquals(HttpStatusCode.OK, adminList.status)
+        assertEquals(HttpStatusCode.OK, adminUpdate.status)
+        assertEquals(HttpStatusCode.Created, paymentCreate.status)
+        assertEquals(HttpStatusCode.OK, paymentDetail.status)
+        assertEquals(HttpStatusCode.OK, paymentRefund.status)
+        assertEquals(HttpStatusCode.OK, orderCancel.status)
+        assertTrue(orderCreate.bodyAsText().contains("\"ORDER_PLACED\""))
+        assertTrue(orderList.bodyAsText().contains("\"totalCount\""))
+        assertTrue(orderDetail.bodyAsText().contains("\"shippingAddress\""))
+        assertTrue(adminUpdate.bodyAsText().contains("\"SHIPPING\""))
+        assertTrue(paymentCreate.bodyAsText().contains("\"COMPLETED\""))
+        assertTrue(paymentRefund.bodyAsText().contains("\"REFUNDED\""))
+        assertTrue(orderCancel.bodyAsText().contains("\"CANCELLED\""))
     }
 }
 

@@ -2,10 +2,18 @@ package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql
 
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.AuthRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.InMemoryAuthRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.address.AddressRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.address.InMemoryAddressRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.cart.CartRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.cart.InMemoryCartRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.CategoryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.InMemoryCategoryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthCheckResult
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.InMemoryOrderRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.OrderRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.InMemoryPaymentRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.PaymentRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.price.InMemoryPriceRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.price.PriceRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.InMemoryProductRepository
@@ -33,6 +41,10 @@ internal fun ApplicationTestBuilder.installPbShopApp(
     specRepository: SpecRepository = InMemorySpecRepository.seeded(),
     sellerRepository: SellerRepository = InMemorySellerRepository.seeded(),
     priceRepository: PriceRepository = InMemoryPriceRepository.seeded(),
+    cartRepository: CartRepository = InMemoryCartRepository.seeded(),
+    addressRepository: AddressRepository = InMemoryAddressRepository.seeded(),
+    orderRepository: OrderRepository = InMemoryOrderRepository.seeded(),
+    paymentRepository: PaymentRepository = InMemoryPaymentRepository.seeded(),
     generalPerMinute: Int = 60,
     authPerMinute: Int = 10,
 ) {
@@ -50,6 +62,10 @@ internal fun ApplicationTestBuilder.installPbShopApp(
             specRepository = specRepository,
             sellerRepository = sellerRepository,
             priceRepository = priceRepository,
+            cartRepository = cartRepository,
+            addressRepository = addressRepository,
+            orderRepository = orderRepository,
+            paymentRepository = paymentRepository,
         )
     }
 }

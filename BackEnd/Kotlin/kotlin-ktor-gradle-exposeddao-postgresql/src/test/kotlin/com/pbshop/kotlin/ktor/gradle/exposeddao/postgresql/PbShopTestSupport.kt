@@ -6,8 +6,14 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.CategoryRepo
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.InMemoryCategoryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthCheckResult
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.price.InMemoryPriceRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.price.PriceRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.InMemoryProductRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.ProductRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.InMemorySellerRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.SellerRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.InMemorySpecRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.SpecRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.InMemoryUserRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserRepository
 import io.ktor.client.request.header
@@ -24,6 +30,9 @@ internal fun ApplicationTestBuilder.installPbShopApp(
     userRepository: UserRepository = InMemoryUserRepository.seeded(),
     categoryRepository: CategoryRepository = InMemoryCategoryRepository.seeded(),
     productRepository: ProductRepository = InMemoryProductRepository.seeded(),
+    specRepository: SpecRepository = InMemorySpecRepository.seeded(),
+    sellerRepository: SellerRepository = InMemorySellerRepository.seeded(),
+    priceRepository: PriceRepository = InMemoryPriceRepository.seeded(),
     generalPerMinute: Int = 60,
     authPerMinute: Int = 10,
 ) {
@@ -38,6 +47,9 @@ internal fun ApplicationTestBuilder.installPbShopApp(
             userRepository = userRepository,
             categoryRepository = categoryRepository,
             productRepository = productRepository,
+            specRepository = specRepository,
+            sellerRepository = sellerRepository,
+            priceRepository = priceRepository,
         )
     }
 }

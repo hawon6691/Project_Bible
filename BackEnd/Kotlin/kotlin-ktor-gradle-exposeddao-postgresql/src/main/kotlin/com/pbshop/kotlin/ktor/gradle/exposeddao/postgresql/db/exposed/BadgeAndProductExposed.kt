@@ -4,6 +4,7 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.timestamp
 
 enum class ProductStatus {
@@ -122,6 +123,15 @@ object ProductSpecsTable : IntIdTable("product_specs") {
     val createdAt = timestamp("created_at")
 }
 
+object SpecScoresTable : IntIdTable("spec_scores") {
+    val specDefinition = reference("spec_definition_id", SpecDefinitionsTable)
+    val value = varchar("value", 200)
+    val score = integer("score")
+    val benchmarkSource = varchar("benchmark_source", 100).nullable()
+    val createdAt = timestamp("created_at")
+    val updatedAt = timestamp("updated_at")
+}
+
 object SellersTable : IntIdTable("sellers") {
     val name = varchar("name", 100)
     val url = varchar("url", 500)
@@ -149,6 +159,25 @@ object PriceEntriesTable : IntIdTable("price_entries") {
     val crawledAt = timestamp("crawled_at").nullable()
     val createdAt = timestamp("created_at")
     val updatedAt = timestamp("updated_at")
+}
+
+object PriceHistoryTable : IntIdTable("price_history") {
+    val product = reference("product_id", ProductsTable)
+    val date = date("date")
+    val lowestPrice = integer("lowest_price")
+    val averagePrice = integer("average_price")
+    val highestPrice = integer("highest_price")
+    val createdAt = timestamp("created_at")
+}
+
+object PriceAlertsTable : IntIdTable("price_alerts") {
+    val user = reference("user_id", UsersTable)
+    val product = reference("product_id", ProductsTable)
+    val targetPrice = integer("target_price")
+    val isTriggered = bool("is_triggered")
+    val triggeredAt = timestamp("triggered_at").nullable()
+    val isActive = bool("is_active")
+    val createdAt = timestamp("created_at")
 }
 
 object BadgesTable : IntIdTable("badges") {

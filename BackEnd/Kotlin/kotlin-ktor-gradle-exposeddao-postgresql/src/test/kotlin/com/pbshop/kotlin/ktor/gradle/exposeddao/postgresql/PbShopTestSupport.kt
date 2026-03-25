@@ -8,8 +8,12 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.cart.CartRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.cart.InMemoryCartRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.CategoryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.InMemoryCategoryRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.community.CommunityRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.community.InMemoryCommunityRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthCheckResult
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.InMemoryInquiryRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.InquiryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.InMemoryOrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.OrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.InMemoryPaymentRepository
@@ -26,6 +30,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.InMemorySeller
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.SellerRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.InMemorySpecRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.SpecRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.support.InMemorySupportRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.support.SupportRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.InMemoryUserRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.wishlist.InMemoryWishlistRepository
@@ -54,6 +60,9 @@ internal fun ApplicationTestBuilder.installPbShopApp(
     reviewRepository: ReviewRepository = InMemoryReviewRepository.seeded(),
     wishlistRepository: WishlistRepository = InMemoryWishlistRepository.seeded(),
     pointRepository: PointRepository = InMemoryPointRepository.seeded(),
+    communityRepository: CommunityRepository = InMemoryCommunityRepository.seeded(),
+    inquiryRepository: InquiryRepository = InMemoryInquiryRepository.seeded(),
+    supportRepository: SupportRepository = InMemorySupportRepository.seeded(),
     generalPerMinute: Int = 60,
     authPerMinute: Int = 10,
 ) {
@@ -78,6 +87,9 @@ internal fun ApplicationTestBuilder.installPbShopApp(
             reviewRepository = reviewRepository,
             wishlistRepository = wishlistRepository,
             pointRepository = pointRepository,
+            communityRepository = communityRepository,
+            inquiryRepository = inquiryRepository,
+            supportRepository = supportRepository,
         )
     }
 }

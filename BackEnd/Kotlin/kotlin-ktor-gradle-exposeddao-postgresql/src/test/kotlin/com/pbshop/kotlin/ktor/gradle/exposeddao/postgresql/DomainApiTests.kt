@@ -5,6 +5,7 @@ import io.ktor.client.request.delete
 import io.ktor.client.request.header
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.request.forms.MultiPartFormDataContent
@@ -231,16 +232,85 @@ class ProductApiTest {
 
 class SpecSellerPriceApiTest {
     @Test
-    fun spec_seller_and_price_routes_are_available() = testApplication {
+    fun spec_seller_and_price_routes_follow_the_actual_contract() = testApplication {
         installPbShopApp()
 
         val specResponse = client.get("/api/v1/specs/definitions") { pbHeaders(clientId = "specs") }
-        val sellerResponse = client.get("/api/v1/sellers") { pbHeaders(clientId = "sellers") }
+        val specCompare =
+            client.post("/api/v1/specs/compare") {
+                pbHeaders(clientId = "specs-compare")
+                header("Content-Type", "application/json")
+                setBody("""{"productIds":[1,2]}""")
+            }
+        val specReplace =
+            client.put("/api/v1/products/1/specs") {
+                pbHeaders(role = "ADMIN", clientId = "product-specs-replace")
+                header("Content-Type", "application/json")
+                setBody("""[{"specDefinitionId":1,"value":"Intel Ultra 9"},{"specDefinitionId":2,"value":"32","numericValue":32.0}]""")
+            }
+        val sellerResponse = client.get("/api/v1/sellers?page=1&limit=2") { pbHeaders(clientId = "sellers") }
+        val sellerCreate =
+            client.post("/api/v1/sellers") {
+                pbHeaders(role = "ADMIN", clientId = "seller-create")
+                header("Content-Type", "application/json")
+                setBody("""{"name":"딜마트","url":"https://dealmart.example.com","trustScore":88,"isActive":true}""")
+            }
+        val sellerId = Json.parseToJsonElement(sellerCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val sellerUpdate =
+            client.patch("/api/v1/sellers/$sellerId") {
+                pbHeaders(role = "ADMIN", clientId = "seller-update")
+                header("Content-Type", "application/json")
+                setBody("""{"description":"신규 판매처","trustGrade":"A"}""")
+            }
+        val sellerDetail = client.get("/api/v1/sellers/$sellerId") { pbHeaders(clientId = "seller-detail") }
         val priceResponse = client.get("/api/v1/products/1/prices") { pbHeaders(clientId = "prices") }
+        val priceCreate =
+            client.post("/api/v1/products/1/prices") {
+                pbHeaders(role = "SELLER", clientId = "price-create")
+                header("Content-Type", "application/json")
+                setBody("""{"sellerId":3,"price":1690000,"shippingInfo":"무료배송","productUrl":"https://carworld.example.com/p/1","shippingFee":0,"shippingType":"FREE"}""")
+            }
+        val priceId = Json.parseToJsonElement(priceCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val priceUpdate =
+            client.patch("/api/v1/prices/$priceId") {
+                pbHeaders(role = "SELLER", clientId = "price-update")
+                header("Content-Type", "application/json")
+                setBody("""{"price":1680000,"shippingInfo":"특급배송"}""")
+            }
+        val priceHistory = client.get("/api/v1/products/1/price-history") { pbHeaders(clientId = "price-history") }
+        val alertCreate =
+            client.post("/api/v1/price-alerts") {
+                pbHeaders(role = "USER", clientId = "price-alert-create")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"productId":1,"targetPrice":1650000,"isActive":true}""")
+            }
+        val alertList =
+            client.get("/api/v1/price-alerts?page=1&limit=10") {
+                pbHeaders(role = "USER", clientId = "price-alert-list")
+                header("X-User-Id", "4")
+            }
+        val priceDelete = client.delete("/api/v1/prices/$priceId") { pbHeaders(role = "ADMIN", clientId = "price-delete") }
 
         assertEquals(HttpStatusCode.OK, specResponse.status)
+        assertEquals(HttpStatusCode.OK, specCompare.status)
+        assertEquals(HttpStatusCode.OK, specReplace.status)
         assertEquals(HttpStatusCode.OK, sellerResponse.status)
+        assertEquals(HttpStatusCode.Created, sellerCreate.status)
+        assertEquals(HttpStatusCode.OK, sellerUpdate.status)
+        assertEquals(HttpStatusCode.OK, sellerDetail.status)
         assertEquals(HttpStatusCode.OK, priceResponse.status)
+        assertEquals(HttpStatusCode.Created, priceCreate.status)
+        assertEquals(HttpStatusCode.OK, priceUpdate.status)
+        assertEquals(HttpStatusCode.OK, priceHistory.status)
+        assertEquals(HttpStatusCode.Created, alertCreate.status)
+        assertEquals(HttpStatusCode.OK, alertList.status)
+        assertEquals(HttpStatusCode.OK, priceDelete.status)
+        assertTrue(specCompare.bodyAsText().contains("\"diff\""))
+        assertTrue(specReplace.bodyAsText().contains("Intel Ultra 9"))
+        assertTrue(sellerDetail.bodyAsText().contains("딜마트"))
+        assertTrue(priceUpdate.bodyAsText().contains("1680000"))
+        assertTrue(alertList.bodyAsText().contains("\"targetPrice\""))
     }
 }
 

@@ -11,8 +11,14 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.JdbcDbHealthServic
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureHttp
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureRouting
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureSerialization
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.price.ExposedDaoPriceRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.price.PriceRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.ExposedDaoProductRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.ProductRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.ExposedDaoSellerRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.SellerRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.ExposedDaoSpecRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.SpecRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.ExposedDaoUserRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserRepository
 import io.ktor.server.application.Application
@@ -37,6 +43,9 @@ fun Application.module() {
         userRepository = ExposedDaoUserRepository(databaseFactory),
         categoryRepository = ExposedDaoCategoryRepository(databaseFactory),
         productRepository = ExposedDaoProductRepository(databaseFactory),
+        specRepository = ExposedDaoSpecRepository(databaseFactory),
+        sellerRepository = ExposedDaoSellerRepository(databaseFactory),
+        priceRepository = ExposedDaoPriceRepository(databaseFactory),
     )
 }
 
@@ -46,6 +55,9 @@ fun Application.module(
     userRepository: UserRepository,
     categoryRepository: CategoryRepository,
     productRepository: ProductRepository,
+    specRepository: SpecRepository,
+    sellerRepository: SellerRepository,
+    priceRepository: PriceRepository,
 ) {
     val config = PbShopConfig.from(environment.config)
 
@@ -55,5 +67,5 @@ fun Application.module(
 
     configureSerialization()
     configureHttp(config)
-    configureRouting(config, dbHealthService, authRepository, userRepository, categoryRepository, productRepository)
+    configureRouting(config, dbHealthService, authRepository, userRepository, categoryRepository, productRepository, specRepository, sellerRepository, priceRepository)
 }

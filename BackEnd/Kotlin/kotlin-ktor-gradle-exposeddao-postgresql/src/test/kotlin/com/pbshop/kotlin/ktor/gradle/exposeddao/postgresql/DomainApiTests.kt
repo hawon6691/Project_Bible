@@ -787,16 +787,124 @@ class CommunityInquirySupportApiTest {
 
 class ActivityChatPushApiTest {
     @Test
-    fun activity_chat_and_push_routes_are_available() = testApplication {
+    fun activity_chat_and_push_routes_follow_the_actual_contract() = testApplication {
         installPbShopApp()
 
-        val activityResponse = client.get("/api/v1/activity/views") { pbHeaders(role = "USER", clientId = "activity") }
-        val chatResponse = client.post("/api/v1/chat/rooms") { pbHeaders(role = "USER", clientId = "chat") }
-        val pushResponse = client.post("/api/v1/push/subscriptions") { pbHeaders(role = "USER", clientId = "push") }
+        val viewList =
+            client.get("/api/v1/activity/views?page=1&limit=10") {
+                pbHeaders(role = "USER", clientId = "activity-views")
+                header("X-User-Id", "4")
+            }
+        val searchList =
+            client.get("/api/v1/activity/searches?page=1&limit=10") {
+                pbHeaders(role = "USER", clientId = "activity-searches")
+                header("X-User-Id", "4")
+            }
+        val deleteSearch =
+            client.delete("/api/v1/activity/searches/1") {
+                pbHeaders(role = "USER", clientId = "activity-search-delete")
+                header("X-User-Id", "4")
+            }
+        val clearSearches =
+            client.delete("/api/v1/activity/searches") {
+                pbHeaders(role = "USER", clientId = "activity-search-clear")
+                header("X-User-Id", "4")
+            }
+        val clearViews =
+            client.delete("/api/v1/activity/views") {
+                pbHeaders(role = "USER", clientId = "activity-view-clear")
+                header("X-User-Id", "4")
+            }
 
-        assertEquals(HttpStatusCode.OK, activityResponse.status)
-        assertEquals(HttpStatusCode.Created, chatResponse.status)
-        assertEquals(HttpStatusCode.Created, pushResponse.status)
+        val chatCreate =
+            client.post("/api/v1/chat/rooms") {
+                pbHeaders(role = "USER", clientId = "chat-create")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"name":"배송 문의 신규 방","isPrivate":true}""")
+            }
+        val createdRoomId = Json.parseToJsonElement(chatCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val chatList =
+            client.get("/api/v1/chat/rooms?page=1&limit=10") {
+                pbHeaders(role = "USER", clientId = "chat-list")
+                header("X-User-Id", "4")
+            }
+        val adminChatList = client.get("/api/v1/chat/rooms?page=1&limit=10") { pbHeaders(role = "ADMIN", clientId = "chat-admin-list") }
+        val chatMessages =
+            client.get("/api/v1/chat/rooms/1/messages?page=1&limit=10") {
+                pbHeaders(role = "USER", clientId = "chat-messages")
+                header("X-User-Id", "4")
+            }
+        val forbiddenMessages =
+            client.get("/api/v1/chat/rooms/1/messages?page=1&limit=10") {
+                pbHeaders(role = "USER", clientId = "chat-messages-forbidden")
+                header("X-User-Id", "5")
+            }
+        val closeRoom =
+            client.patch("/api/v1/chat/rooms/$createdRoomId/close") {
+                pbHeaders(role = "USER", clientId = "chat-close")
+                header("X-User-Id", "4")
+            }
+
+        val subscribe =
+            client.post("/api/v1/push/subscriptions") {
+                pbHeaders(role = "USER", clientId = "push-subscribe")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"endpoint":"https://push.example.com/sub/new-1","p256dhKey":"k1","authKey":"a1","expirationTime":1741000000000}""")
+            }
+        val subscriptionList =
+            client.get("/api/v1/push/subscriptions") {
+                pbHeaders(role = "USER", clientId = "push-list")
+                header("X-User-Id", "4")
+            }
+        val preferenceGet =
+            client.get("/api/v1/push/preferences") {
+                pbHeaders(role = "USER", clientId = "push-pref-get")
+                header("X-User-Id", "4")
+            }
+        val preferenceUpdate =
+            client.post("/api/v1/push/preferences") {
+                pbHeaders(role = "USER", clientId = "push-pref-update")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"priceAlertEnabled":false,"orderStatusEnabled":true,"chatMessageEnabled":false,"dealEnabled":true}""")
+            }
+        val unsubscribe =
+            client.post("/api/v1/push/subscriptions/unsubscribe") {
+                pbHeaders(role = "USER", clientId = "push-unsubscribe")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"endpoint":"https://push.example.com/sub/new-1"}""")
+            }
+
+        assertEquals(HttpStatusCode.OK, viewList.status)
+        assertEquals(HttpStatusCode.OK, searchList.status)
+        assertEquals(HttpStatusCode.OK, deleteSearch.status)
+        assertEquals(HttpStatusCode.OK, clearSearches.status)
+        assertEquals(HttpStatusCode.OK, clearViews.status)
+        assertEquals(HttpStatusCode.Created, chatCreate.status)
+        assertEquals(HttpStatusCode.OK, chatList.status)
+        assertEquals(HttpStatusCode.OK, adminChatList.status)
+        assertEquals(HttpStatusCode.OK, chatMessages.status)
+        assertEquals(HttpStatusCode.Forbidden, forbiddenMessages.status)
+        assertEquals(HttpStatusCode.OK, closeRoom.status)
+        assertEquals(HttpStatusCode.Created, subscribe.status)
+        assertEquals(HttpStatusCode.OK, subscriptionList.status)
+        assertEquals(HttpStatusCode.OK, preferenceGet.status)
+        assertEquals(HttpStatusCode.OK, preferenceUpdate.status)
+        assertEquals(HttpStatusCode.OK, unsubscribe.status)
+        assertTrue(viewList.bodyAsText().contains("\"productName\""))
+        assertTrue(searchList.bodyAsText().contains("\"keyword\""))
+        assertTrue(chatList.bodyAsText().contains("\"배송 문의 방\""))
+        assertTrue(adminChatList.bodyAsText().contains("\"status\""))
+        assertTrue(chatMessages.bodyAsText().contains("배송 관련 문의드립니다"))
+        assertTrue(closeRoom.bodyAsText().contains("\"status\": \"CLOSED\""))
+        assertTrue(subscribe.bodyAsText().contains("https://push.example.com/sub/new-1"))
+        assertTrue(subscriptionList.bodyAsText().contains("\"isActive\": true"))
+        assertTrue(preferenceGet.bodyAsText().contains("\"priceAlertEnabled\""))
+        assertTrue(preferenceUpdate.bodyAsText().contains("\"chatMessageEnabled\": false"))
+        assertTrue(unsubscribe.bodyAsText().contains("\"success\": true"))
     }
 }
 

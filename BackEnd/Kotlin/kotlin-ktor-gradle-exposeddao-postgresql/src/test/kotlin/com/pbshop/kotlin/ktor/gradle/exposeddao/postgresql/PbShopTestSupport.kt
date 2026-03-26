@@ -2,12 +2,16 @@ package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql
 
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.AuthRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.InMemoryAuthRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.activity.ActivityRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.activity.InMemoryActivityRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.address.AddressRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.address.InMemoryAddressRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.cart.CartRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.cart.InMemoryCartRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.CategoryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.InMemoryCategoryRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.chat.ChatRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.chat.InMemoryChatRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.community.CommunityRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.community.InMemoryCommunityRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthCheckResult
@@ -24,6 +28,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.price.InMemoryPriceRe
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.price.PriceRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.InMemoryProductRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.ProductRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.push.InMemoryPushRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.push.PushRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.review.InMemoryReviewRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.review.ReviewRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.InMemorySellerRepository
@@ -63,6 +69,9 @@ internal fun ApplicationTestBuilder.installPbShopApp(
     communityRepository: CommunityRepository = InMemoryCommunityRepository.seeded(),
     inquiryRepository: InquiryRepository = InMemoryInquiryRepository.seeded(),
     supportRepository: SupportRepository = InMemorySupportRepository.seeded(),
+    activityRepository: ActivityRepository = InMemoryActivityRepository.seeded(),
+    chatRepository: ChatRepository = InMemoryChatRepository.seeded(),
+    pushRepository: PushRepository = InMemoryPushRepository.seeded(),
     generalPerMinute: Int = 60,
     authPerMinute: Int = 10,
 ) {
@@ -90,6 +99,9 @@ internal fun ApplicationTestBuilder.installPbShopApp(
             communityRepository = communityRepository,
             inquiryRepository = inquiryRepository,
             supportRepository = supportRepository,
+            activityRepository = activityRepository,
+            chatRepository = chatRepository,
+            pushRepository = pushRepository,
         )
     }
 }

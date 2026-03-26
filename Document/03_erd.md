@@ -5,6 +5,672 @@
 
 ---
 
+## 0. Mermaid 개요도
+
+> 아래 다이어그램은 전체 73개 테이블을 도메인별로 한 번에 볼 수 있도록 정리한 개요도입니다.
+
+```mermaid
+flowchart TB
+    subgraph A[계정 / 회원 / 공통설정]
+        u[users]
+        addr[addresses]
+        pt[point_transactions]
+        ev[email_verifications]
+        usa[user_social_accounts]
+        fr[friendships]
+        bd[badges]
+        ubd[user_badges]
+        tr[translations]
+        exr[exchange_rates]
+        adm[admin_settings]
+    end
+
+    subgraph B[상품 / 카테고리 / 가격 / 판매처]
+        cat[categories]
+        prod[products]
+        popt[product_options]
+        pimg[product_images]
+        sdef[spec_definitions]
+        pspec[product_specs]
+        sscore[spec_scores]
+        sell[sellers]
+        pentry[price_entries]
+        phist[price_history]
+        palert[price_alerts]
+        ppred[price_predictions]
+        strust[seller_trust_metrics]
+        srev[seller_reviews]
+        ivar[image_variants]
+        pmap[product_mappings]
+        fraud[fraud_alerts]
+        usedp[used_prices]
+    end
+
+    subgraph C[장바구니 / 주문 / 결제 / 후기 / 고객지원 / 활동 / 푸시]
+        cart[cart_items]
+        ord[orders]
+        oitem[order_items]
+        pay[payments]
+        rev[reviews]
+        rimg[review_images]
+        rtag[review_tags]
+        wish[wishlists]
+        inq[inquiries]
+        st[support_tickets]
+        trep[ticket_replies]
+        faq[faqs]
+        notice[notices]
+        viewh[view_history]
+        searchh[search_history]
+        psub[push_subscriptions]
+        pnoti[push_notifications]
+    end
+
+    subgraph D[커뮤니티 / 채팅 / 숏폼 / 뉴스]
+        board[boards]
+        post[posts]
+        comment[comments]
+        plike[post_likes]
+        croom[chat_rooms]
+        cmsg[chat_messages]
+        sform[short_forms]
+        sfprod[short_form_products]
+        sflike[short_form_likes]
+        attach[attachments]
+        ncat[news_categories]
+        nart[news_articles]
+        nrprod[news_related_products]
+    end
+
+    subgraph E[추천 / 검색 / 크롤러 / PC견적 / 자동차 / 역경매]
+        rec[recommendations]
+        deal[deals]
+        dprod[deal_products]
+        slog[search_logs]
+        ssyn[search_synonyms]
+        cjob[crawler_jobs]
+        clog[crawler_logs]
+        pcb[pc_builds]
+        bpart[build_parts]
+        crule[compatibility_rules]
+        car[car_models]
+        lease[lease_offers]
+        auc[auctions]
+        bid[bids]
+    end
+
+    u --> addr
+    u --> pt
+    u --> ev
+    u --> usa
+    u --> fr
+    u --> ubd
+    bd --> ubd
+    u --> adm
+
+    cat --> cat
+    cat --> prod
+    cat --> sdef
+    prod --> popt
+    prod --> pimg
+    pimg --> ivar
+    prod --> pspec
+    sdef --> pspec
+    sdef --> sscore
+    prod --> pentry
+    sell --> pentry
+    prod --> phist
+    prod --> palert
+    prod --> ppred
+    sell --> strust
+    sell --> srev
+    sell --> pmap
+    prod --> pmap
+    prod --> fraud
+    prod --> usedp
+
+    u --> cart
+    u --> ord
+    ord --> oitem
+    ord --> pay
+    prod --> oitem
+    sell --> oitem
+    pentry --> oitem
+    u --> rev
+    prod --> rev
+    rev --> rimg
+    rev --> rtag
+    u --> wish
+    prod --> wish
+    u --> inq
+    prod --> inq
+    u --> st
+    st --> trep
+    u --> viewh
+    prod --> viewh
+    u --> searchh
+    u --> psub
+    u --> pnoti
+
+    board --> post
+    u --> post
+    post --> comment
+    u --> comment
+    post --> plike
+    u --> plike
+    croom --> cmsg
+    u --> croom
+    u --> cmsg
+    u --> sform
+    sform --> sfprod
+    prod --> sfprod
+    sform --> sflike
+    u --> sflike
+    post --> attach
+    ncat --> nart
+    nart --> nrprod
+    prod --> nrprod
+
+    u --> rec
+    prod --> rec
+    deal --> dprod
+    prod --> dprod
+    u --> slog
+    cjob --> clog
+    cat --> cjob
+    u --> pcb
+    pcb --> bpart
+    crule --> bpart
+    car --> lease
+    u --> auc
+    auc --> bid
+    u --> bid
+```
+
+## 0.1 Mermaid 상세 ERD
+
+> 아래 다이어그램은 PK/FK 중심의 실제 관계를 도메인별로 나눈 상세 ERD입니다.  
+> `users`, `products`, `categories`, `sellers` 같은 공유 루트 엔터티는 블록 간 관계 가독성을 위해 일부 다이어그램에서 반복 표기합니다.
+
+### 0.1.1 계정 / 회원 / 공통설정
+
+```mermaid
+erDiagram
+    users {
+        int id PK
+    }
+    addresses {
+        int id PK
+        int user_id FK
+    }
+    point_transactions {
+        int id PK
+        int user_id FK
+    }
+    email_verifications {
+        int id PK
+        int user_id FK
+    }
+    user_social_accounts {
+        int id PK
+        int user_id FK
+    }
+    friendships {
+        int id PK
+        int requester_id FK
+        int addressee_id FK
+    }
+    badges {
+        int id PK
+    }
+    user_badges {
+        int id PK
+        int user_id FK
+        int badge_id FK
+    }
+    translations {
+        int id PK
+    }
+    exchange_rates {
+        int id PK
+    }
+    admin_settings {
+        int id PK
+        int updated_by FK
+    }
+
+    users ||--o{ addresses : has
+    users ||--o{ point_transactions : owns
+    users ||--o{ email_verifications : verifies
+    users ||--o{ user_social_accounts : links
+    users ||--o{ friendships : requests
+    users ||--o{ friendships : receives
+    users ||--o{ user_badges : earns
+    badges ||--o{ user_badges : grants
+    users o|--o{ admin_settings : updates
+```
+
+### 0.1.2 상품 / 카테고리 / 가격 / 판매처
+
+```mermaid
+erDiagram
+    users {
+        int id PK
+    }
+    orders {
+        int id PK
+    }
+    categories {
+        int id PK
+        int parent_id FK
+    }
+    products {
+        int id PK
+        int category_id FK
+    }
+    product_options {
+        int id PK
+        int product_id FK
+    }
+    product_images {
+        int id PK
+        int product_id FK
+    }
+    spec_definitions {
+        int id PK
+        int category_id FK
+    }
+    product_specs {
+        int id PK
+        int product_id FK
+        int spec_definition_id FK
+    }
+    spec_scores {
+        int id PK
+        int spec_definition_id FK
+    }
+    sellers {
+        int id PK
+    }
+    price_entries {
+        int id PK
+        int product_id FK
+        int seller_id FK
+    }
+    price_history {
+        int id PK
+        int product_id FK
+    }
+    price_alerts {
+        int id PK
+        int user_id FK
+        int product_id FK
+    }
+    price_predictions {
+        int id PK
+        int product_id FK
+    }
+    seller_trust_metrics {
+        int id PK
+        int seller_id FK
+    }
+    seller_reviews {
+        int id PK
+        int seller_id FK
+        int user_id FK
+        int order_id FK
+    }
+    image_variants {
+        int id PK
+    }
+    product_mappings {
+        int id PK
+        int seller_id FK
+        int product_id FK
+        int reviewed_by FK
+    }
+    fraud_alerts {
+        int id PK
+        int product_id FK
+        int seller_id FK
+    }
+    used_prices {
+        int id PK
+        int product_id FK
+    }
+
+    categories ||--o{ categories : parent_of
+    categories ||--o{ products : classifies
+    categories ||--o{ spec_definitions : defines
+    products ||--o{ product_options : has
+    products ||--o{ product_images : has
+    products ||--o{ product_specs : has
+    spec_definitions ||--o{ product_specs : maps
+    spec_definitions ||--o{ spec_scores : scores
+    products ||--o{ price_entries : priced_by
+    sellers ||--o{ price_entries : lists
+    products ||--o{ price_history : tracks
+    users ||--o{ price_alerts : subscribes
+    products ||--o{ price_alerts : watches
+    products ||--o{ price_predictions : predicts
+    sellers ||--|| seller_trust_metrics : measures
+    sellers ||--o{ seller_reviews : receives
+    users ||--o{ seller_reviews : writes
+    orders ||--o{ seller_reviews : references
+    sellers ||--o{ product_mappings : crawls
+    products o|--o{ product_mappings : maps_to
+    users o|--o{ product_mappings : reviews
+    products ||--o{ fraud_alerts : detects
+    sellers ||--o{ fraud_alerts : triggers
+    products ||--o{ used_prices : tracks
+```
+
+### 0.1.3 장바구니 / 주문 / 결제 / 후기 / 고객지원 / 활동 / 푸시
+
+```mermaid
+erDiagram
+    users {
+        int id PK
+    }
+    products {
+        int id PK
+    }
+    sellers {
+        int id PK
+    }
+    cart_items {
+        int id PK
+        int user_id FK
+        int product_id FK
+        int seller_id FK
+    }
+    orders {
+        int id PK
+        int user_id FK
+    }
+    order_items {
+        int id PK
+        int order_id FK
+        int product_id FK
+        int seller_id FK
+    }
+    payments {
+        int id PK
+        int order_id FK
+    }
+    reviews {
+        int id PK
+        int user_id FK
+        int product_id FK
+        int order_id FK
+    }
+    review_images {
+        int id PK
+        int review_id FK
+    }
+    review_tags {
+        int id PK
+        int review_id FK
+    }
+    wishlists {
+        int id PK
+        int user_id FK
+        int product_id FK
+    }
+    inquiries {
+        int id PK
+        int product_id FK
+        int user_id FK
+        int answered_by FK
+    }
+    support_tickets {
+        int id PK
+        int user_id FK
+    }
+    ticket_replies {
+        int id PK
+        int ticket_id FK
+        int user_id FK
+    }
+    faqs {
+        int id PK
+    }
+    notices {
+        int id PK
+    }
+    view_history {
+        int id PK
+        int user_id FK
+        int product_id FK
+    }
+    search_history {
+        int id PK
+        int user_id FK
+    }
+    push_subscriptions {
+        int id PK
+        int user_id FK
+    }
+    push_notifications {
+        int id PK
+        int user_id FK
+    }
+
+    users ||--o{ cart_items : owns
+    products ||--o{ cart_items : added
+    sellers ||--o{ cart_items : sold_by
+    users ||--o{ orders : places
+    orders ||--o{ order_items : contains
+    products ||--o{ order_items : snapshots
+    sellers ||--o{ order_items : fulfills
+    orders ||--|| payments : pays
+    users ||--o{ reviews : writes
+    products ||--o{ reviews : reviewed
+    orders ||--o{ reviews : references
+    reviews ||--o{ review_images : has
+    reviews ||--o{ review_tags : tagged
+    users ||--o{ wishlists : keeps
+    products ||--o{ wishlists : wishes
+    products ||--o{ inquiries : asks_about
+    users ||--o{ inquiries : asks
+    users o|--o{ inquiries : answers
+    users ||--o{ support_tickets : opens
+    support_tickets ||--o{ ticket_replies : has
+    users ||--o{ ticket_replies : writes
+    users ||--o{ view_history : views
+    products ||--o{ view_history : viewed
+    users ||--o{ search_history : searches
+    users ||--o{ push_subscriptions : subscribes
+    users ||--o{ push_notifications : receives
+```
+
+### 0.1.4 커뮤니티 / 채팅 / 숏폼 / 뉴스
+
+```mermaid
+erDiagram
+    users {
+        int id PK
+    }
+    products {
+        int id PK
+    }
+    boards {
+        int id PK
+    }
+    posts {
+        int id PK
+        int board_id FK
+        int user_id FK
+    }
+    comments {
+        int id PK
+        int post_id FK
+        int user_id FK
+        int parent_id FK
+    }
+    post_likes {
+        int id PK
+        int post_id FK
+        int user_id FK
+    }
+    chat_rooms {
+        int id PK
+        int user_id FK
+        int admin_id FK
+    }
+    chat_messages {
+        int id PK
+        int room_id FK
+        int sender_id FK
+    }
+    short_forms {
+        int id PK
+        int user_id FK
+    }
+    short_form_products {
+        int id PK
+        int short_form_id FK
+        int product_id FK
+    }
+    short_form_likes {
+        int id PK
+        int short_form_id FK
+        int user_id FK
+    }
+    attachments {
+        int id PK
+    }
+    news_categories {
+        int id PK
+    }
+    news_articles {
+        int id PK
+        int category_id FK
+        int author_id FK
+    }
+    news_related_products {
+        int id PK
+        int news_id FK
+        int product_id FK
+    }
+
+    boards ||--o{ posts : contains
+    users ||--o{ posts : writes
+    posts ||--o{ comments : has
+    users ||--o{ comments : writes
+    comments ||--o{ comments : replies
+    posts ||--o{ post_likes : liked
+    users ||--o{ post_likes : clicks
+    users ||--o{ chat_rooms : opens
+    users o|--o{ chat_rooms : handles
+    chat_rooms ||--o{ chat_messages : contains
+    users ||--o{ chat_messages : sends
+    users ||--o{ short_forms : uploads
+    short_forms ||--o{ short_form_products : tags
+    products ||--o{ short_form_products : tagged
+    short_forms ||--o{ short_form_likes : liked
+    users ||--o{ short_form_likes : clicks
+    news_categories ||--o{ news_articles : groups
+    users ||--o{ news_articles : authors
+    news_articles ||--o{ news_related_products : maps
+    products ||--o{ news_related_products : relates
+```
+
+### 0.1.5 추천 / 검색 / 크롤러 / PC견적 / 자동차 / 역경매
+
+```mermaid
+erDiagram
+    users {
+        int id PK
+    }
+    products {
+        int id PK
+    }
+    sellers {
+        int id PK
+    }
+    categories {
+        int id PK
+    }
+    recommendations {
+        int id PK
+        int product_id FK
+    }
+    deals {
+        int id PK
+    }
+    deal_products {
+        int id PK
+        int deal_id FK
+        int product_id FK
+    }
+    search_logs {
+        bigint id PK
+        int user_id FK
+    }
+    search_synonyms {
+        int id PK
+    }
+    crawler_jobs {
+        int id PK
+        int seller_id FK
+        int category_id FK
+    }
+    crawler_logs {
+        bigint id PK
+        int job_id FK
+    }
+    pc_builds {
+        int id PK
+        int user_id FK
+    }
+    build_parts {
+        int id PK
+        int build_id FK
+        int product_id FK
+        int seller_id FK
+    }
+    compatibility_rules {
+        int id PK
+    }
+    car_models {
+        int id PK
+    }
+    lease_offers {
+        int id PK
+        int car_model_id FK
+    }
+    auctions {
+        int id PK
+        int user_id FK
+        int category_id FK
+    }
+    bids {
+        int id PK
+        int auction_id FK
+        int seller_id FK
+    }
+
+    products ||--o{ recommendations : featured
+    deals ||--o{ deal_products : contains
+    products ||--o{ deal_products : discounted
+    users o|--o{ search_logs : searches
+    sellers ||--o{ crawler_jobs : runs
+    categories ||--o{ crawler_jobs : targets
+    crawler_jobs ||--o{ crawler_logs : logs
+    users ||--o{ pc_builds : builds
+    pc_builds ||--o{ build_parts : contains
+    products ||--o{ build_parts : selected
+    sellers o|--o{ build_parts : purchased_from
+    car_models ||--o{ lease_offers : offers
+    users ||--o{ auctions : requests
+    categories ||--o{ auctions : scoped_to
+    auctions ||--o{ bids : receives
+    sellers ||--o{ bids : proposes
+```
+
+---
+
 ## 1. 테이블 목록
 
 | # | 테이블명 | 설명 |

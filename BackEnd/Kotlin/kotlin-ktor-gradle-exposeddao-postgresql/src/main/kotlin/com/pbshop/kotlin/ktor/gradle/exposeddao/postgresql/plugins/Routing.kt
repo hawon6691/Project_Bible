@@ -183,6 +183,13 @@ fun Application.configureRouting(
     activityRepository: ActivityRepository,
     chatRepository: ChatRepository,
     pushRepository: PushRepository,
+    rankingRepository: RankingRepository,
+    recommendationRepository: RecommendationRepository,
+    dealRepository: DealRepository,
+    searchRepository: SearchRepository,
+    crawlerRepository: CrawlerRepository,
+    predictionRepository: PredictionRepository,
+    trustRepository: TrustRepository,
 ) {
     val endpointSpecs = pbShopEndpointSpecs()
     val platformController = PlatformController(PlatformService(config, endpointSpecs))
@@ -219,13 +226,13 @@ fun Application.configureRouting(
     val activityController = ActivityController(ActivityService(activityRepository))
     val chatController = ChatController(ChatService(chatRepository))
     val pushController = PushController(PushService(pushRepository))
-    val rankingController = RankingController(RankingService(RankingRepository()))
-    val recommendationController = RecommendationController(RecommendationService(RecommendationRepository()))
-    val dealController = DealController(DealService(DealRepository()))
-    val searchController = SearchController(SearchService(SearchRepository()))
-    val crawlerController = CrawlerController(CrawlerService(CrawlerRepository()))
-    val predictionController = PredictionController(PredictionService(PredictionRepository()))
-    val trustController = TrustController(TrustService(TrustRepository()))
+    val rankingController = RankingController(RankingService(rankingRepository))
+    val recommendationController = RecommendationController(RecommendationService(recommendationRepository))
+    val dealController = DealController(DealService(dealRepository))
+    val searchController = SearchController(SearchService(searchRepository))
+    val crawlerController = CrawlerController(CrawlerService(crawlerRepository))
+    val predictionController = PredictionController(PredictionService(predictionRepository))
+    val trustController = TrustController(TrustService(trustRepository))
     val i18nController = I18nController(I18nService(I18nRepository()))
     val imageController = ImageController(ImageService(ImageRepository()))
     val mediaController = MediaController(MediaService(MediaRepository()))

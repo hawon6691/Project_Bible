@@ -15,9 +15,13 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.chat.ExposedDaoChatRe
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.community.CommunityRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.community.ExposedDaoCommunityRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config.PbShopConfig
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.crawler.CrawlerRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.crawler.ExposedDaoCrawlerRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DatabaseFactory
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.JdbcDbHealthService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.deal.DealRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.deal.ExposedDaoDealRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.ExposedDaoInquiryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.InquiryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.ExposedDaoOrderRepository
@@ -26,6 +30,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.ExposedDaoPay
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.PaymentRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.point.ExposedDaoPointRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.point.PointRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.prediction.ExposedDaoPredictionRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.prediction.PredictionRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureHttp
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureRouting
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureSerialization
@@ -35,14 +41,22 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.ExposedDaoPro
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.ProductRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.push.ExposedDaoPushRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.push.PushRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.ranking.ExposedDaoRankingRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.ranking.RankingRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.recommendation.ExposedDaoRecommendationRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.recommendation.RecommendationRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.review.ExposedDaoReviewRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.review.ReviewRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.search.ExposedDaoSearchRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.search.SearchRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.ExposedDaoSellerRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.SellerRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.ExposedDaoSpecRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.SpecRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.support.ExposedDaoSupportRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.support.SupportRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.trust.ExposedDaoTrustRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.trust.TrustRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.ExposedDaoUserRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.wishlist.ExposedDaoWishlistRepository
@@ -85,6 +99,13 @@ fun Application.module() {
         activityRepository = ExposedDaoActivityRepository(databaseFactory),
         chatRepository = ExposedDaoChatRepository(databaseFactory),
         pushRepository = ExposedDaoPushRepository(databaseFactory),
+        rankingRepository = ExposedDaoRankingRepository(databaseFactory),
+        recommendationRepository = ExposedDaoRecommendationRepository(databaseFactory),
+        dealRepository = ExposedDaoDealRepository(databaseFactory),
+        searchRepository = ExposedDaoSearchRepository(databaseFactory),
+        crawlerRepository = ExposedDaoCrawlerRepository(databaseFactory),
+        predictionRepository = ExposedDaoPredictionRepository(databaseFactory),
+        trustRepository = ExposedDaoTrustRepository(databaseFactory),
     )
 }
 
@@ -110,6 +131,13 @@ fun Application.module(
     activityRepository: ActivityRepository,
     chatRepository: ChatRepository,
     pushRepository: PushRepository,
+    rankingRepository: RankingRepository,
+    recommendationRepository: RecommendationRepository,
+    dealRepository: DealRepository,
+    searchRepository: SearchRepository,
+    crawlerRepository: CrawlerRepository,
+    predictionRepository: PredictionRepository,
+    trustRepository: TrustRepository,
 ) {
     val config = PbShopConfig.from(environment.config)
 
@@ -142,5 +170,12 @@ fun Application.module(
         activityRepository,
         chatRepository,
         pushRepository,
+        rankingRepository,
+        recommendationRepository,
+        dealRepository,
+        searchRepository,
+        crawlerRepository,
+        predictionRepository,
+        trustRepository,
     )
 }

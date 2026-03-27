@@ -1,5 +1,21 @@
 package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.prediction
 
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.StubDomainRepository
+import java.time.Instant
 
-class PredictionRepository : StubDomainRepository(predictionOperations())
+data class PriceTrendPredictionRecord(
+    val productId: Int,
+    val trend: String,
+    val recommendation: String,
+    val expectedLowestPrice: Int,
+    val confidence: Double,
+    val updatedAt: Instant,
+)
+
+interface PredictionRepository {
+    fun predictPriceTrend(
+        productId: Int,
+        days: Int,
+    ): PriceTrendPredictionRecord?
+
+    fun productExists(productId: Int): Boolean
+}

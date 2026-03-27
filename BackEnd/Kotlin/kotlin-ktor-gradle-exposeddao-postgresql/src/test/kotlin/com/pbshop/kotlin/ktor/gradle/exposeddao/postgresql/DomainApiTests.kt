@@ -910,35 +910,221 @@ class ActivityChatPushApiTest {
 
 class PredictionDealRecommendationRankingApiTest {
     @Test
-    fun prediction_deal_recommendation_and_ranking_routes_work() = testApplication {
+    fun ranking_recommendation_deal_and_search_routes_follow_the_actual_contract() = testApplication {
         installPbShopApp()
 
-        val predictionResponse = client.get("/api/v1/predictions/products/1/price-trend") { pbHeaders(clientId = "prediction") }
-        val dealResponse = client.get("/api/v1/deals") { pbHeaders(clientId = "deals") }
-        val recommendationResponse = client.get("/api/v1/recommendations/today") { pbHeaders(clientId = "recommendation") }
-        val rankingResponse = client.get("/api/v1/rankings/products/popular") { pbHeaders(clientId = "ranking") }
+        val rankingProducts = client.get("/api/v1/rankings/products/popular?categoryId=2&period=weekly&limit=2") { pbHeaders(clientId = "ranking-products") }
+        val rankingSearches = client.get("/api/v1/rankings/searches?period=monthly&limit=2") { pbHeaders(clientId = "ranking-searches") }
+        val recommendationToday = client.get("/api/v1/recommendations/today") { pbHeaders(clientId = "recommendation-today") }
+        val recommendationPersonalized =
+            client.get("/api/v1/recommendations/personalized?limit=1") {
+                pbHeaders(role = "USER", clientId = "recommendation-personalized")
+                header("X-User-Id", "4")
+            }
+        val recommendationCreate =
+            client.post("/api/v1/admin/recommendations") {
+                pbHeaders(role = "ADMIN", clientId = "recommendation-create")
+                header("Content-Type", "application/json")
+                setBody("""{"productId":2,"type":"TODAY","sortOrder":3}""")
+            }
+        val recommendationId = Json.parseToJsonElement(recommendationCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val recommendationAdmin = client.get("/api/v1/admin/recommendations") { pbHeaders(role = "ADMIN", clientId = "recommendation-admin") }
+        val recommendationDelete = client.delete("/api/v1/admin/recommendations/$recommendationId") { pbHeaders(role = "ADMIN", clientId = "recommendation-delete") }
 
-        assertEquals(HttpStatusCode.OK, predictionResponse.status)
-        assertEquals(HttpStatusCode.OK, dealResponse.status)
-        assertEquals(HttpStatusCode.OK, recommendationResponse.status)
-        assertEquals(HttpStatusCode.OK, rankingResponse.status)
+        val dealList = client.get("/api/v1/deals?type=SPECIAL&page=1&limit=10") { pbHeaders(clientId = "deal-list") }
+        val dealCreate =
+            client.post("/api/v1/deals") {
+                pbHeaders(role = "ADMIN", clientId = "deal-create")
+                header("Content-Type", "application/json")
+                setBody(
+                    """
+                    {
+                      "title":"주말 특가",
+                      "type":"SPECIAL",
+                      "description":"이번 주말 한정 할인",
+                      "discountRate":12,
+                      "startDate":"2026-03-20T00:00:00Z",
+                      "endDate":"2026-03-30T23:59:59Z",
+                      "bannerUrl":"/uploads/deals/weekend.jpg",
+                      "products":[{"productId":1,"dealPrice":1390000,"stock":30}]
+                    }
+                    """.trimIndent(),
+                )
+            }
+        val dealId = Json.parseToJsonElement(dealCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val dealDetail = client.get("/api/v1/deals/$dealId") { pbHeaders(clientId = "deal-detail") }
+        val dealUpdate =
+            client.patch("/api/v1/deals/$dealId") {
+                pbHeaders(role = "ADMIN", clientId = "deal-update")
+                header("Content-Type", "application/json")
+                setBody("""{"title":"수정된 주말 특가","discountRate":15,"isActive":false}""")
+            }
+        val dealDelete = client.delete("/api/v1/deals/$dealId") { pbHeaders(role = "ADMIN", clientId = "deal-delete") }
+
+        val searchResponse = client.get("/api/v1/search?q=노트북&page=1&limit=10") { pbHeaders(clientId = "search") }
+        val autocompleteResponse = client.get("/api/v1/search/autocomplete?q=갤럭") { pbHeaders(clientId = "search-autocomplete") }
+        val popularResponse = client.get("/api/v1/search/popular?limit=2") { pbHeaders(clientId = "search-popular") }
+        val recentCreate =
+            client.post("/api/v1/search/recent") {
+                pbHeaders(role = "USER", clientId = "search-recent-create")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"keyword":"고성능 노트북"}""")
+            }
+        val recentId = Json.parseToJsonElement(recentCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val recentList =
+            client.get("/api/v1/search/recent") {
+                pbHeaders(role = "USER", clientId = "search-recent-list")
+                header("X-User-Id", "4")
+            }
+        val recentDelete =
+            client.delete("/api/v1/search/recent/$recentId") {
+                pbHeaders(role = "USER", clientId = "search-recent-delete")
+                header("X-User-Id", "4")
+            }
+        val recentClear =
+            client.delete("/api/v1/search/recent") {
+                pbHeaders(role = "USER", clientId = "search-recent-clear")
+                header("X-User-Id", "4")
+            }
+        val preferenceUpdate =
+            client.patch("/api/v1/search/preferences") {
+                pbHeaders(role = "USER", clientId = "search-pref-update")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"saveRecentSearches":false}""")
+            }
+        val weightsGet = client.get("/api/v1/search/admin/weights") { pbHeaders(role = "ADMIN", clientId = "search-weights-get") }
+        val weightsUpdate =
+            client.patch("/api/v1/search/admin/weights") {
+                pbHeaders(role = "ADMIN", clientId = "search-weights-update")
+                header("Content-Type", "application/json")
+                setBody("""{"nameWeight":1.2,"keywordWeight":1.4,"clickWeight":0.9}""")
+            }
+        val indexStatus = client.get("/api/v1/search/admin/index/status") { pbHeaders(role = "ADMIN", clientId = "search-index-status") }
+        val reindexAll = client.post("/api/v1/search/admin/index/reindex") { pbHeaders(role = "ADMIN", clientId = "search-reindex-all") }
+        val reindexProduct = client.post("/api/v1/search/admin/index/products/1/reindex") { pbHeaders(role = "ADMIN", clientId = "search-reindex-product") }
+
+        assertEquals(HttpStatusCode.OK, rankingProducts.status)
+        assertEquals(HttpStatusCode.OK, rankingSearches.status)
+        assertEquals(HttpStatusCode.OK, recommendationToday.status)
+        assertEquals(HttpStatusCode.OK, recommendationPersonalized.status)
+        assertEquals(HttpStatusCode.Created, recommendationCreate.status)
+        assertEquals(HttpStatusCode.OK, recommendationAdmin.status)
+        assertEquals(HttpStatusCode.OK, recommendationDelete.status)
+        assertEquals(HttpStatusCode.OK, dealList.status)
+        assertEquals(HttpStatusCode.Created, dealCreate.status)
+        assertEquals(HttpStatusCode.OK, dealDetail.status)
+        assertEquals(HttpStatusCode.OK, dealUpdate.status)
+        assertEquals(HttpStatusCode.OK, dealDelete.status)
+        assertEquals(HttpStatusCode.OK, searchResponse.status)
+        assertEquals(HttpStatusCode.OK, autocompleteResponse.status)
+        assertEquals(HttpStatusCode.OK, popularResponse.status)
+        assertEquals(HttpStatusCode.Created, recentCreate.status)
+        assertEquals(HttpStatusCode.OK, recentList.status)
+        assertEquals(HttpStatusCode.OK, recentDelete.status)
+        assertEquals(HttpStatusCode.OK, recentClear.status)
+        assertEquals(HttpStatusCode.OK, preferenceUpdate.status)
+        assertEquals(HttpStatusCode.OK, weightsGet.status)
+        assertEquals(HttpStatusCode.OK, weightsUpdate.status)
+        assertEquals(HttpStatusCode.OK, indexStatus.status)
+        assertEquals(HttpStatusCode.Created, reindexAll.status)
+        assertEquals(HttpStatusCode.Created, reindexProduct.status)
+        assertTrue(rankingProducts.bodyAsText().contains("\"score\""))
+        assertTrue(rankingSearches.bodyAsText().contains("\"searchCount\""))
+        assertTrue(recommendationToday.bodyAsText().contains("\"productId\""))
+        assertTrue(recommendationPersonalized.bodyAsText().contains("\"lowestPrice\""))
+        assertTrue(recommendationAdmin.bodyAsText().contains("\"sortOrder\""))
+        assertTrue(dealDetail.bodyAsText().contains("\"products\""))
+        assertTrue(dealUpdate.bodyAsText().contains("수정된 주말 특가"))
+        assertTrue(searchResponse.bodyAsText().contains("\"hits\""))
+        assertTrue(autocompleteResponse.bodyAsText().contains("\"keywords\""))
+        assertTrue(popularResponse.bodyAsText().contains("\"keyword\""))
+        assertTrue(recentList.bodyAsText().contains("\"createdAt\""))
+        assertTrue(preferenceUpdate.bodyAsText().contains("\"saveRecentSearches\""))
+        assertTrue(preferenceUpdate.bodyAsText().contains("false"))
+        assertTrue(weightsUpdate.bodyAsText().contains("\"nameWeight\""))
+        assertTrue(weightsUpdate.bodyAsText().contains("1.2"))
+        assertTrue(indexStatus.bodyAsText().contains("\"documents\""))
+        assertTrue(reindexProduct.bodyAsText().contains("\"productId\""))
     }
 }
 
 class FraudTrustI18nImageBadgeApiTest {
     @Test
-    fun fraud_trust_i18n_image_and_badge_routes_work() = testApplication {
+    fun crawler_prediction_and_trust_routes_follow_the_actual_contract() = testApplication {
         installPbShopApp()
 
-        val fraudResponse = client.get("/api/v1/fraud/alerts") { pbHeaders(role = "ADMIN", clientId = "fraud") }
-        val trustResponse = client.get("/api/v1/sellers/1/trust") { pbHeaders(clientId = "trust") }
-        val i18nResponse = client.get("/api/v1/i18n/translations") { pbHeaders(clientId = "i18n") }
-        val badgeResponse = client.get("/api/v1/badges") { pbHeaders(clientId = "badges") }
+        val crawlerList = client.get("/api/v1/crawler/admin/jobs?page=1&limit=10") { pbHeaders(role = "ADMIN", clientId = "crawler-list") }
+        val crawlerCreate =
+            client.post("/api/v1/crawler/admin/jobs") {
+                pbHeaders(role = "ADMIN", clientId = "crawler-create")
+                header("Content-Type", "application/json")
+                setBody("""{"sellerId":1,"name":"수동 가격 수집","cronExpression":"0 */12 * * *","collectPrice":true,"collectSpec":false,"detectAnomaly":true,"isActive":true}""")
+            }
+        val crawlerId = Json.parseToJsonElement(crawlerCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val crawlerUpdate =
+            client.patch("/api/v1/crawler/admin/jobs/$crawlerId") {
+                pbHeaders(role = "ADMIN", clientId = "crawler-update")
+                header("Content-Type", "application/json")
+                setBody("""{"name":"수정된 수동 가격 수집","isActive":false}""")
+            }
+        val crawlerRun = client.post("/api/v1/crawler/admin/jobs/$crawlerId/run") { pbHeaders(role = "ADMIN", clientId = "crawler-run") }
+        val crawlerTrigger =
+            client.post("/api/v1/crawler/admin/triggers") {
+                pbHeaders(role = "ADMIN", clientId = "crawler-trigger")
+                header("Content-Type", "application/json")
+                setBody("""{"jobId":$crawlerId,"name":"판매처 수동 실행"}""")
+            }
+        val crawlerRuns = client.get("/api/v1/crawler/admin/runs?jobId=$crawlerId&page=1&limit=10") { pbHeaders(role = "ADMIN", clientId = "crawler-runs") }
+        val crawlerMonitoring = client.get("/api/v1/crawler/admin/monitoring") { pbHeaders(role = "ADMIN", clientId = "crawler-monitoring") }
+        val crawlerDelete = client.delete("/api/v1/crawler/admin/jobs/$crawlerId") { pbHeaders(role = "ADMIN", clientId = "crawler-delete") }
 
-        assertEquals(HttpStatusCode.OK, fraudResponse.status)
+        val predictionResponse = client.get("/api/v1/predictions/products/1/price-trend?days=14") { pbHeaders(clientId = "prediction") }
+        val trustResponse = client.get("/api/v1/sellers/1/trust") { pbHeaders(clientId = "trust-detail") }
+        val trustReviews = client.get("/api/v1/sellers/1/reviews?page=1&limit=10&sort=rating_desc") { pbHeaders(clientId = "trust-reviews") }
+        val trustCreate =
+            client.post("/api/v1/sellers/1/reviews") {
+                pbHeaders(role = "USER", clientId = "trust-review-create")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"orderId":1,"rating":4,"deliveryRating":5,"content":"가격도 좋고 배송도 빨랐습니다."}""")
+            }
+        val trustReviewId = Json.parseToJsonElement(trustCreate.bodyAsText()).jsonObject["data"]!!.jsonObject["id"]!!.jsonPrimitive.content.toInt()
+        val trustUpdate =
+            client.patch("/api/v1/seller-reviews/$trustReviewId") {
+                pbHeaders(role = "USER", clientId = "trust-review-update")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"rating":5,"content":"수정된 판매처 리뷰"}""")
+            }
+        val trustDelete =
+            client.delete("/api/v1/seller-reviews/$trustReviewId") {
+                pbHeaders(role = "USER", clientId = "trust-review-delete")
+                header("X-User-Id", "4")
+            }
+
+        assertEquals(HttpStatusCode.OK, crawlerList.status)
+        assertEquals(HttpStatusCode.Created, crawlerCreate.status)
+        assertEquals(HttpStatusCode.OK, crawlerUpdate.status)
+        assertEquals(HttpStatusCode.OK, crawlerRun.status)
+        assertEquals(HttpStatusCode.OK, crawlerTrigger.status)
+        assertEquals(HttpStatusCode.OK, crawlerRuns.status)
+        assertEquals(HttpStatusCode.OK, crawlerMonitoring.status)
+        assertEquals(HttpStatusCode.OK, crawlerDelete.status)
+        assertEquals(HttpStatusCode.OK, predictionResponse.status)
         assertEquals(HttpStatusCode.OK, trustResponse.status)
-        assertEquals(HttpStatusCode.OK, i18nResponse.status)
-        assertEquals(HttpStatusCode.OK, badgeResponse.status)
+        assertEquals(HttpStatusCode.OK, trustReviews.status)
+        assertEquals(HttpStatusCode.Created, trustCreate.status)
+        assertEquals(HttpStatusCode.OK, trustUpdate.status)
+        assertEquals(HttpStatusCode.OK, trustDelete.status)
+        assertTrue(crawlerUpdate.bodyAsText().contains("수정된 수동 가격 수집"))
+        assertTrue(crawlerRun.bodyAsText().contains("\"runId\""))
+        assertTrue(crawlerMonitoring.bodyAsText().contains("\"successCount\""))
+        assertTrue(predictionResponse.bodyAsText().contains("\"expectedLowestPrice\""))
+        assertTrue(trustResponse.bodyAsText().contains("\"breakdown\""))
+        assertTrue(trustReviews.bodyAsText().contains("\"rating\""))
+        assertTrue(trustUpdate.bodyAsText().contains("수정된 판매처 리뷰"))
     }
 }
 

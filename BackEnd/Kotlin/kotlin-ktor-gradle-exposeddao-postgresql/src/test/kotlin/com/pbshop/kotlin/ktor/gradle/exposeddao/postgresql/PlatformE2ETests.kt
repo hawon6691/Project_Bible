@@ -51,10 +51,11 @@ class AuthSearchE2ETest {
                 header("Content-Type", "application/json")
                 setBody("""{"email":"user1@nestshop.com","password":"Password1!"}""")
             }
-        val search = client.get("/api/v1/search") { pbHeaders(clientId = "auth-search-query") }
+        val search = client.get("/api/v1/search?q=laptop") { pbHeaders(clientId = "auth-search-query") }
 
         assertEquals(HttpStatusCode.OK, login.status)
         assertEquals(HttpStatusCode.OK, search.status)
+        assertTrue(search.bodyAsText().contains("\"hits\""))
     }
 }
 

@@ -21,6 +21,10 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.deal.DealRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.InMemoryInquiryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.InquiryRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.i18n.InMemoryI18nRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.i18n.I18nRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.image.ImageRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.image.InMemoryImageRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.InMemoryOrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.OrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.InMemoryPaymentRepository
@@ -55,6 +59,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.InMemoryUserRepo
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.wishlist.InMemoryWishlistRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.wishlist.WishlistRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.badge.BadgeRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.badge.InMemoryBadgeRepository
 import io.ktor.client.request.header
 import io.ktor.server.config.MapApplicationConfig
 import io.ktor.server.testing.ApplicationTestBuilder
@@ -92,6 +98,9 @@ internal fun ApplicationTestBuilder.installPbShopApp(
     crawlerRepository: CrawlerRepository = InMemoryCrawlerRepository.seeded(),
     predictionRepository: PredictionRepository = InMemoryPredictionRepository.seeded(),
     trustRepository: TrustRepository = InMemoryTrustRepository.seeded(),
+    i18nRepository: I18nRepository = InMemoryI18nRepository.seeded(),
+    imageRepository: ImageRepository = InMemoryImageRepository.seeded(),
+    badgeRepository: BadgeRepository = InMemoryBadgeRepository.seeded(),
     generalPerMinute: Int = 60,
     authPerMinute: Int = 10,
 ) {
@@ -129,6 +138,9 @@ internal fun ApplicationTestBuilder.installPbShopApp(
             crawlerRepository = crawlerRepository,
             predictionRepository = predictionRepository,
             trustRepository = trustRepository,
+            i18nRepository = i18nRepository,
+            imageRepository = imageRepository,
+            badgeRepository = badgeRepository,
         )
     }
 }

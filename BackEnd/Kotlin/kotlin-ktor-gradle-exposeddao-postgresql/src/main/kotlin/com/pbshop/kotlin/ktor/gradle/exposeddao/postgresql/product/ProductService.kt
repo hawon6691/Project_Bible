@@ -3,6 +3,8 @@ package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.PbShopException
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.StubResponse
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.exposed.ProductStatus
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.image.ImageService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.image.ImageUploadInput
 import io.ktor.http.HttpStatusCode
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -10,6 +12,7 @@ import kotlinx.serialization.json.jsonPrimitive
 
 class ProductService(
     private val repository: ProductRepository,
+    private val imageService: ImageService? = null,
 ) {
     fun listProducts(request: ProductQueryRequest): StubResponse {
         val page = if (request.page < 1) 1 else request.page
@@ -156,15 +159,25 @@ class ProductService(
         request: ProductImageUploadRequest,
     ): StubResponse {
         requireProduct(productId)
-        val sanitizedName = request.fileName.trim().ifBlank { "product-image.bin" }.replace("\\s+".toRegex(), "-")
+        val uploadedAsset =
+            imageService?.storeImage(
+                ImageUploadInput(
+                    uploadedByUserId = request.uploadedByUserId,
+                    originalFilename = request.fileName,
+                    mimeType = request.mimeType,
+                    size = request.size,
+                    category = "product",
+                ),
+            )
         val image =
             repository.createImage(
                 productId = productId,
                 newImage =
                     NewProductImage(
-                        url = "https://img.pbshop.dev/products/$productId/$sanitizedName",
+                        url = uploadedAsset?.let { imageService?.preferredUrl(it) } ?: "https://img.pbshop.dev/products/$productId/${request.fileName.trim().ifBlank { "product-image.bin" }.replace("\\s+".toRegex(), "-")}",
                         isMain = request.isMain,
                         sortOrder = request.sortOrder.coerceAtLeast(0),
+                        imageVariantId = uploadedAsset?.let { imageService?.preferredVariantId(it) },
                     ),
             )
         return StubResponse(status = HttpStatusCode.Created, data = imagePayload(image))

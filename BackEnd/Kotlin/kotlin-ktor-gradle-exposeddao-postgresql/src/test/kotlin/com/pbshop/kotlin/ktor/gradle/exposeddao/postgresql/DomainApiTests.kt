@@ -225,7 +225,7 @@ class ProductApiTest {
         assertTrue(create.bodyAsText().contains("\"태블릿 Pro 11\""))
         assertTrue(update.bodyAsText().contains("\"태블릿 Pro 11 2026\""))
         assertTrue(addOption.bodyAsText().contains("\"보증\""))
-        assertTrue(uploadImage.bodyAsText().contains("tablet-side.jpg"))
+        assertTrue(uploadImage.bodyAsText().contains("/uploads/large/"))
         assertTrue(initialOptionId > 0)
     }
 }

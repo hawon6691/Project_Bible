@@ -57,6 +57,9 @@ data class ProductUpdateRequest(
 
 data class ProductImageUploadRequest(
     val fileName: String,
+    val mimeType: String,
+    val size: Int,
+    val uploadedByUserId: Int?,
     val isMain: Boolean,
     val sortOrder: Int,
 )

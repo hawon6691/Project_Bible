@@ -180,7 +180,7 @@ class InMemoryProductRepository(
                 if (image.productId == productId) image.copy(isMain = false) else image
             }
         }
-        val created = ProductImageRecord(nextImageId++, productId, newImage.url, newImage.isMain, newImage.sortOrder)
+        val created = ProductImageRecord(nextImageId++, productId, newImage.url, newImage.isMain, newImage.sortOrder, newImage.imageVariantId)
         images[created.id] = created
         return created
     }

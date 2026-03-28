@@ -36,6 +36,7 @@ data class ProductImageRecord(
     val url: String,
     val isMain: Boolean,
     val sortOrder: Int,
+    val imageVariantId: Int? = null,
 )
 
 data class ProductSpecRecord(
@@ -132,6 +133,7 @@ data class NewProductImage(
     val url: String,
     val isMain: Boolean,
     val sortOrder: Int,
+    val imageVariantId: Int? = null,
 )
 
 interface ProductRepository {

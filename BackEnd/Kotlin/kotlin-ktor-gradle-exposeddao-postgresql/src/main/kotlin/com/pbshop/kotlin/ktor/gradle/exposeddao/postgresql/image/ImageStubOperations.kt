@@ -20,10 +20,4 @@ fun imageOperations(): List<StubOperation> =
             StubResponse(data = listOf(mapOf("imageId" to call.pathParam("id", "1"), "type" to "THUMBNAIL", "url" to "/uploads/thumb/abc123.webp")))
         },
         endpoint(HttpMethod.Delete, "/images/{id}", "Image", "Delete image", roles = setOf(PbRole.ADMIN)) { message("Image deleted.") },
-        endpoint(HttpMethod.Post, "/products/{id}/images", "Image", "Attach product image", roles = setOf(PbRole.ADMIN)) { call ->
-            StubResponse(status = HttpStatusCode.Created, data = mapOf("productId" to call.pathParam("id", "1"), "imageId" to 1))
-        },
-        endpoint(HttpMethod.Delete, "/products/{id}/images/{imageId}", "Image", "Delete product image", roles = setOf(PbRole.ADMIN)) { message("Product image deleted.") },
-        endpoint(HttpMethod.Post, "/users/me/profile-image", "Image", "Upload profile image", roles = setOf(PbRole.USER)) { StubResponse(status = HttpStatusCode.Created, data = mapOf("profileImageUrl" to "/uploads/profile/user-1.webp")) },
-        endpoint(HttpMethod.Delete, "/users/me/profile-image", "Image", "Delete profile image", roles = setOf(PbRole.USER)) { message("Profile image deleted.") },
     )

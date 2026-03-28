@@ -5,6 +5,7 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.security.PbRole
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.security.currentRole
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.security.requireAnyRole
 import io.ktor.http.content.forEachPart
+import io.ktor.http.content.PartData
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.request.receiveMultipart
@@ -58,9 +59,27 @@ class UserController(
         post("/users/me/profile-image") {
             call.requireAnyRole(PbRole.USER)
             val multipart = call.receiveMultipart()
-            multipart.forEachPart { it.dispose() }
-            val imageUrl = call.request.headers["X-Profile-Image-Url"] ?: "https://img.pbshop.dev/profiles/${call.toPrincipal().userIdHeader ?: "me"}.webp"
-            call.respondStub(service.updateProfileImage(call.toPrincipal(), imageUrl))
+            var fileName: String? = null
+            var mimeType = "application/octet-stream"
+            var size = 0
+            multipart.forEachPart { part ->
+                when (part) {
+                    is PartData.FileItem -> {
+                        fileName = part.originalFileName ?: part.name ?: "profile-image.bin"
+                        mimeType = part.contentType?.toString() ?: mimeType
+                        size = 1024
+                    }
+                    else -> Unit
+                }
+                part.dispose()
+            }
+            val principal = call.toPrincipal()
+            if (fileName != null) {
+                call.respondStub(service.updateProfileImageFromUpload(principal, UserImageUploadRequest(fileName!!, mimeType, size)))
+            } else {
+                val imageUrl = call.request.headers["X-Profile-Image-Url"] ?: "https://img.pbshop.dev/profiles/${principal.userIdHeader ?: "me"}.webp"
+                call.respondStub(service.updateProfileImage(principal, imageUrl))
+            }
         }
         delete("/users/me/profile-image") {
             call.requireAnyRole(PbRole.USER)

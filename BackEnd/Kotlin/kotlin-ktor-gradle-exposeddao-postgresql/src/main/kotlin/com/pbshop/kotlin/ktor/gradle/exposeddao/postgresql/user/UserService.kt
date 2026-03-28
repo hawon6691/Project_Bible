@@ -4,6 +4,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.AuthTokenCodec
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.AuthUserStatus
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.PbShopException
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.StubResponse
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.image.ImageService
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.image.ImageUploadInput
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.security.PbRole
 import io.ktor.http.HttpStatusCode
 import org.mindrot.jbcrypt.BCrypt
@@ -17,6 +19,7 @@ data class UserPrincipal(
 
 class UserService(
     private val repository: UserRepository,
+    private val imageService: ImageService? = null,
 ) {
     fun currentUser(principal: UserPrincipal): StubResponse {
         val user = resolveCurrentUser(principal)
@@ -146,6 +149,26 @@ class UserService(
         val user = resolveCurrentUser(principal)
         repository.updateProfileImage(user.id, null)
         return StubResponse(data = mapOf("message" to "프로필 이미지가 기본 이미지로 초기화되었습니다."))
+    }
+
+    fun updateProfileImageFromUpload(
+        principal: UserPrincipal,
+        upload: UserImageUploadRequest,
+    ): StubResponse {
+        val user = resolveCurrentUser(principal)
+        val uploaded =
+            imageService?.storeImage(
+                ImageUploadInput(
+                    uploadedByUserId = user.id,
+                    originalFilename = upload.fileName,
+                    mimeType = upload.mimeType,
+                    size = upload.size,
+                    category = "profile",
+                ),
+            )
+                ?: throw PbShopException(HttpStatusCode.InternalServerError, "INTERNAL_ERROR", "이미지 서비스가 준비되지 않았습니다.")
+        val updated = repository.updateProfileImage(user.id, imageService.preferredUrl(uploaded))
+        return StubResponse(data = mapOf("imageUrl" to updated.profileImageUrl))
     }
 
     private fun resolveCurrentUser(principal: UserPrincipal): UserRecord {

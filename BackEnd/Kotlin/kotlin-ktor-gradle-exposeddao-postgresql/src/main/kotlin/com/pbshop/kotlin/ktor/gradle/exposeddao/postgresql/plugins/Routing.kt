@@ -192,6 +192,9 @@ fun Application.configureRouting(
     crawlerRepository: CrawlerRepository,
     predictionRepository: PredictionRepository,
     trustRepository: TrustRepository,
+    i18nRepository: I18nRepository,
+    imageRepository: ImageRepository,
+    badgeRepository: BadgeRepository,
 ) {
     val endpointSpecs = pbShopEndpointSpecs()
     val platformController = PlatformController(PlatformService(config, endpointSpecs))
@@ -199,9 +202,10 @@ fun Application.configureRouting(
     val docsController = DocsController(DocsService(config, endpointSpecs))
 
     val authController = AuthController(AuthService(authRepository))
-    val userController = UserController(UserService(userRepository))
+    val imageService = ImageService(imageRepository)
+    val userController = UserController(UserService(userRepository, imageService))
     val categoryController = CategoryController(CategoryService(categoryRepository))
-    val productController = ProductController(ProductService(productRepository))
+    val productController = ProductController(ProductService(productRepository, imageService))
     val specController = SpecController(SpecService(specRepository))
     val sellerController = SellerController(SellerService(sellerRepository))
     val priceController = PriceController(PriceService(priceRepository))
@@ -237,10 +241,10 @@ fun Application.configureRouting(
     val crawlerController = CrawlerController(CrawlerService(crawlerRepository))
     val predictionController = PredictionController(PredictionService(predictionRepository))
     val trustController = TrustController(TrustService(trustRepository))
-    val i18nController = I18nController(I18nService(I18nRepository()))
-    val imageController = ImageController(ImageService(ImageRepository()))
+    val i18nController = I18nController(I18nService(i18nRepository))
+    val imageController = ImageController(imageService)
     val mediaController = MediaController(MediaService(MediaRepository()))
-    val badgeController = BadgeController(BadgeService(BadgeRepository()))
+    val badgeController = BadgeController(BadgeService(badgeRepository))
     val pcBuilderController = PcBuilderController(PcBuilderService(PcBuilderRepository()))
     val friendController = FriendController(FriendService(FriendRepository()))
     val shortformController = ShortformController(ShortformService(ShortformRepository()))

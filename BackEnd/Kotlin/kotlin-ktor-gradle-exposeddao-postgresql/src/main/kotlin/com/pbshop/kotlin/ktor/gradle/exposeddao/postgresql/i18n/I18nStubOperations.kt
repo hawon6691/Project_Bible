@@ -22,6 +22,9 @@ fun i18nOperations(): List<StubOperation> =
         endpoint(HttpMethod.Get, "/i18n/exchange-rates", "I18n", "Exchange rates") {
             StubResponse(data = listOf(mapOf("baseCurrency" to "KRW", "targetCurrency" to "USD", "rate" to 0.000748)))
         },
+        endpoint(HttpMethod.Post, "/admin/i18n/exchange-rates", "I18n", "Upsert exchange rate", roles = setOf(PbRole.ADMIN)) {
+            StubResponse(status = HttpStatusCode.Created, data = mapOf("id" to 1, "baseCurrency" to "KRW", "targetCurrency" to "USD", "rate" to 0.000748))
+        },
         endpoint(HttpMethod.Get, "/i18n/convert", "I18n", "Currency conversion") {
             StubResponse(data = mapOf("originalAmount" to 1590000, "originalCurrency" to "KRW", "convertedAmount" to 1189.32, "targetCurrency" to "USD"))
         },

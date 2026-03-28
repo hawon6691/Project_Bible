@@ -1,6 +1,7 @@
 package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product
 
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.PbShopException
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.pbActor
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.respondStub
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.security.PbRole
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.security.requireAnyRole
@@ -67,11 +68,17 @@ class ProductController(
             call.requireAnyRole(PbRole.ADMIN)
             val multipart = call.receiveMultipart()
             var fileName: String? = null
+            var mimeType = "application/octet-stream"
+            var size = 0
             var isMain = false
             var sortOrder = 0
             multipart.forEachPart { part ->
                 when (part) {
-                    is PartData.FileItem -> fileName = part.originalFileName ?: part.name ?: "product-image.bin"
+                    is PartData.FileItem -> {
+                        fileName = part.originalFileName ?: part.name ?: "product-image.bin"
+                        mimeType = part.contentType?.toString() ?: mimeType
+                        size = 1024
+                    }
                     is PartData.FormItem -> {
                         when (part.name) {
                             "isMain" -> isMain = part.value.equals("true", ignoreCase = true)
@@ -87,6 +94,9 @@ class ProductController(
                     fileName =
                         fileName
                             ?: throw PbShopException(HttpStatusCode.BadRequest, "VALIDATION_ERROR", "업로드할 이미지 파일이 필요합니다."),
+                    mimeType = mimeType,
+                    size = size,
+                    uploadedByUserId = call.pbActor().userId,
                     isMain = isMain,
                     sortOrder = sortOrder,
                 )

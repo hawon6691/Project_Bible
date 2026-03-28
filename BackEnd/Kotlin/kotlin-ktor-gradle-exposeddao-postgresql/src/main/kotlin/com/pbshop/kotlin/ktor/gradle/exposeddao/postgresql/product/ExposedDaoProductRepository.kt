@@ -122,6 +122,7 @@ class ExposedDaoProductRepository(
                             url = it[ProductImagesTable.url],
                             isMain = it[ProductImagesTable.isMain],
                             sortOrder = it[ProductImagesTable.sortOrder],
+                            imageVariantId = it[ProductImagesTable.imageVariantId],
                         )
                     }
 
@@ -302,10 +303,10 @@ class ExposedDaoProductRepository(
                     url = newImage.url
                     isMain = newImage.isMain
                     sortOrder = newImage.sortOrder
-                    imageVariantId = null
+                    imageVariantId = newImage.imageVariantId
                     createdAt = Instant.now()
                 }
-            ProductImageRecord(created.id.value, productId, created.url, created.isMain, created.sortOrder)
+            ProductImageRecord(created.id.value, productId, created.url, created.isMain, created.sortOrder, created.imageVariantId)
         }
 
     override fun deleteImage(
@@ -360,7 +361,7 @@ class ExposedDaoProductRepository(
                     mainApplied = true
                 }
                 sortOrder = image.sortOrder
-                imageVariantId = null
+                imageVariantId = image.imageVariantId
                 createdAt = now
             }
         }

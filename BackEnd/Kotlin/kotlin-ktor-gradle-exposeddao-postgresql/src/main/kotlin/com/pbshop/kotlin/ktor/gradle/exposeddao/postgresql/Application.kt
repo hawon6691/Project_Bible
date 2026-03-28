@@ -24,6 +24,10 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.deal.DealRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.deal.ExposedDaoDealRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.ExposedDaoInquiryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.InquiryRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.i18n.ExposedDaoI18nRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.i18n.I18nRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.image.ExposedDaoImageRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.image.ImageRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.ExposedDaoOrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.OrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.ExposedDaoPaymentRepository
@@ -62,6 +66,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.ExposedDaoUserRe
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.wishlist.ExposedDaoWishlistRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.wishlist.WishlistRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.badge.BadgeRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.badge.ExposedDaoBadgeRepository
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.callloging.CallLogging
@@ -107,6 +113,9 @@ fun Application.module() {
         crawlerRepository = ExposedDaoCrawlerRepository(databaseFactory),
         predictionRepository = ExposedDaoPredictionRepository(databaseFactory),
         trustRepository = ExposedDaoTrustRepository(databaseFactory),
+        i18nRepository = ExposedDaoI18nRepository(databaseFactory),
+        imageRepository = ExposedDaoImageRepository(databaseFactory),
+        badgeRepository = ExposedDaoBadgeRepository(databaseFactory),
     )
 }
 
@@ -139,6 +148,9 @@ fun Application.module(
     crawlerRepository: CrawlerRepository,
     predictionRepository: PredictionRepository,
     trustRepository: TrustRepository,
+    i18nRepository: I18nRepository,
+    imageRepository: ImageRepository,
+    badgeRepository: BadgeRepository,
 ) {
     val config = PbShopConfig.from(environment.config)
 
@@ -179,5 +191,8 @@ fun Application.module(
         crawlerRepository,
         predictionRepository,
         trustRepository,
+        i18nRepository,
+        imageRepository,
+        badgeRepository,
     )
 }

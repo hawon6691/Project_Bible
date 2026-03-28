@@ -182,10 +182,23 @@ object PriceAlertsTable : IntIdTable("price_alerts") {
 
 object BadgesTable : IntIdTable("badges") {
     val name = varchar("name", 50)
+    val description = varchar("description", 200)
     val iconUrl = varchar("icon_url", 500)
+    val type = varchar("type", 20)
+    val conditionJson = text("condition").nullable()
+    val rarity = varchar("rarity", 20)
+    val holderCount = integer("holder_count")
+    val isActive = bool("is_active")
+    val createdAt = timestamp("created_at")
+    val updatedAt = timestamp("updated_at")
 }
 
 object UserBadgesTable : IntIdTable("user_badges") {
     val user = reference("user_id", UsersTable)
     val badge = reference("badge_id", BadgesTable)
+    val grantedByAdminId = reference("granted_by_admin_id", UsersTable).nullable()
+    val reason = varchar("reason", 255).nullable()
+    val grantedAt = timestamp("granted_at")
+    val createdAt = timestamp("created_at")
+    val updatedAt = timestamp("updated_at")
 }

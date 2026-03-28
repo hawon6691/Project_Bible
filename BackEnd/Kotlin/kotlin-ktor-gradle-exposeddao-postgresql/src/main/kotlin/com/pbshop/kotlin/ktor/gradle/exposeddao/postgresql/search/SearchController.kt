@@ -78,6 +78,14 @@ class SearchController(
             call.requireAnyRole(PbRole.ADMIN)
             call.respondStub(service.reindexProduct(call.parameters["id"]?.toIntOrNull() ?: 0))
         }
+        get("/search/admin/index/outbox/summary") {
+            call.requireAnyRole(PbRole.ADMIN)
+            call.respondStub(service.outboxSummary())
+        }
+        post("/search/admin/index/outbox/requeue-failed") {
+            call.requireAnyRole(PbRole.ADMIN)
+            call.respondStub(service.requeueFailed(call.request.queryParameters["limit"]?.toIntOrNull()))
+        }
     }
 
     private fun io.ktor.server.application.ApplicationCall.currentUserId(): Int =

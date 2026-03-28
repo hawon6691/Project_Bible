@@ -70,6 +70,42 @@ class ChatService(
         return StubResponse(data = roomPayload(repository.closeRoom(roomId, userId)))
     }
 
+    fun joinRoom(
+        userId: Int,
+        isAdmin: Boolean,
+        roomId: Int,
+    ): ChatRoomRecord {
+        val room =
+            repository.findRoomById(roomId)
+                ?: throw PbShopException(HttpStatusCode.NotFound, "CHAT_ROOM_NOT_FOUND", "채팅방을 찾을 수 없습니다.")
+        if (!isAdmin && !repository.isRoomMember(roomId, userId)) {
+            throw PbShopException(HttpStatusCode.Forbidden, "CHAT_ROOM_FORBIDDEN", "해당 채팅방에 참여할 수 없습니다.")
+        }
+        return room
+    }
+
+    fun sendMessage(
+        userId: Int,
+        isAdmin: Boolean,
+        roomId: Int,
+        content: String,
+    ): ChatMessageRecord {
+        val trimmed = content.trim()
+        if (trimmed.isBlank()) {
+            throw PbShopException(HttpStatusCode.BadRequest, "VALIDATION_ERROR", "message는 비어 있을 수 없습니다.")
+        }
+        val room =
+            repository.findRoomById(roomId)
+                ?: throw PbShopException(HttpStatusCode.NotFound, "CHAT_ROOM_NOT_FOUND", "채팅방을 찾을 수 없습니다.")
+        if (!isAdmin && !repository.isRoomMember(roomId, userId)) {
+            throw PbShopException(HttpStatusCode.Forbidden, "CHAT_ROOM_FORBIDDEN", "해당 채팅방에 메시지를 보낼 수 없습니다.")
+        }
+        if (room.status == "CLOSED") {
+            throw PbShopException(HttpStatusCode.BadRequest, "CHAT_ROOM_CLOSED", "종료된 채팅방에는 메시지를 보낼 수 없습니다.")
+        }
+        return repository.createMessage(roomId, userId, NewChatMessage(trimmed))
+    }
+
     private fun roomPayload(record: ChatRoomRecord): Map<String, Any?> =
         mapOf(
             "id" to record.id,

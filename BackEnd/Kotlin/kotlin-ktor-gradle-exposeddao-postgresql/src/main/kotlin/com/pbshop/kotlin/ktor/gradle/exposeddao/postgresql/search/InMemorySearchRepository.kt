@@ -4,9 +4,23 @@ import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
 class InMemorySearchRepository private constructor() : SearchRepository {
+    private data class SearchOutboxEntry(
+        val id: Int,
+        val eventType: String,
+        var status: String,
+        val aggregateId: Int,
+        var attemptCount: Int,
+        var lastError: String?,
+        var processedAt: Instant?,
+        val createdAt: Instant,
+        var updatedAt: Instant,
+    )
+
     private val recentByUser = ConcurrentHashMap<Int, MutableList<SearchRecentKeywordRecord>>()
     private val preferenceByUser = ConcurrentHashMap<Int, Boolean>()
+    private val outboxEntries = mutableListOf<SearchOutboxEntry>()
     private var nextRecentId = 3
+    private var nextOutboxId = 3
     private var weights = SearchWeightConfig(1.0, 1.5, 0.8)
     private var indexStatus = SearchIndexStatusRecord("HEALTHY", 1200, Instant.now().minusSeconds(300))
 
@@ -17,6 +31,30 @@ class InMemorySearchRepository private constructor() : SearchRepository {
                 SearchRecentKeywordRecord(2, "7800x3d", Instant.now().minusSeconds(1_800)),
             )
         preferenceByUser[4] = true
+        outboxEntries +=
+            SearchOutboxEntry(
+                id = 1,
+                eventType = "PRODUCT_REINDEX",
+                status = "FAILED",
+                aggregateId = 1,
+                attemptCount = 2,
+                lastError = "index writer timeout",
+                processedAt = null,
+                createdAt = Instant.now().minusSeconds(1200),
+                updatedAt = Instant.now().minusSeconds(900),
+            )
+        outboxEntries +=
+            SearchOutboxEntry(
+                id = 2,
+                eventType = "FULL_REINDEX",
+                status = "COMPLETED",
+                aggregateId = 0,
+                attemptCount = 1,
+                lastError = null,
+                processedAt = Instant.now().minusSeconds(600),
+                createdAt = Instant.now().minusSeconds(1800),
+                updatedAt = Instant.now().minusSeconds(600),
+            )
     }
 
     override fun search(query: SearchQuery): SearchResultRecord =
@@ -92,11 +130,61 @@ class InMemorySearchRepository private constructor() : SearchRepository {
     override fun getIndexStatus(): SearchIndexStatusRecord = indexStatus
 
     override fun reindexAllProducts(): Pair<String, Boolean> {
-        indexStatus = indexStatus.copy(lastIndexedAt = Instant.now())
+        val now = Instant.now()
+        indexStatus = indexStatus.copy(lastIndexedAt = now)
+        outboxEntries +=
+            SearchOutboxEntry(
+                id = nextOutboxId++,
+                eventType = "FULL_REINDEX",
+                status = "PENDING",
+                aggregateId = 0,
+                attemptCount = 0,
+                lastError = null,
+                processedAt = null,
+                createdAt = now,
+                updatedAt = now,
+            )
         return "Reindex queued." to true
     }
 
-    override fun reindexProduct(productId: Int): Pair<String, Int> = "Product reindex queued." to productId
+    override fun reindexProduct(productId: Int): Pair<String, Int> {
+        val now = Instant.now()
+        indexStatus = indexStatus.copy(lastIndexedAt = now)
+        outboxEntries +=
+            SearchOutboxEntry(
+                id = nextOutboxId++,
+                eventType = "PRODUCT_REINDEX",
+                status = "PENDING",
+                aggregateId = productId,
+                attemptCount = 0,
+                lastError = null,
+                processedAt = null,
+                createdAt = now,
+                updatedAt = now,
+            )
+        return "Product reindex queued." to productId
+    }
+
+    override fun getOutboxSummary(): SearchOutboxSummaryRecord =
+        SearchOutboxSummaryRecord(
+            total = outboxEntries.size,
+            pending = outboxEntries.count { it.status == "PENDING" },
+            processing = outboxEntries.count { it.status == "PROCESSING" },
+            completed = outboxEntries.count { it.status == "COMPLETED" },
+            failed = outboxEntries.count { it.status == "FAILED" },
+        )
+
+    override fun requeueFailed(limit: Int): Int {
+        val now = Instant.now()
+        val targets = outboxEntries.filter { it.status == "FAILED" }.sortedBy { it.updatedAt }.take(limit)
+        targets.forEach {
+            it.status = "PENDING"
+            it.lastError = null
+            it.processedAt = null
+            it.updatedAt = now
+        }
+        return targets.size
+    }
 
     companion object {
         fun seeded(): InMemorySearchRepository = InMemorySearchRepository()

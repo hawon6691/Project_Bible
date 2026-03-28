@@ -32,6 +32,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.CategoryRepo
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.CategoryService
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.chat.ChatController
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.chat.ChatRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.chat.ChatSocketController
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.chat.ChatSocketCoordinator
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.chat.ChatService
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.community.CommunityController
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.community.CommunityRepository
@@ -224,7 +226,9 @@ fun Application.configureRouting(
     val inquiryController = InquiryController(InquiryService(inquiryRepository))
     val supportController = SupportController(SupportService(supportRepository))
     val activityController = ActivityController(ActivityService(activityRepository))
-    val chatController = ChatController(ChatService(chatRepository))
+    val chatService = ChatService(chatRepository)
+    val chatController = ChatController(chatService)
+    val chatSocketController = ChatSocketController(chatService, ChatSocketCoordinator())
     val pushController = PushController(PushService(pushRepository))
     val rankingController = RankingController(RankingService(rankingRepository))
     val recommendationController = RecommendationController(RecommendationService(recommendationRepository))
@@ -293,6 +297,7 @@ fun Application.configureRouting(
             with(supportController) { register() }
             with(activityController) { register() }
             with(chatController) { register() }
+            with(chatSocketController) { register() }
             with(pushController) { register() }
             with(rankingController) { register() }
             with(recommendationController) { register() }

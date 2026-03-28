@@ -25,6 +25,7 @@ kotlin {
 dependencies {
     implementation("io.ktor:ktor-server-core-jvm:2.3.12")
     implementation("io.ktor:ktor-server-netty-jvm:2.3.12")
+    implementation("io.ktor:ktor-server-websockets-jvm:2.3.12")
     implementation("io.ktor:ktor-server-content-negotiation-jvm:2.3.12")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:2.3.12")
     implementation("io.ktor:ktor-server-call-logging-jvm:2.3.12")
@@ -40,6 +41,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.5.6")
 
     testImplementation("io.ktor:ktor-server-tests-jvm:2.3.12")
+    testImplementation("io.ktor:ktor-client-websockets-jvm:2.3.12")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.9.25")
 }
 

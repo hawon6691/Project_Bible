@@ -53,4 +53,10 @@ fun searchOperations(): List<StubOperation> =
         endpoint(HttpMethod.Post, "/search/admin/index/products/{id}/reindex", "Search", "Reindex product", roles = setOf(PbRole.ADMIN)) { call ->
             StubResponse(status = HttpStatusCode.Created, data = mapOf("message" to "Product reindex queued.", "productId" to call.pathParam("id", "1")))
         },
+        endpoint(HttpMethod.Get, "/search/admin/index/outbox/summary", "Search", "Search sync outbox summary", roles = setOf(PbRole.ADMIN)) {
+            StubResponse(data = mapOf("total" to 4, "pending" to 1, "processing" to 0, "completed" to 2, "failed" to 1))
+        },
+        endpoint(HttpMethod.Post, "/search/admin/index/outbox/requeue-failed", "Search", "Requeue failed search sync outbox rows", roles = setOf(PbRole.ADMIN)) {
+            StubResponse(data = mapOf("requeuedCount" to 1))
+        },
     )

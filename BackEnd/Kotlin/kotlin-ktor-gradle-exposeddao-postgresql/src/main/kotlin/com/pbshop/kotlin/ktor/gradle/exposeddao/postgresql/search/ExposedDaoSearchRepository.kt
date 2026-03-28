@@ -6,6 +6,7 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.exposed.PriceEntri
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.exposed.ProductSpecsTable
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.exposed.ProductsTable
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.exposed.SearchHistoriesTable
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.exposed.SearchIndexOutboxTable
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.exposed.SearchLogsTable
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.exposed.SearchSynonymsTable
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.exposed.SpecDefinitionsTable
@@ -25,9 +26,15 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.max
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.ConcurrentHashMap
+
+private const val OUTBOX_PENDING = "PENDING"
+private const val OUTBOX_PROCESSING = "PROCESSING"
+private const val OUTBOX_COMPLETED = "COMPLETED"
+private const val OUTBOX_FAILED = "FAILED"
 
 class ExposedDaoSearchRepository(
     private val databaseFactory: DatabaseFactory,
@@ -205,14 +212,57 @@ class ExposedDaoSearchRepository(
         }
 
     override fun reindexAllProducts(): Pair<String, Boolean> {
-        lastIndexedAt = Instant.now()
+        val now = Instant.now()
+        lastIndexedAt = now
+        databaseFactory.withTransaction {
+            enqueueOutbox(eventType = "FULL_REINDEX", aggregateId = 0, now = now)
+        }
         return "Reindex queued." to true
     }
 
     override fun reindexProduct(productId: Int): Pair<String, Int> {
-        lastIndexedAt = Instant.now()
+        val now = Instant.now()
+        lastIndexedAt = now
+        databaseFactory.withTransaction {
+            enqueueOutbox(eventType = "PRODUCT_REINDEX", aggregateId = productId, now = now)
+        }
         return "Product reindex queued." to productId
     }
+
+    override fun getOutboxSummary(): SearchOutboxSummaryRecord =
+        databaseFactory.withTransaction {
+            val counts =
+                SearchIndexOutboxTable.selectAll()
+                    .groupBy { it[SearchIndexOutboxTable.status] }
+                    .mapValues { (_, rows) -> rows.size }
+            SearchOutboxSummaryRecord(
+                total = counts.values.sum(),
+                pending = counts[OUTBOX_PENDING] ?: 0,
+                processing = counts[OUTBOX_PROCESSING] ?: 0,
+                completed = counts[OUTBOX_COMPLETED] ?: 0,
+                failed = counts[OUTBOX_FAILED] ?: 0,
+            )
+        }
+
+    override fun requeueFailed(limit: Int): Int =
+        databaseFactory.withTransaction {
+            val now = Instant.now()
+            val targets =
+                SearchIndexOutboxTable.selectAll()
+                    .where { SearchIndexOutboxTable.status eq OUTBOX_FAILED }
+                    .orderBy(SearchIndexOutboxTable.updatedAt to SortOrder.ASC, SearchIndexOutboxTable.id to SortOrder.ASC)
+                    .limit(limit)
+                    .map { it[SearchIndexOutboxTable.id].value }
+            targets.forEach { id ->
+                SearchIndexOutboxTable.update({ SearchIndexOutboxTable.id eq id }) {
+                    it[SearchIndexOutboxTable.status] = OUTBOX_PENDING
+                    it[SearchIndexOutboxTable.lastError] = null
+                    it[SearchIndexOutboxTable.processedAt] = null
+                    it[SearchIndexOutboxTable.updatedAt] = now
+                }
+            }
+            targets.size
+        }
 
     private fun matchesKeyword(
         row: SearchProductRow,
@@ -307,6 +357,23 @@ class ExposedDaoSearchRepository(
         runCatching {
             Json.parseToJsonElement(raw).jsonArray.map { it.jsonPrimitive.content }
         }.getOrDefault(emptyList())
+
+    private fun enqueueOutbox(
+        eventType: String,
+        aggregateId: Int,
+        now: Instant,
+    ) {
+        SearchIndexOutboxTable.insert {
+            it[SearchIndexOutboxTable.eventType] = eventType
+            it[SearchIndexOutboxTable.status] = OUTBOX_PENDING
+            it[SearchIndexOutboxTable.aggregateId] = aggregateId
+            it[SearchIndexOutboxTable.attemptCount] = 0
+            it[SearchIndexOutboxTable.lastError] = null
+            it[SearchIndexOutboxTable.processedAt] = null
+            it[SearchIndexOutboxTable.createdAt] = now
+            it[SearchIndexOutboxTable.updatedAt] = now
+        }
+    }
 
     private data class SearchProductRow(
         val id: Int,

@@ -71,6 +71,17 @@ object SearchSynonymsTable : IntIdTable("search_synonyms") {
     val updatedAt = timestamp("updated_at")
 }
 
+object SearchIndexOutboxTable : IntIdTable("search_index_outbox") {
+    val eventType = varchar("event_type", 30)
+    val status = varchar("status", 20)
+    val aggregateId = integer("aggregate_id")
+    val attemptCount = integer("attempt_count")
+    val lastError = varchar("last_error", 500).nullable()
+    val processedAt = timestamp("processed_at").nullable()
+    val createdAt = timestamp("created_at")
+    val updatedAt = timestamp("updated_at")
+}
+
 object CrawlerJobsTable : IntIdTable("crawler_jobs") {
     val seller = reference("seller_id", SellersTable)
     val name = varchar("name", 100)

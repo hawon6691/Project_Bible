@@ -42,6 +42,14 @@ data class SearchIndexStatusRecord(
     val lastIndexedAt: Instant?,
 )
 
+data class SearchOutboxSummaryRecord(
+    val total: Int,
+    val pending: Int,
+    val processing: Int,
+    val completed: Int,
+    val failed: Int,
+)
+
 data class SearchQuery(
     val q: String,
     val categoryId: Int?,
@@ -94,4 +102,8 @@ interface SearchRepository {
     fun reindexAllProducts(): Pair<String, Boolean>
 
     fun reindexProduct(productId: Int): Pair<String, Int>
+
+    fun getOutboxSummary(): SearchOutboxSummaryRecord
+
+    fun requeueFailed(limit: Int): Int
 }

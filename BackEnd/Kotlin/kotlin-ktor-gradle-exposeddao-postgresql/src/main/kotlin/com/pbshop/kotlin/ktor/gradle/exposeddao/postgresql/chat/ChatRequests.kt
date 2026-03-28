@@ -7,3 +7,14 @@ data class ChatRoomCreateRequest(
     val name: String,
     val isPrivate: Boolean = true,
 )
+
+@Serializable
+data class ChatSocketJoinRoomRequest(
+    val roomId: Int,
+)
+
+@Serializable
+data class ChatSocketSendMessageRequest(
+    val roomId: Int,
+    val content: String,
+)

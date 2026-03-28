@@ -35,6 +35,7 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.prediction.Prediction
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureHttp
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureRouting
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureSerialization
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins.configureWebSockets
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.price.ExposedDaoPriceRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.price.PriceRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.ExposedDaoProductRepository
@@ -147,6 +148,7 @@ fun Application.module(
 
     configureSerialization()
     configureHttp(config)
+    configureWebSockets()
     configureRouting(
         config,
         dbHealthService,

@@ -37,14 +37,8 @@ fun buildOpenApiDocument(
                 "chat" to
                     listOf(
                         mapOf("event" to "joinRoom", "direction" to "client->server"),
-                        mapOf("event" to "leaveRoom", "direction" to "client->server"),
                         mapOf("event" to "sendMessage", "direction" to "client->server"),
                         mapOf("event" to "newMessage", "direction" to "server->client"),
-                        mapOf("event" to "messageRead", "direction" to "client->server"),
-                        mapOf("event" to "readReceipt", "direction" to "server->client"),
-                        mapOf("event" to "typing", "direction" to "client->server"),
-                        mapOf("event" to "userTyping", "direction" to "server->client"),
-                        mapOf("event" to "priceAlert", "direction" to "server->client"),
                     ),
             ),
     ).toJsonElement()

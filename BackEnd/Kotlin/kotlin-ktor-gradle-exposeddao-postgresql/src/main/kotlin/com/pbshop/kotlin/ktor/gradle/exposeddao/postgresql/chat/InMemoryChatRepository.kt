@@ -106,6 +106,26 @@ class InMemoryChatRepository(
         return closed
     }
 
+    override fun createMessage(
+        roomId: Int,
+        senderId: Int,
+        message: NewChatMessage,
+    ): ChatMessageRecord {
+        val now = Instant.now()
+        val created =
+            ChatMessageRecord(
+                id = nextMessageId++,
+                roomId = roomId,
+                senderId = senderId,
+                message = message.message,
+                createdAt = now,
+                updatedAt = now,
+            )
+        messages[created.id] = created
+        rooms[roomId]?.let { room -> rooms[roomId] = room.copy(updatedAt = now) }
+        return created
+    }
+
     private fun roomStatus(roomId: Int): String =
         if (messages.values.any { it.roomId == roomId && it.message == CHAT_CLOSE_MARKER }) "CLOSED" else "OPEN"
 

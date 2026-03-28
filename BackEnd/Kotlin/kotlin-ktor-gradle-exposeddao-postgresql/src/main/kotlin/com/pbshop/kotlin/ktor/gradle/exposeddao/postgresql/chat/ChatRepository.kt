@@ -37,6 +37,10 @@ data class NewChatRoom(
     val isPrivate: Boolean,
 )
 
+data class NewChatMessage(
+    val message: String,
+)
+
 interface ChatRepository {
     fun createRoom(
         createdBy: Int,
@@ -67,4 +71,10 @@ interface ChatRepository {
         roomId: Int,
         actorUserId: Int,
     ): ChatRoomRecord
+
+    fun createMessage(
+        roomId: Int,
+        senderId: Int,
+        message: NewChatMessage,
+    ): ChatMessageRecord
 }

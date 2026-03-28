@@ -135,6 +135,28 @@ class SearchService(
     fun reindexProduct(productId: Int): StubResponse =
         repository.reindexProduct(productId).let { StubResponse(status = HttpStatusCode.Created, data = mapOf("message" to it.first, "productId" to it.second)) }
 
+    fun outboxSummary(): StubResponse =
+        repository.getOutboxSummary().let {
+            StubResponse(
+                data =
+                    mapOf(
+                        "total" to it.total,
+                        "pending" to it.pending,
+                        "processing" to it.processing,
+                        "completed" to it.completed,
+                        "failed" to it.failed,
+                    ),
+            )
+        }
+
+    fun requeueFailed(limit: Int?): StubResponse =
+        StubResponse(
+            data =
+                mapOf(
+                    "requeuedCount" to repository.requeueFailed((limit ?: 100).coerceIn(1, 1000)),
+                ),
+        )
+
     private fun parseSpecs(raw: String?): Map<String, String> {
         if (raw.isNullOrBlank()) return emptyMap()
         return runCatching {

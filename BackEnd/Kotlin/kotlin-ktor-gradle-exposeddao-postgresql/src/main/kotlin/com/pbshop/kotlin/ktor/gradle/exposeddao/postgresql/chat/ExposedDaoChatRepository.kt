@@ -210,4 +210,32 @@ class ExposedDaoChatRepository(
             }
             requireNotNull(findRoomById(roomId))
         }
+
+    override fun createMessage(
+        roomId: Int,
+        senderId: Int,
+        message: NewChatMessage,
+    ): ChatMessageRecord =
+        databaseFactory.withTransaction {
+            val now = Instant.now()
+            val messageId =
+                ChatMessagesTable.insertAndGetId {
+                    it[room] = EntityID(roomId, ChatRoomsTable)
+                    it[sender] = EntityID(senderId, UsersTable)
+                    it[ChatMessagesTable.message] = message.message
+                    it[createdAt] = now
+                    it[updatedAt] = now
+                }.value
+            ChatRoomsTable.update({ ChatRoomsTable.id eq roomId }) {
+                it[updatedAt] = now
+            }
+            ChatMessageRecord(
+                id = messageId,
+                roomId = roomId,
+                senderId = senderId,
+                message = message.message,
+                createdAt = now,
+                updatedAt = now,
+            )
+        }
 }

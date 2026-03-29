@@ -195,6 +195,9 @@ fun Application.configureRouting(
     i18nRepository: I18nRepository,
     imageRepository: ImageRepository,
     badgeRepository: BadgeRepository,
+    pcBuilderRepository: PcBuilderRepository,
+    friendRepository: FriendRepository,
+    shortformRepository: ShortformRepository,
 ) {
     val endpointSpecs = pbShopEndpointSpecs()
     val platformController = PlatformController(PlatformService(config, endpointSpecs))
@@ -245,9 +248,9 @@ fun Application.configureRouting(
     val imageController = ImageController(imageService)
     val mediaController = MediaController(MediaService(MediaRepository()))
     val badgeController = BadgeController(BadgeService(badgeRepository))
-    val pcBuilderController = PcBuilderController(PcBuilderService(PcBuilderRepository()))
-    val friendController = FriendController(FriendService(FriendRepository()))
-    val shortformController = ShortformController(ShortformService(ShortformRepository()))
+    val pcBuilderController = PcBuilderController(PcBuilderService(pcBuilderRepository))
+    val friendController = FriendController(FriendService(friendRepository))
+    val shortformController = ShortformController(ShortformService(shortformRepository))
     val newsController = NewsController(NewsService(NewsRepository()))
     val matchingController = MatchingController(MatchingService(MatchingRepository()))
     val fraudController = FraudController(FraudService(FraudRepository()))

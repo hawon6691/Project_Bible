@@ -22,6 +22,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.JdbcDbHealthService
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.deal.DealRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.deal.ExposedDaoDealRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.friend.ExposedDaoFriendRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.friend.FriendRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.ExposedDaoInquiryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.InquiryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.i18n.ExposedDaoI18nRepository
@@ -32,6 +34,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.ExposedDaoOrder
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.OrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.ExposedDaoPaymentRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.PaymentRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.pcbuilder.ExposedDaoPcBuilderRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.pcbuilder.PcBuilderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.point.ExposedDaoPointRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.point.PointRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.prediction.ExposedDaoPredictionRepository
@@ -56,6 +60,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.search.ExposedDaoSear
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.search.SearchRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.ExposedDaoSellerRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.SellerRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.shortform.ExposedDaoShortformRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.shortform.ShortformRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.ExposedDaoSpecRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.SpecRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.support.ExposedDaoSupportRepository
@@ -116,6 +122,9 @@ fun Application.module() {
         i18nRepository = ExposedDaoI18nRepository(databaseFactory),
         imageRepository = ExposedDaoImageRepository(databaseFactory),
         badgeRepository = ExposedDaoBadgeRepository(databaseFactory),
+        pcBuilderRepository = ExposedDaoPcBuilderRepository(databaseFactory),
+        friendRepository = ExposedDaoFriendRepository(databaseFactory),
+        shortformRepository = ExposedDaoShortformRepository(databaseFactory),
     )
 }
 
@@ -151,6 +160,9 @@ fun Application.module(
     i18nRepository: I18nRepository,
     imageRepository: ImageRepository,
     badgeRepository: BadgeRepository,
+    pcBuilderRepository: PcBuilderRepository,
+    friendRepository: FriendRepository,
+    shortformRepository: ShortformRepository,
 ) {
     val config = PbShopConfig.from(environment.config)
 
@@ -194,5 +206,8 @@ fun Application.module(
         i18nRepository,
         imageRepository,
         badgeRepository,
+        pcBuilderRepository,
+        friendRepository,
+        shortformRepository,
     )
 }

@@ -19,6 +19,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.crawler.InMemoryCrawl
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthCheckResult
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.deal.DealRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.friend.FriendRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.friend.InMemoryFriendRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.InMemoryInquiryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.InquiryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.i18n.InMemoryI18nRepository
@@ -29,6 +31,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.InMemoryOrderRe
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.OrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.InMemoryPaymentRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.PaymentRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.pcbuilder.InMemoryPcBuilderRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.pcbuilder.PcBuilderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.point.InMemoryPointRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.point.PointRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.prediction.InMemoryPredictionRepository
@@ -49,6 +53,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.search.InMemorySearch
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.search.SearchRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.InMemorySellerRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.seller.SellerRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.shortform.InMemoryShortformRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.shortform.ShortformRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.InMemorySpecRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.spec.SpecRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.support.InMemorySupportRepository
@@ -101,6 +107,9 @@ internal fun ApplicationTestBuilder.installPbShopApp(
     i18nRepository: I18nRepository = InMemoryI18nRepository.seeded(),
     imageRepository: ImageRepository = InMemoryImageRepository.seeded(),
     badgeRepository: BadgeRepository = InMemoryBadgeRepository.seeded(),
+    pcBuilderRepository: PcBuilderRepository = InMemoryPcBuilderRepository.seeded(),
+    friendRepository: FriendRepository = InMemoryFriendRepository.seeded(),
+    shortformRepository: ShortformRepository = InMemoryShortformRepository.seeded(),
     generalPerMinute: Int = 60,
     authPerMinute: Int = 10,
 ) {
@@ -141,6 +150,9 @@ internal fun ApplicationTestBuilder.installPbShopApp(
             i18nRepository = i18nRepository,
             imageRepository = imageRepository,
             badgeRepository = badgeRepository,
+            pcBuilderRepository = pcBuilderRepository,
+            friendRepository = friendRepository,
+            shortformRepository = shortformRepository,
         )
     }
 }

@@ -27,6 +27,12 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.i18n.InMemoryI18nRepo
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.i18n.I18nRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.image.ImageRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.image.InMemoryImageRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.matching.InMemoryMatchingRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.matching.MatchingRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.media.InMemoryMediaRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.media.MediaRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.news.InMemoryNewsRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.news.NewsRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.InMemoryOrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.OrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.InMemoryPaymentRepository
@@ -106,10 +112,13 @@ internal fun ApplicationTestBuilder.installPbShopApp(
     trustRepository: TrustRepository = InMemoryTrustRepository.seeded(),
     i18nRepository: I18nRepository = InMemoryI18nRepository.seeded(),
     imageRepository: ImageRepository = InMemoryImageRepository.seeded(),
+    mediaRepository: MediaRepository = InMemoryMediaRepository.seeded(),
     badgeRepository: BadgeRepository = InMemoryBadgeRepository.seeded(),
     pcBuilderRepository: PcBuilderRepository = InMemoryPcBuilderRepository.seeded(),
     friendRepository: FriendRepository = InMemoryFriendRepository.seeded(),
     shortformRepository: ShortformRepository = InMemoryShortformRepository.seeded(),
+    newsRepository: NewsRepository = InMemoryNewsRepository.seeded(),
+    matchingRepository: MatchingRepository = InMemoryMatchingRepository.seeded(),
     generalPerMinute: Int = 60,
     authPerMinute: Int = 10,
 ) {
@@ -149,10 +158,13 @@ internal fun ApplicationTestBuilder.installPbShopApp(
             trustRepository = trustRepository,
             i18nRepository = i18nRepository,
             imageRepository = imageRepository,
+            mediaRepository = mediaRepository,
             badgeRepository = badgeRepository,
             pcBuilderRepository = pcBuilderRepository,
             friendRepository = friendRepository,
             shortformRepository = shortformRepository,
+            newsRepository = newsRepository,
+            matchingRepository = matchingRepository,
         )
     }
 }

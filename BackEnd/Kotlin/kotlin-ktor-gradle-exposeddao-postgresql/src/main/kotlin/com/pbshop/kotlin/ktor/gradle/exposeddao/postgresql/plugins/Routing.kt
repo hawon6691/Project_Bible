@@ -194,10 +194,13 @@ fun Application.configureRouting(
     trustRepository: TrustRepository,
     i18nRepository: I18nRepository,
     imageRepository: ImageRepository,
+    mediaRepository: MediaRepository,
     badgeRepository: BadgeRepository,
     pcBuilderRepository: PcBuilderRepository,
     friendRepository: FriendRepository,
     shortformRepository: ShortformRepository,
+    newsRepository: NewsRepository,
+    matchingRepository: MatchingRepository,
 ) {
     val endpointSpecs = pbShopEndpointSpecs()
     val platformController = PlatformController(PlatformService(config, endpointSpecs))
@@ -246,13 +249,13 @@ fun Application.configureRouting(
     val trustController = TrustController(TrustService(trustRepository))
     val i18nController = I18nController(I18nService(i18nRepository))
     val imageController = ImageController(imageService)
-    val mediaController = MediaController(MediaService(MediaRepository()))
+    val mediaController = MediaController(MediaService(mediaRepository))
     val badgeController = BadgeController(BadgeService(badgeRepository))
     val pcBuilderController = PcBuilderController(PcBuilderService(pcBuilderRepository))
     val friendController = FriendController(FriendService(friendRepository))
     val shortformController = ShortformController(ShortformService(shortformRepository))
-    val newsController = NewsController(NewsService(NewsRepository()))
-    val matchingController = MatchingController(MatchingService(MatchingRepository()))
+    val newsController = NewsController(NewsService(newsRepository))
+    val matchingController = MatchingController(MatchingService(matchingRepository))
     val fraudController = FraudController(FraudService(FraudRepository()))
     val analyticsController = AnalyticsController(AnalyticsService(AnalyticsRepository()))
     val usedMarketController = UsedMarketController(UsedMarketService(UsedMarketRepository()))

@@ -30,6 +30,12 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.i18n.ExposedDaoI18nRe
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.i18n.I18nRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.image.ExposedDaoImageRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.image.ImageRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.matching.ExposedDaoMatchingRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.matching.MatchingRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.media.ExposedDaoMediaRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.media.MediaRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.news.ExposedDaoNewsRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.news.NewsRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.ExposedDaoOrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.OrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.ExposedDaoPaymentRepository
@@ -121,10 +127,13 @@ fun Application.module() {
         trustRepository = ExposedDaoTrustRepository(databaseFactory),
         i18nRepository = ExposedDaoI18nRepository(databaseFactory),
         imageRepository = ExposedDaoImageRepository(databaseFactory),
+        mediaRepository = ExposedDaoMediaRepository(databaseFactory),
         badgeRepository = ExposedDaoBadgeRepository(databaseFactory),
         pcBuilderRepository = ExposedDaoPcBuilderRepository(databaseFactory),
         friendRepository = ExposedDaoFriendRepository(databaseFactory),
         shortformRepository = ExposedDaoShortformRepository(databaseFactory),
+        newsRepository = ExposedDaoNewsRepository(databaseFactory),
+        matchingRepository = ExposedDaoMatchingRepository(databaseFactory),
     )
 }
 
@@ -159,10 +168,13 @@ fun Application.module(
     trustRepository: TrustRepository,
     i18nRepository: I18nRepository,
     imageRepository: ImageRepository,
+    mediaRepository: MediaRepository,
     badgeRepository: BadgeRepository,
     pcBuilderRepository: PcBuilderRepository,
     friendRepository: FriendRepository,
     shortformRepository: ShortformRepository,
+    newsRepository: NewsRepository,
+    matchingRepository: MatchingRepository,
 ) {
     val config = PbShopConfig.from(environment.config)
 
@@ -205,9 +217,12 @@ fun Application.module(
         trustRepository,
         i18nRepository,
         imageRepository,
+        mediaRepository,
         badgeRepository,
         pcBuilderRepository,
         friendRepository,
         shortformRepository,
+        newsRepository,
+        matchingRepository,
     )
 }

@@ -1136,14 +1136,20 @@ class PcFriendShortformMediaNewsMatchingApiTest {
         val pcResponse = client.get("/api/v1/pc-builds") { pbHeaders(role = "USER", clientId = "pc") }
         val friendResponse = client.get("/api/v1/friends") { pbHeaders(role = "USER", clientId = "friends") }
         val shortformResponse = client.get("/api/v1/shortforms") { pbHeaders(clientId = "shortforms") }
-        val mediaResponse = client.post("/api/v1/media/presigned-url") { pbHeaders(role = "USER", clientId = "media") }
+        val mediaResponse =
+            client.post("/api/v1/media/presigned-url") {
+                pbHeaders(role = "USER", clientId = "media")
+                header("X-User-Id", "4")
+                header("Content-Type", "application/json")
+                setBody("""{"fileName":"media.jpg","fileType":"image/jpeg"}""")
+            }
         val newsResponse = client.get("/api/v1/news") { pbHeaders(clientId = "news") }
         val matchingResponse = client.get("/api/v1/matching/pending") { pbHeaders(role = "ADMIN", clientId = "matching") }
 
         assertEquals(HttpStatusCode.OK, pcResponse.status)
         assertEquals(HttpStatusCode.OK, friendResponse.status)
         assertEquals(HttpStatusCode.OK, shortformResponse.status)
-        assertEquals(HttpStatusCode.OK, mediaResponse.status)
+        assertEquals(HttpStatusCode.Created, mediaResponse.status)
         assertEquals(HttpStatusCode.OK, newsResponse.status)
         assertEquals(HttpStatusCode.OK, matchingResponse.status)
     }

@@ -13,13 +13,30 @@ import io.ktor.http.HttpStatusCode
 fun newsOperations(): List<StubOperation> =
     listOf(
         endpoint(HttpMethod.Get, "/news", "News", "News list") {
-            paged(listOf(mapOf("id" to 1, "title" to "PB weekly hardware briefing")))
+            paged(
+                listOf(
+                    mapOf(
+                        "id" to 1,
+                        "title" to "PB weekly hardware briefing",
+                        "category" to mapOf("id" to 1, "name" to "Hardware", "slug" to "hardware"),
+                        "viewCount" to 12,
+                    )
+                )
+            )
         },
         endpoint(HttpMethod.Get, "/news/categories", "News", "News category list") {
-            StubResponse(data = listOf(mapOf("id" to 1, "name" to "Hardware")))
+            StubResponse(data = listOf(mapOf("id" to 1, "name" to "Hardware", "slug" to "hardware")))
         },
         endpoint(HttpMethod.Get, "/news/{id}", "News", "News detail") { call ->
-            StubResponse(data = mapOf("id" to call.pathParam("id", "1"), "title" to "PB weekly hardware briefing", "relatedProducts" to listOf(productSummary(1, "PB GalaxyBook 4 Pro"))))
+            StubResponse(
+                data = mapOf(
+                    "id" to call.pathParam("id", "1"),
+                    "title" to "PB weekly hardware briefing",
+                    "category" to mapOf("id" to 1, "name" to "Hardware", "slug" to "hardware"),
+                    "viewCount" to 13,
+                    "relatedProducts" to listOf(productSummary(1, "PB GalaxyBook 4 Pro")),
+                )
+            )
         },
         endpoint(HttpMethod.Post, "/news", "News", "Create news", roles = setOf(PbRole.ADMIN)) {
             StubResponse(status = HttpStatusCode.Created, data = mapOf("id" to 2, "title" to "New article"))
@@ -31,7 +48,7 @@ fun newsOperations(): List<StubOperation> =
             message("News deleted.")
         },
         endpoint(HttpMethod.Post, "/news/categories", "News", "Create news category", roles = setOf(PbRole.ADMIN)) {
-            StubResponse(status = HttpStatusCode.Created, data = mapOf("id" to 2, "name" to "Deals"))
+            StubResponse(status = HttpStatusCode.Created, data = mapOf("id" to 2, "name" to "Deals", "slug" to "deals"))
         },
         endpoint(HttpMethod.Delete, "/news/categories/{id}", "News", "Delete news category", roles = setOf(PbRole.ADMIN)) {
             message("News category deleted.")

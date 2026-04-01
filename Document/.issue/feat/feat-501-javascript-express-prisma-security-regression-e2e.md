@@ -1,15 +1,15 @@
 ---
-name: "🧪 Test Request"
-about: 새로운 테스트 제안
-title: "[TEST] JavaScript Express Prisma Security Regression E2E"
-labels: test
+name: "✨ Feature Request"
+about: 새로운 기능 제안
+title: "[FEAT] JavaScript Express Prisma Security Regression E2E"
+labels: feature
 assignees: ""
-issue: "[TEST] JavaScript Express Prisma Security Regression E2E 구현"
-commit: "test: (#501) JavaScript Express Prisma Security Regression E2E 구현"
-branch: "test/#501/javascript-express-prisma-security-regression-e2e"
+issue: "[FEAT] JavaScript Express Prisma Security Regression E2E 구현"
+commit: "feat: (#501) JavaScript Express Prisma Security Regression E2E 구현"
+branch: "feat/#501/javascript-express-prisma-security-regression-e2e"
 ---
 
-## 🧪 테스트 요약
+## ✨ 기능 요약
 
 > JavaScript Express Prisma 백엔드에 공개 문서, 인증 경계, 관리자 권한 경계를 검증하는 security regression E2E를 추가한다.
 
@@ -27,3 +27,5 @@ branch: "test/#501/javascript-express-prisma-security-regression-e2e"
 - [x] `npm run test:e2e:security-regression` 통과 확인
 - [x] `npm run test:e2e:critical` 회귀 통과 확인
 - [x] security regression E2E 10건 통과 확인
+
+

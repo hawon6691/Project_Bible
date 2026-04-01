@@ -1,15 +1,15 @@
 ---
-name: "🧪 Test Request"
-about: 새로운 테스트 제안
-title: "[TEST] JavaScript Express Prisma Contract Admin E2E"
-labels: test
+name: "✨ Feature Request"
+about: 새로운 기능 제안
+title: "[FEAT] JavaScript Express Prisma Contract Admin E2E"
+labels: feature
 assignees: ""
-issue: "[TEST] JavaScript Express Prisma Contract Admin E2E 구현"
-commit: "test: (#499) JavaScript Express Prisma Contract Admin E2E 구현"
-branch: "test/#499/javascript-express-prisma-contract-admin-e2e"
+issue: "[FEAT] JavaScript Express Prisma Contract Admin E2E 구현"
+commit: "feat: (#499) JavaScript Express Prisma Contract Admin E2E 구현"
+branch: "feat/#499/javascript-express-prisma-contract-admin-e2e"
 ---
 
-## 🧪 테스트 요약
+## ✨ 기능 요약
 
 > JavaScript Express Prisma 백엔드에 공개 API 계약 검증과 관리자 권한 경계 검증 E2E를 추가한다.
 
@@ -29,3 +29,5 @@ branch: "test/#499/javascript-express-prisma-contract-admin-e2e"
 - [x] `npm run test:e2e:contract` 통과 확인
 - [x] `npm run test:e2e:admin-boundary` 통과 확인
 - [x] `npm run test:e2e:platform` 통과 확인
+
+

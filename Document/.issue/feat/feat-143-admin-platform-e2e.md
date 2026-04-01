@@ -1,11 +1,11 @@
 ---
 name: "✨ Feature Request"
 about: 새로운 기능 제안
-title: "[TEST] 관리자 운영 API E2E 시나리오 추가"
-labels: test
-issue: "[TEST] 관리자 운영 API E2E 시나리오 추가"
-commit: "test: (#143) search-outbox/crawler/resilience 관리자 API E2E 테스트 추가"
-branch: "test/#143/admin-platform-e2e"
+title: "[FEAT] 관리자 운영 API E2E 시나리오 추가"
+labels: feature
+issue: "[FEAT] 관리자 운영 API E2E 시나리오 추가"
+commit: "feat: (#143) search-outbox/crawler/resilience 관리자 API E2E 테스트 추가"
+branch: "feat/#143/admin-platform-e2e"
 assignees: ""
 ---
 
@@ -24,3 +24,5 @@ assignees: ""
 - [x] Crawler 목록 쿼리 검증 실패(400) 시나리오 추가 (`limit=0`)
 - [x] Resilience 목록/상세/리셋 API E2E 검증 추가 (`/resilience/circuit-breakers*`)
 - [x] 공통 응답 래핑(`success`, `data`) 및 호출 인자 검증 추가
+
+

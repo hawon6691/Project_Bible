@@ -1,15 +1,15 @@
 ---
-name: "🧪 Feature Request"
+name: "✨ Feature Request"
 about: 새로운 기능 제안
-title: "[TEST] 수동 테스트 확장 스위트(계약/안정성/확장부하) 추가"
-labels: test
-issue: "[TEST] 수동 테스트 확장 스위트(계약/안정성/확장부하) 추가"
-commit: "test: (#209) workflow_dispatch 기반 계약/안정성/확장부하 검증 경로 추가"
-branch: "test/#209/manual-test-expansion-suite"
+title: "[FEAT] 수동 테스트 확장 스위트(계약/안정성/확장부하) 추가"
+labels: feature
+issue: "[FEAT] 수동 테스트 확장 스위트(계약/안정성/확장부하) 추가"
+commit: "feat: (#209) workflow_dispatch 기반 계약/안정성/확장부하 검증 경로 추가"
+branch: "feat/#209/manual-test-expansion-suite"
 assignees: ""
 ---
 
-## 🧪 테스트 요약
+## ✨ 기능 요약
 
 > workflow_dispatch 수동 실행 경로에 계약 테스트, critical 안정성 체크, 확장 부하(soak/spike) 검증을 추가했습니다.
 
@@ -53,3 +53,5 @@ assignees: ""
 - [x] 릴리스 체크리스트 아티팩트 항목 확장 (`contract/stability/perf-extended`)
 - [x] 타입 체크 통과 (`npx tsc -p tsconfig.json --noEmit --incremental false`)
 - [x] 계약 테스트 통과 (`npm run test:e2e:contract -- --runInBand`)
+
+

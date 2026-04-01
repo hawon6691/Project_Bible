@@ -4,7 +4,7 @@ about: 새로운 기능 제안
 title: "[FEAT] E2E 테스트 스위트 베이스라인 구축"
 labels: feature
 issue: "[FEAT] E2E 테스트 스위트 베이스라인 구축"
-commit: "test: (#133) e2e 테스트 부트스트랩 및 public/auth/search 시나리오 추가"
+commit: "feat: (#133) e2e 테스트 부트스트랩 및 public/auth/search 시나리오 추가"
 branch: "feat/#133/e2e-test-suite-bootstrap"
 assignees: ""
 ---
@@ -25,3 +25,4 @@ assignees: ""
 - [x] 성공 응답 래핑(`success/data/meta`) 검증 테스트 추가
 - [x] `npm run test:e2e -- --runInBand` 통과
 - [x] 타입 체크 통과 (`npx tsc -p tsconfig.json --noEmit --incremental false`)
+

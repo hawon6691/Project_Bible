@@ -1,11 +1,11 @@
 ---
 name: "✨ Feature Request"
 about: 새로운 기능 제안
-title: "[TEST] k6 성능 테스트 시나리오 구축"
-labels: test
-issue: "[TEST] k6 성능 테스트 시나리오 구축"
-commit: "test: (#137) k6 기반 smoke/search-ranking/price 성능 시나리오 추가"
-branch: "test/#137/performance-scenarios"
+title: "[FEAT] k6 성능 테스트 시나리오 구축"
+labels: feature
+issue: "[FEAT] k6 성능 테스트 시나리오 구축"
+commit: "feat: (#137) k6 기반 smoke/search-ranking/price 성능 시나리오 추가"
+branch: "feat/#137/performance-scenarios"
 assignees: ""
 ---
 
@@ -24,3 +24,5 @@ assignees: ""
 - [x] k6 실행 가이드 문서 추가 (`test/performance/README.md`)
 - [x] 시나리오 임계치(threshold) 설정 추가 (`http_req_failed`, `http_req_duration`)
 - [x] 타입 체크 통과 (`npx tsc -p tsconfig.json --noEmit --incremental false`)
+
+

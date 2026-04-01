@@ -1,18 +1,18 @@
 ---
-name: "🧪 Test Request"
-about: "Java Maven 테스트, CI, Swagger 검증 정렬"
-title: "[TEST] Java Maven 테스트, CI, Swagger 정렬"
-labels: ["test"]
-issue: "[TEST] Java Maven 테스트, CI, Swagger 정렬"
-commit: "test: (#421) Java Maven 테스트, CI, Swagger 정렬"
-branch: "test/#421/java-maven-test-ci-swagger-alignment"
+name: "✨ Feature Request"
+about: "새로운 기능 제안"
+title: "[FEAT] Java Maven 테스트, CI, Swagger 정렬"
+labels: ["feature"]
+issue: "[FEAT] Java Maven 테스트, CI, Swagger 정렬"
+commit: "feat: (#421) Java Maven 테스트, CI, Swagger 정렬"
+branch: "feat/#421/java-maven-test-ci-swagger-alignment"
 assignees: ""
 ---
 
-## 🧪 테스트 요약
+## ✨ 기능 요약
 Java Maven 백엔드가 `Document/05_test-specification.md` 기준의 공통 테스트 축을 따라가도록 운영/공개 API E2E를 보강하고, 전용 GitHub Actions CI 및 Swagger/OpenAPI 검증 경로를 추가한다.
 
-## 📋 검증 항목
+## 📋 요구사항
 - [x] Java Maven 테스트 전용 공통 지원 클래스 추가 (`AuthenticatedApiIntegrationSupport`)
 - [x] 운영/플랫폼 E2E 테스트 추가
 - [x] `PublicApiE2ETest` 추가
@@ -73,8 +73,10 @@ Java Maven 백엔드가 `Document/05_test-specification.md` 기준의 공통 테
   - [x] `MigrationRoundtripScriptTest`
   - [x] `ValidateMigrationsScriptTest`
 
-## 📌 결과
+## 📌 메모
 - Java Maven 백엔드에 문서 기준 운영/플랫폼 E2E 축이 추가되었다.
 - Java Maven 백엔드에 남아 있던 운영/보안/회복성/스크립트/성능 자산 축이 추가되었다.
 - Java Maven 전용 CI 워크플로가 생겨 자동 검증과 수동 릴리즈 게이트를 분리해 운영할 수 있게 되었다.
 - `/docs/openapi`, `/docs/swagger` 경로가 실제로 동작하고, CI에서 OpenAPI/Swagger 산출물을 아티팩트로 수집할 수 있게 되었다.
+
+

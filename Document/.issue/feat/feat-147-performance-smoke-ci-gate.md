@@ -1,11 +1,11 @@
 ---
 name: "✨ Feature Request"
 about: 새로운 기능 제안
-title: "[TEST] CI 성능 스모크 게이트 추가"
-labels: test
-issue: "[TEST] CI 성능 스모크 게이트 추가"
-commit: "test: (#147) perf mock server + k6 smoke CI 게이트 추가"
-branch: "test/#147/performance-smoke-ci-gate"
+title: "[FEAT] CI 성능 스모크 게이트 추가"
+labels: feature
+issue: "[FEAT] CI 성능 스모크 게이트 추가"
+commit: "feat: (#147) perf mock server + k6 smoke CI 게이트 추가"
+branch: "feat/#147/performance-smoke-ci-gate"
 assignees: ""
 ---
 
@@ -23,3 +23,5 @@ assignees: ""
 - [x] CI에서 mock 서버 기동/헬스 체크 대기 로직 추가
 - [x] CI에서 Docker k6로 smoke 시나리오 실행 (`smoke.perf.js`)
 - [x] 기존 품질/핵심 E2E 게이트와 병행 동작 유지
+
+

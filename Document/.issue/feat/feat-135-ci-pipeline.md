@@ -1,11 +1,11 @@
 ---
 name: "✨ Feature Request"
 about: 새로운 기능 제안
-title: "[TEST] Nestshop CI 파이프라인 구축"
-labels: test
-issue: "[TEST] Nestshop CI 파이프라인 구축"
-commit: "test: (#135) github actions nestshop ci (lint/tsc/test/e2e/build) 추가"
-branch: "test/#135/ci-pipeline"
+title: "[FEAT] Nestshop CI 파이프라인 구축"
+labels: feature
+issue: "[FEAT] Nestshop CI 파이프라인 구축"
+commit: "feat: (#135) github actions nestshop ci (lint/tsc/test/e2e/build) 추가"
+branch: "feat/#135/ci-pipeline"
 assignees: ""
 ---
 
@@ -28,3 +28,5 @@ assignees: ""
 - [x] 빌드 단계 추가 (`npm run build`)
 - [x] CI용 lint non-fix 스크립트 추가 (`lint:check`)
 - [x] 타입 체크 통과 (`npx tsc -p tsconfig.json --noEmit --incremental false`)
+
+

@@ -1,15 +1,15 @@
 ---
-name: "\U0001F9EA Test Request"
-about: PHP Laravel CI 확장 및 수동 워크플로 보강
-title: ""
-labels: test
+name: "✨ Feature Request"
+about: 새로운 기능 제안
+title: "[FEAT] PHP Laravel CI 확장 및 수동 워크플로 보강"
+labels: feature
 assignees: ""
-issue: "[TEST] PHP Laravel CI 확장 및 수동 워크플로 보강"
-commit: "test: (#363) PHP Laravel CI 확장 및 수동 워크플로 보강"
-branch: "test/#363/php-laravel-ci-expansion"
+issue: "[FEAT] PHP Laravel CI 확장 및 수동 워크플로 보강"
+commit: "feat: (#363) PHP Laravel CI 확장 및 수동 워크플로 보강"
+branch: "feat/#363/php-laravel-ci-expansion"
 ---
 
-## 🧪 테스트 요약
+## ✨ 기능 요약
 
 TypeScript CI처럼 PHP도 자동 검증과 수동 실행 워크플로를 분리해, 품질 검사 외에 API 회귀, MySQL 통합 검증, route snapshot, release gate, live smoke를 실행할 수 있도록 GitHub Actions를 확장한다.
 
@@ -45,3 +45,8 @@ TypeScript CI처럼 PHP도 자동 검증과 수동 실행 워크플로를 분리
 - [x] TypeScript 대비 남아 있던 manual CI 항목(contract/perf-extended/migration-validation) 추가
 - [x] 인라인 shell 위주 검증을 전용 PHP/k6 자산 호출 방식으로 정리
 - [x] GitHub Actions가 `tests/E2E`, `tests/scripts`, `tests/performance` 자산을 직접 호출하도록 정리
+
+
+
+
+

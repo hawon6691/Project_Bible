@@ -58,16 +58,10 @@ DB 엔진은 공통으로 아래 두 축을 기준으로 둔다.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Java | `Spring Boot` | `Maven`, `Gradle` | `JDBC`, `jOOQ` | `JDBC`, `MyBatis` | `JPA(Hibernate)`, `Spring Data JPA` | `JPA(Hibernate)`, `Spring Data JPA` | `8` |
 | Kotlin | `Spring`, `Ktor` | `Gradle` | `JDBC`, `Exposed SQL DSL` | `JDBC`, `Exposed SQL DSL` | `JPA(Hibernate)`, `Exposed DAO` | `JPA(Hibernate)`, `Exposed DAO` | `8` |
-| C++ | `Oat++`, `Drogon` | `CMake`, `Conan` | `libpqxx` | `mysqlclient` | `Drogon ORM`, `ODB` | `Drogon ORM`, `ODB` | `16` |
-| C# | `ASP.NET Core` | `dotnet CLI` | `ADO.NET`, `Dapper` | `ADO.NET`, `Dapper` | `Entity Framework Core` | `Entity Framework Core` | `4` |
-| Go | `Gin`, `Echo` | `Go Modules` | `database/sql`, `sqlx` | `database/sql`, `sqlx` | `GORM`, `Ent` | `GORM`, `Ent` | `8` |
-| Rust | `Actix-web`, `Axum` | `Cargo` | `SQLx` | `SQLx` | `Diesel`, `SeaORM` | `Diesel`, `SeaORM` | `8` |
 | JavaScript | `Express` | `npm` | `pg`, `knex` | `mysql2`, `knex` | `Prisma`, `Sequelize` | `Prisma`, `Sequelize` | `4` |
 | TypeScript | `NestJS` | `npm` | `pg`, `knex` | `mysql2`, `knex` | `TypeORM`, `Prisma` | `TypeORM`, `Prisma` | `4` |
 | Python | `Django`, `FastAPI` | `pip`, `uv` | `psycopg`, `SQLAlchemy Core` | `mysqlclient`, `SQLAlchemy Core` | `Django ORM`, `SQLAlchemy ORM` | `Django ORM`, `SQLAlchemy ORM` | `8` |
 | PHP | `Laravel` | `Composer` | `PDO`, `Query Builder` | `PDO`, `Query Builder` | `Eloquent ORM` | `Eloquent ORM` | `4` |
-| Ruby | `Rails` | `Bundler` | `pg`, `Sequel` | `mysql2`, `Sequel` | `ActiveRecord` | `ActiveRecord` | `4` |
-| Lua | `Lapis(OpenResty)` | `LuaRocks` | `pgmoon` | `luasql` | `Lapis Model` | `Lapis Model` | `4` |
 
 ## 언어별 생성 프로젝트 기준
 
@@ -75,16 +69,10 @@ DB 엔진은 공통으로 아래 두 축을 기준으로 둔다.
 | --- | --- |
 | Java | `java-spring-maven-jdbc-postgresql`, `java-spring-maven-jpa-postgresql`, `java-spring-maven-jdbc-mysql`, `java-spring-maven-jpa-mysql`, `java-spring-gradle-jdbc-postgresql`, `java-spring-gradle-jpa-postgresql`, `java-spring-gradle-jdbc-mysql`, `java-spring-gradle-jpa-mysql` |
 | Kotlin | `kotlin-spring-gradle-jdbc-postgresql`, `kotlin-spring-gradle-jpa-postgresql`, `kotlin-spring-gradle-jdbc-mysql`, `kotlin-spring-gradle-jpa-mysql`, `kotlin-ktor-gradle-exposedsql-postgresql`, `kotlin-ktor-gradle-exposeddao-postgresql`, `kotlin-ktor-gradle-exposedsql-mysql`, `kotlin-ktor-gradle-exposeddao-mysql` |
-| C++ | `cpp-oatpp-cmake-libpqxx-postgresql`, `cpp-oatpp-cmake-odb-postgresql`, `cpp-oatpp-cmake-mysqlclient-mysql`, `cpp-oatpp-cmake-odb-mysql`, `cpp-drogon-cmake-libpqxx-postgresql`, `cpp-drogon-cmake-orm-postgresql`, `cpp-drogon-cmake-mysqlclient-mysql`, `cpp-drogon-cmake-orm-mysql`, `cpp-oatpp-conan-libpqxx-postgresql`, `cpp-oatpp-conan-odb-postgresql`, `cpp-oatpp-conan-mysqlclient-mysql`, `cpp-oatpp-conan-odb-mysql`, `cpp-drogon-conan-libpqxx-postgresql`, `cpp-drogon-conan-orm-postgresql`, `cpp-drogon-conan-mysqlclient-mysql`, `cpp-drogon-conan-orm-mysql` |
-| C# | `csharp-aspnetcore-dotnetcli-dapper-postgresql`, `csharp-aspnetcore-dotnetcli-efcore-postgresql`, `csharp-aspnetcore-dotnetcli-dapper-mysql`, `csharp-aspnetcore-dotnetcli-efcore-mysql` |
-| Go | `go-gin-gomodules-sqlx-postgresql`, `go-gin-gomodules-gorm-postgresql`, `go-gin-gomodules-sqlx-mysql`, `go-gin-gomodules-gorm-mysql`, `go-echo-gomodules-sqlx-postgresql`, `go-echo-gomodules-gorm-postgresql`, `go-echo-gomodules-sqlx-mysql`, `go-echo-gomodules-gorm-mysql` |
-| Rust | `rust-actixweb-cargo-sqlx-postgresql`, `rust-actixweb-cargo-diesel-postgresql`, `rust-actixweb-cargo-sqlx-mysql`, `rust-actixweb-cargo-seaorm-mysql`, `rust-axum-cargo-sqlx-postgresql`, `rust-axum-cargo-diesel-postgresql`, `rust-axum-cargo-sqlx-mysql`, `rust-axum-cargo-seaorm-mysql` |
 | JavaScript | `javascript-express-npm-knex-postgresql`, `javascript-express-npm-prisma-postgresql`, `javascript-express-npm-knex-mysql`, `javascript-express-npm-prisma-mysql` |
 | TypeScript | `typescript-nest-npm-knex-postgresql`, `typescript-nest-npm-typeorm-postgresql`, `typescript-nest-npm-knex-mysql`, `typescript-nest-npm-typeorm-mysql` |
 | Python | `python-django-pip-sqlalchemycore-postgresql`, `python-django-pip-djangoorm-postgresql`, `python-django-pip-sqlalchemycore-mysql`, `python-django-pip-djangoorm-mysql`, `python-fastapi-uv-sqlalchemycore-postgresql`, `python-fastapi-uv-sqlalchemyorm-postgresql`, `python-fastapi-uv-sqlalchemycore-mysql`, `python-fastapi-uv-sqlalchemyorm-mysql` |
 | PHP | `php-laravel-composer-pdo-postgresql`, `php-laravel-composer-eloquent-postgresql`, `php-laravel-composer-pdo-mysql`, `php-laravel-composer-eloquent-mysql` |
-| Ruby | `ruby-rails-bundler-sequel-postgresql`, `ruby-rails-bundler-activerecord-postgresql`, `ruby-rails-bundler-sequel-mysql`, `ruby-rails-bundler-activerecord-mysql` |
-| Lua | `lua-lapis-luarocks-pgmoon-postgresql`, `lua-lapis-luarocks-model-postgresql`, `lua-lapis-luarocks-luasql-mysql`, `lua-lapis-luarocks-model-mysql` |
 
 ## 작성 원칙
 
@@ -99,4 +87,4 @@ DB 엔진은 공통으로 아래 두 축을 기준으로 둔다.
 
 ## 결론
 
-이 문서의 핵심은 언어 선택이 아니라, 언어별 구현체를 프레임워크, 빌드 도구, 데이터 접근 방식, DB 엔진 기준으로 몇 개의 비교 가능한 프로젝트로 나눌지 정하는 것이다.
+이 문서의 핵심은 현재 유지할 언어 트랙의 구현체를 프레임워크, 빌드 도구, 데이터 접근 방식, DB 엔진 기준으로 몇 개의 비교 가능한 프로젝트로 나눌지 정하는 것이다.

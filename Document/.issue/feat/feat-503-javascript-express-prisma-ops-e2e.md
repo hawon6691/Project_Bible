@@ -1,15 +1,15 @@
 ---
-name: "🧪 Test Request"
-about: 새로운 테스트 제안
-title: "[TEST] JavaScript Express Prisma Ops E2E"
-labels: test
+name: "✨ Feature Request"
+about: 새로운 기능 제안
+title: "[FEAT] JavaScript Express Prisma Ops E2E"
+labels: feature
 assignees: ""
-issue: "[TEST] JavaScript Express Prisma Ops E2E 구현"
-commit: "test: (#503) JavaScript Express Prisma Ops E2E 구현"
-branch: "test/#503/javascript-express-prisma-ops-e2e"
+issue: "[FEAT] JavaScript Express Prisma Ops E2E 구현"
+commit: "feat: (#503) JavaScript Express Prisma Ops E2E 구현"
+branch: "feat/#503/javascript-express-prisma-ops-e2e"
 ---
 
-## 🧪 테스트 요약
+## ✨ 기능 요약
 
 > JavaScript Express Prisma 백엔드에 운영 API 묶음에 대한 E2E 검증을 추가한다.
 
@@ -28,3 +28,5 @@ branch: "test/#503/javascript-express-prisma-ops-e2e"
 - [x] `npm run test:e2e:ops` 통과 확인
 - [x] `npm run test:e2e:critical` 회귀 통과 확인
 - [x] ops E2E 16건 통과 확인
+
+

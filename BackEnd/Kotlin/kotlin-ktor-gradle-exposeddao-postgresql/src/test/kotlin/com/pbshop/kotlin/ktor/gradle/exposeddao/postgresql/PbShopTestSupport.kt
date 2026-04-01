@@ -6,6 +6,10 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.activity.ActivityRepo
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.activity.InMemoryActivityRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.address.AddressRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.address.InMemoryAddressRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.analytics.AnalyticsRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.analytics.InMemoryAnalyticsRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auto.AutoRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auto.InMemoryAutoRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.cart.CartRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.cart.InMemoryCartRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.category.CategoryRepository
@@ -14,6 +18,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.chat.ChatRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.chat.InMemoryChatRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.community.CommunityRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.community.InMemoryCommunityRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.compare.CompareRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.compare.InMemoryCompareRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.crawler.CrawlerRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.crawler.InMemoryCrawlerRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthCheckResult
@@ -21,6 +27,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.deal.DealRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.friend.FriendRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.friend.InMemoryFriendRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.fraud.FraudRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.fraud.InMemoryFraudRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.InMemoryInquiryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.inquiry.InquiryRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.i18n.InMemoryI18nRepository
@@ -67,6 +75,10 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.support.InMemorySuppo
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.support.SupportRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.trust.InMemoryTrustRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.trust.TrustRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.usedmarket.InMemoryUsedMarketRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.usedmarket.UsedMarketRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auction.InMemoryAuctionRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auction.AuctionRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.InMemoryUserRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.user.UserRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.wishlist.InMemoryWishlistRepository
@@ -119,6 +131,12 @@ internal fun ApplicationTestBuilder.installPbShopApp(
     shortformRepository: ShortformRepository = InMemoryShortformRepository.seeded(),
     newsRepository: NewsRepository = InMemoryNewsRepository.seeded(),
     matchingRepository: MatchingRepository = InMemoryMatchingRepository.seeded(),
+    fraudRepository: FraudRepository = InMemoryFraudRepository.seeded(),
+    analyticsRepository: AnalyticsRepository = InMemoryAnalyticsRepository.seeded(),
+    usedMarketRepository: UsedMarketRepository = InMemoryUsedMarketRepository.seeded(),
+    autoRepository: AutoRepository = InMemoryAutoRepository.seeded(),
+    auctionRepository: AuctionRepository = InMemoryAuctionRepository.seeded(),
+    compareRepository: CompareRepository = InMemoryCompareRepository.seeded(),
     generalPerMinute: Int = 60,
     authPerMinute: Int = 10,
 ) {
@@ -165,6 +183,12 @@ internal fun ApplicationTestBuilder.installPbShopApp(
             shortformRepository = shortformRepository,
             newsRepository = newsRepository,
             matchingRepository = matchingRepository,
+            fraudRepository = fraudRepository,
+            analyticsRepository = analyticsRepository,
+            usedMarketRepository = usedMarketRepository,
+            autoRepository = autoRepository,
+            auctionRepository = auctionRepository,
+            compareRepository = compareRepository,
         )
     }
 }

@@ -207,6 +207,13 @@ fun Application.configureRouting(
     autoRepository: AutoRepository,
     auctionRepository: AuctionRepository,
     compareRepository: CompareRepository,
+    adminSettingsRepository: AdminSettingsRepository,
+    resilienceRepository: ResilienceRepository,
+    errorCodeRepository: ErrorCodeRepository,
+    queueAdminRepository: QueueAdminRepository,
+    queryRepository: QueryRepository,
+    observabilityRepository: ObservabilityRepository,
+    opsDashboardRepository: OpsDashboardRepository,
 ) {
     val endpointSpecs = pbShopEndpointSpecs()
     val platformController = PlatformController(PlatformService(config, endpointSpecs))
@@ -268,13 +275,33 @@ fun Application.configureRouting(
     val autoController = AutoController(AutoService(autoRepository))
     val auctionController = AuctionController(AuctionService(auctionRepository))
     val compareController = CompareController(CompareService(compareRepository))
-    val adminSettingsController = AdminSettingsController(AdminSettingsService(AdminSettingsRepository()))
-    val resilienceController = ResilienceController(ResilienceService(ResilienceRepository()))
-    val errorCodeController = ErrorCodeController(ErrorCodeService(ErrorCodeRepository()))
-    val queueAdminController = QueueAdminController(QueueAdminService(QueueAdminRepository()))
-    val opsDashboardController = OpsDashboardController(OpsDashboardService(OpsDashboardRepository()))
-    val observabilityController = ObservabilityController(ObservabilityService(ObservabilityRepository()))
-    val queryController = QueryController(QueryService(QueryRepository()))
+    val adminSettingsController = AdminSettingsController(AdminSettingsService(adminSettingsRepository))
+    val resilienceService = ResilienceService(resilienceRepository)
+    val resilienceController = ResilienceController(resilienceService)
+    val errorCodeController = ErrorCodeController(ErrorCodeService(errorCodeRepository))
+    val queueAdminService = QueueAdminService(queueAdminRepository)
+    val queueAdminController = QueueAdminController(queueAdminService)
+    val opsDashboardService =
+        OpsDashboardService(
+            repository = opsDashboardRepository,
+            dbHealthService = dbHealthService,
+            searchRepository = searchRepository,
+            crawlerRepository = crawlerRepository,
+            queueAdminRepository = queueAdminRepository,
+        )
+    val opsDashboardController = OpsDashboardController(opsDashboardService)
+    val observabilityController =
+        ObservabilityController(
+            ObservabilityService(
+                repository = observabilityRepository,
+                queueAdminRepository = queueAdminRepository,
+                resilienceService = resilienceService,
+                searchRepository = searchRepository,
+                crawlerRepository = crawlerRepository,
+                opsDashboardService = opsDashboardService,
+            ),
+        )
+    val queryController = QueryController(QueryService(queryRepository))
 
     routing {
         with(platformController) {

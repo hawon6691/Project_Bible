@@ -5,6 +5,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlin.reflect.full.memberProperties
 
 fun Any?.toJsonElement(): JsonElement =
     when (this) {
@@ -22,7 +23,18 @@ fun Any?.toJsonElement(): JsonElement =
             )
         is Iterable<*> -> JsonArray(map { it.toJsonElement() })
         is Array<*> -> JsonArray(map { it.toJsonElement() })
-        else -> JsonPrimitive(toString())
+        else ->
+            if (this::class.isData) {
+                JsonObject(
+                    this::class.memberProperties
+                        .sortedBy { it.name }
+                        .associate { property ->
+                            property.name to property.getter.call(this).toJsonElement()
+                        },
+                )
+            } else {
+                JsonPrimitive(toString())
+            }
     }
 
 fun pageMeta(

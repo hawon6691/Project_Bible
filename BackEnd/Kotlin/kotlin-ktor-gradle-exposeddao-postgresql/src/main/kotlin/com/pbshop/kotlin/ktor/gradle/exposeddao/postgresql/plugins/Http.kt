@@ -1,8 +1,11 @@
 package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.plugins
 
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.pbActor
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.PbShopException
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.respondFailure
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.config.PbShopConfig
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.observability.HttpTraceRecord
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.observability.ObservabilityRuntimeRegistry
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.security.PbRole
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.security.RequestIdAttributeKey
 import io.ktor.server.application.Application
@@ -15,6 +18,7 @@ import io.ktor.server.request.header
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
 import org.slf4j.LoggerFactory
+import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
@@ -77,6 +81,7 @@ fun Application.configureHttp(config: PbShopConfig) {
         proceed()
         val durationMs = System.currentTimeMillis() - startedAt
         val statusCode = call.response.status()?.value ?: 200
+        val role = call.pbActor().role?.name ?: PbRole.fromHeader(call.request.header("X-Role"))?.name ?: "ANON"
         val level =
             when {
                 statusCode >= 500 -> "ERROR"
@@ -87,11 +92,22 @@ fun Application.configureHttp(config: PbShopConfig) {
             "level={} requestId={} role={} method={} path={} status={} durationMs={}",
             level,
             call.attributes[RequestIdAttributeKey],
-            PbRole.fromHeader(call.request.header("X-Role"))?.name ?: "ANON",
+            role,
             call.request.httpMethod.value,
             call.request.path(),
             statusCode,
             durationMs,
+        )
+        ObservabilityRuntimeRegistry.repository?.recordTrace(
+            HttpTraceRecord(
+                requestId = call.attributes[RequestIdAttributeKey],
+                method = call.request.httpMethod.value,
+                path = call.request.path(),
+                statusCode = statusCode,
+                durationMs = durationMs,
+                timestamp = Instant.now(),
+                role = role,
+            ),
         )
     }
 }

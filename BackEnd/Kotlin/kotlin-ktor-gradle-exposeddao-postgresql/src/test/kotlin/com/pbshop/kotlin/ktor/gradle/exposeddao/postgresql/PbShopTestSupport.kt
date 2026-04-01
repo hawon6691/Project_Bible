@@ -1,5 +1,7 @@
 package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql
 
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.adminsettings.AdminSettingsRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.adminsettings.InMemoryAdminSettingsRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.AuthRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.auth.InMemoryAuthRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.activity.ActivityRepository
@@ -25,6 +27,8 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.crawler.InMemoryCrawl
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthCheckResult
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.db.DbHealthService
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.deal.DealRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.errorcode.ErrorCodeRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.errorcode.InMemoryErrorCodeRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.friend.FriendRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.friend.InMemoryFriendRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.fraud.FraudRepository
@@ -41,6 +45,10 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.media.InMemoryMediaRe
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.media.MediaRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.news.InMemoryNewsRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.news.NewsRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.observability.InMemoryObservabilityRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.observability.ObservabilityRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.opsdashboard.InMemoryOpsDashboardRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.opsdashboard.OpsDashboardRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.InMemoryOrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.order.OrderRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.payment.InMemoryPaymentRepository
@@ -57,10 +65,16 @@ import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.InMemoryProdu
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.product.ProductRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.push.InMemoryPushRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.push.PushRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.query.InMemoryQueryRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.query.QueryRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.queueadmin.InMemoryQueueAdminRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.queueadmin.QueueAdminRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.ranking.InMemoryRankingRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.ranking.RankingRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.recommendation.InMemoryRecommendationRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.recommendation.RecommendationRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.resilience.InMemoryResilienceRepository
+import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.resilience.ResilienceRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.review.InMemoryReviewRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.review.ReviewRepository
 import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.search.InMemorySearchRepository
@@ -137,6 +151,13 @@ internal fun ApplicationTestBuilder.installPbShopApp(
     autoRepository: AutoRepository = InMemoryAutoRepository.seeded(),
     auctionRepository: AuctionRepository = InMemoryAuctionRepository.seeded(),
     compareRepository: CompareRepository = InMemoryCompareRepository.seeded(),
+    adminSettingsRepository: AdminSettingsRepository = InMemoryAdminSettingsRepository.seeded(),
+    resilienceRepository: ResilienceRepository = InMemoryResilienceRepository.seeded(),
+    errorCodeRepository: ErrorCodeRepository = InMemoryErrorCodeRepository(),
+    queueAdminRepository: QueueAdminRepository = InMemoryQueueAdminRepository.seeded(),
+    queryRepository: QueryRepository = InMemoryQueryRepository.seeded(),
+    observabilityRepository: ObservabilityRepository = InMemoryObservabilityRepository(maxBuffer = 50),
+    opsDashboardRepository: OpsDashboardRepository = InMemoryOpsDashboardRepository(),
     generalPerMinute: Int = 60,
     authPerMinute: Int = 10,
 ) {
@@ -189,6 +210,13 @@ internal fun ApplicationTestBuilder.installPbShopApp(
             autoRepository = autoRepository,
             auctionRepository = auctionRepository,
             compareRepository = compareRepository,
+            adminSettingsRepository = adminSettingsRepository,
+            resilienceRepository = resilienceRepository,
+            errorCodeRepository = errorCodeRepository,
+            queueAdminRepository = queueAdminRepository,
+            queryRepository = queryRepository,
+            observabilityRepository = observabilityRepository,
+            opsDashboardRepository = opsDashboardRepository,
         )
     }
 }

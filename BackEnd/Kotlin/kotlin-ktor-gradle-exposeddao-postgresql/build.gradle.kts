@@ -39,6 +39,7 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.4")
     implementation("org.mindrot:jbcrypt:0.4")
     implementation("ch.qos.logback:logback-classic:1.5.6")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.25")
 
     testImplementation("io.ktor:ktor-server-tests-jvm:2.3.12")
     testImplementation("io.ktor:ktor-client-websockets-jvm:2.3.12")

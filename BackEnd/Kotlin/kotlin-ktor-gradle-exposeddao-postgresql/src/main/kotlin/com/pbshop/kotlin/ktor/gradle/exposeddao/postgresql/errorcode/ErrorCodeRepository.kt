@@ -1,5 +1,7 @@
 package com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.errorcode
 
-import com.pbshop.kotlin.ktor.gradle.exposeddao.postgresql.common.StubDomainRepository
+interface ErrorCodeRepository {
+    fun listCodes(): List<ErrorCodeRecord>
 
-class ErrorCodeRepository : StubDomainRepository(errorCodeOperations())
+    fun findCode(key: String): ErrorCodeRecord?
+}

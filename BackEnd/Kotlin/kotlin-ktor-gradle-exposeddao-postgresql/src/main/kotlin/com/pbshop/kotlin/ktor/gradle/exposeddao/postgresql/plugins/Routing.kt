@@ -201,6 +201,12 @@ fun Application.configureRouting(
     shortformRepository: ShortformRepository,
     newsRepository: NewsRepository,
     matchingRepository: MatchingRepository,
+    fraudRepository: FraudRepository,
+    analyticsRepository: AnalyticsRepository,
+    usedMarketRepository: UsedMarketRepository,
+    autoRepository: AutoRepository,
+    auctionRepository: AuctionRepository,
+    compareRepository: CompareRepository,
 ) {
     val endpointSpecs = pbShopEndpointSpecs()
     val platformController = PlatformController(PlatformService(config, endpointSpecs))
@@ -256,12 +262,12 @@ fun Application.configureRouting(
     val shortformController = ShortformController(ShortformService(shortformRepository))
     val newsController = NewsController(NewsService(newsRepository))
     val matchingController = MatchingController(MatchingService(matchingRepository))
-    val fraudController = FraudController(FraudService(FraudRepository()))
-    val analyticsController = AnalyticsController(AnalyticsService(AnalyticsRepository()))
-    val usedMarketController = UsedMarketController(UsedMarketService(UsedMarketRepository()))
-    val autoController = AutoController(AutoService(AutoRepository()))
-    val auctionController = AuctionController(AuctionService(AuctionRepository()))
-    val compareController = CompareController(CompareService(CompareRepository()))
+    val fraudController = FraudController(FraudService(fraudRepository))
+    val analyticsController = AnalyticsController(AnalyticsService(analyticsRepository))
+    val usedMarketController = UsedMarketController(UsedMarketService(usedMarketRepository))
+    val autoController = AutoController(AutoService(autoRepository))
+    val auctionController = AuctionController(AuctionService(auctionRepository))
+    val compareController = CompareController(CompareService(compareRepository))
     val adminSettingsController = AdminSettingsController(AdminSettingsService(AdminSettingsRepository()))
     val resilienceController = ResilienceController(ResilienceService(ResilienceRepository()))
     val errorCodeController = ErrorCodeController(ErrorCodeService(ErrorCodeRepository()))

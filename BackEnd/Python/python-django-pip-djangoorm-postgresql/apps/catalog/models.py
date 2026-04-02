@@ -7,6 +7,18 @@ class ProductStatus(models.TextChoices):
     HIDDEN = "HIDDEN", "Hidden"
 
 
+class SpecDefinitionType(models.TextChoices):
+    TEXT = "TEXT", "Text"
+    NUMBER = "NUMBER", "Number"
+    SELECT = "SELECT", "Select"
+
+
+class SpecDataType(models.TextChoices):
+    NUMBER = "NUMBER", "Number"
+    STRING = "STRING", "String"
+    BOOLEAN = "BOOLEAN", "Boolean"
+
+
 class Category(models.Model):
     class Meta:
         db_table = "categories"
@@ -75,4 +87,76 @@ class Product(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class SpecDefinition(models.Model):
+    class Meta:
+        db_table = "spec_definitions"
+        indexes = [
+            models.Index(fields=["category"], name="idx_spec_definitions_category"),
+        ]
+
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.PROTECT,
+        related_name="spec_definitions",
+        db_index=False,
+    )
+    name = models.CharField(max_length=50)
+    type = models.CharField(
+        max_length=10,
+        choices=SpecDefinitionType.choices,
+    )
+    options = models.JSONField(null=True, blank=True)
+    unit = models.CharField(max_length=20, null=True, blank=True)
+    is_comparable = models.BooleanField(default=True)
+    data_type = models.CharField(
+        max_length=10,
+        choices=SpecDataType.choices,
+        default=SpecDataType.STRING,
+    )
+    sort_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class ProductSpec(models.Model):
+    class Meta:
+        db_table = "product_specs"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["product", "spec_definition"],
+                name="uq_product_specs",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["spec_definition", "value"],
+                name="idx_product_specs_value",
+            ),
+        ]
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="product_specs",
+    )
+    spec_definition = models.ForeignKey(
+        SpecDefinition,
+        on_delete=models.CASCADE,
+        related_name="product_specs",
+    )
+    value = models.CharField(max_length=200)
+    numeric_value = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"{self.product_id}:{self.spec_definition_id}"
 

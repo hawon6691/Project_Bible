@@ -1,0 +1,72 @@
+name: PBShop python-django-pip-djangoorm-postgresql CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'BackEnd/Python/python-django-pip-djangoorm-postgresql/**'
+      - '.github/workflows/python-django-pip-djangoorm-postgresql-ci.yml'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'BackEnd/Python/python-django-pip-djangoorm-postgresql/**'
+      - '.github/workflows/python-django-pip-djangoorm-postgresql-ci.yml'
+
+concurrency:
+  group: python-django-pip-djangoorm-postgresql-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BackEnd/Python/python-django-pip-djangoorm-postgresql
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: BackEnd/Python/python-django-pip-djangoorm-postgresql/requirements.txt
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install Dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Prepare Environment
+        run: |
+          if [ ! -f .env ]; then cp .env.example .env; fi
+
+      - name: Django System Check
+        run: python manage.py check
+
+      - name: Django Test Suite
+        run: python manage.py test
+
+      - name: Bootstrap Smoke Check
+        run: |
+          python - <<'PY'
+          import os
+          os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+
+          import django
+          from django.test import Client
+
+          django.setup()
+
+          client = Client()
+          for path in ("/health", "/api/v1/"):
+              response = client.get(path)
+              if response.status_code != 200:
+                  raise SystemExit(f"{path} expected 200 but got {response.status_code}")
+          print("Bootstrap smoke checks passed.")
+          PY

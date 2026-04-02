@@ -23,6 +23,26 @@ Copy-Item .env.example .env
 .\.venv\Scripts\python manage.py runserver
 ```
 
+## CI
+
+GitHub Actions validates the bootstrap track on `push` and `pull_request`.
+
+The first CI scope stays intentionally small:
+
+- `python -m pip install -r requirements.txt`
+- `python manage.py check`
+- `python manage.py test`
+- bootstrap smoke checks for `/health` and `/api/v1/`
+
+Local CI-equivalent commands:
+
+```powershell
+Copy-Item .env.example .env
+python -m pip install -r requirements.txt
+python manage.py check
+python manage.py test
+```
+
 ## Contract References
 
 - `Document/01_requirements.md`

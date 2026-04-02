@@ -10,6 +10,19 @@ class ShippingType(models.TextChoices):
     CONDITIONAL = "CONDITIONAL", "Conditional"
 
 
+class PriceTrend(models.TextChoices):
+    RISING = "RISING", "Rising"
+    FALLING = "FALLING", "Falling"
+    STABLE = "STABLE", "Stable"
+
+
+class PriceRecommendation(models.TextChoices):
+    BUY_NOW = "BUY_NOW", "Buy now"
+    BUY_SOON = "BUY_SOON", "Buy soon"
+    WAIT = "WAIT", "Wait"
+    HOLD = "HOLD", "Hold"
+
+
 class Seller(models.Model):
     class Meta:
         db_table = "sellers"
@@ -80,3 +93,107 @@ class PriceEntry(models.Model):
 
     def __str__(self) -> str:
         return f"{self.product_id}:{self.seller_id}"
+
+
+class PriceHistory(models.Model):
+    class Meta:
+        db_table = "price_history"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["product", "date"],
+                name="uq_price_history",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["-date"], name="idx_price_hist_date"),
+        ]
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="price_history_entries",
+    )
+    date = models.DateField()
+    lowest_price = models.IntegerField()
+    average_price = models.IntegerField()
+    highest_price = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"{self.product_id}:{self.date}"
+
+
+class PriceAlert(models.Model):
+    class Meta:
+        db_table = "price_alerts"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "product"],
+                name="uq_price_alerts",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["is_active", "is_triggered"],
+                name="idx_price_alert_state",
+            ),
+        ]
+
+    user = models.ForeignKey(
+        "users.CustomUser",
+        on_delete=models.CASCADE,
+        related_name="price_alerts",
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="price_alerts",
+    )
+    target_price = models.IntegerField()
+    is_triggered = models.BooleanField(default=False)
+    triggered_at = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"{self.user_id}:{self.product_id}"
+
+
+class PricePrediction(models.Model):
+    class Meta:
+        db_table = "price_predictions"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["product", "prediction_date"],
+                name="uq_price_predictions",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["prediction_date"], name="idx_price_pred_date"),
+        ]
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="price_predictions",
+    )
+    prediction_date = models.DateField()
+    predicted_price = models.IntegerField()
+    confidence = models.DecimalField(max_digits=3, decimal_places=2)
+    trend = models.CharField(
+        max_length=10,
+        choices=PriceTrend.choices,
+    )
+    trend_strength = models.DecimalField(max_digits=3, decimal_places=2)
+    moving_avg_7d = models.IntegerField(null=True, blank=True)
+    moving_avg_30d = models.IntegerField(null=True, blank=True)
+    recommendation = models.CharField(
+        max_length=10,
+        choices=PriceRecommendation.choices,
+    )
+    seasonality_note = models.CharField(max_length=200, null=True, blank=True)
+    calculated_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"{self.product_id}:{self.prediction_date}"

@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "apps.auth.apps.PBShopAuthConfig",
+    "apps.docs.apps.DocsConfig",
     "apps.users",
     "apps.catalog",
     "apps.pricing",
@@ -127,8 +129,50 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = os.getenv("DJANGO_MEDIA_URL", "/media/")
+MEDIA_ROOT = BASE_DIR / os.getenv("DJANGO_MEDIA_ROOT", "media")
 
 APPEND_SLASH = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "users.CustomUser"
+
+JWT_ACCESS_SECRET = os.getenv(
+    "JWT_ACCESS_SECRET",
+    "pbshop-python-access-secret-key-2026",
+)
+JWT_REFRESH_SECRET = os.getenv(
+    "JWT_REFRESH_SECRET",
+    "pbshop-python-refresh-secret-key-2026",
+)
+JWT_ACCESS_EXPIRES_IN_SECONDS = int(os.getenv("JWT_ACCESS_EXPIRES_IN_SECONDS", "1800"))
+JWT_REFRESH_EXPIRES_IN_SECONDS = int(os.getenv("JWT_REFRESH_EXPIRES_IN_SECONDS", "604800"))
+JWT_SIGNUP_TOKEN_EXPIRES_IN_SECONDS = int(os.getenv("JWT_SIGNUP_TOKEN_EXPIRES_IN_SECONDS", "600"))
+PASSWORD_RESET_TOKEN_EXPIRES_IN_SECONDS = int(
+    os.getenv("PASSWORD_RESET_TOKEN_EXPIRES_IN_SECONDS", "300")
+)
+EMAIL_VERIFICATION_CODE_EXPIRES_IN_SECONDS = int(
+    os.getenv("EMAIL_VERIFICATION_CODE_EXPIRES_IN_SECONDS", "600")
+)
+EMAIL_VERIFICATION_MAX_ATTEMPTS = int(os.getenv("EMAIL_VERIFICATION_MAX_ATTEMPTS", "5"))
+EMAIL_VERIFICATION_RESEND_INTERVAL_SECONDS = int(
+    os.getenv("EMAIL_VERIFICATION_RESEND_INTERVAL_SECONDS", "60")
+)
+PBSHOP_DEFAULT_PROFILE_IMAGE_URL = os.getenv(
+    "PBSHOP_DEFAULT_PROFILE_IMAGE_URL",
+    "/media/profiles/default.png",
+)
+PBSHOP_PROFILE_IMAGE_DIR = os.getenv("PBSHOP_PROFILE_IMAGE_DIR", "profiles")
+PBSHOP_SOCIAL_SIGNUP_COOKIE_NAME = os.getenv(
+    "PBSHOP_SOCIAL_SIGNUP_COOKIE_NAME",
+    "pbshop_social_signup_token",
+)
+PBSHOP_SOCIAL_STATE_EXPIRES_IN_SECONDS = int(
+    os.getenv("PBSHOP_SOCIAL_STATE_EXPIRES_IN_SECONDS", "600")
+)
+
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.locmem.EmailBackend",
+)
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@pbshop.local")

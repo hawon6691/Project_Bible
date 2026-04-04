@@ -64,9 +64,39 @@ jobs:
           django.setup()
 
           client = Client()
-          for path in ("/health", "/api/v1/"):
+          for path in ("/health", "/api/v1/", "/docs/openapi", "/docs/swagger-ui/index.html"):
               response = client.get(path)
               if response.status_code != 200:
                   raise SystemExit(f"{path} expected 200 but got {response.status_code}")
           print("Bootstrap smoke checks passed.")
           PY
+
+      - name: Export Docs Artifacts
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+
+          import django
+          from django.test import Client
+
+          django.setup()
+
+          client = Client()
+          openapi = client.get("/docs/openapi")
+          swagger = client.get("/docs/swagger-ui/index.html")
+          Path("test-results").mkdir(exist_ok=True)
+          Path("test-results/openapi.json").write_text(openapi.content.decode("utf-8"), encoding="utf-8")
+          Path("test-results/swagger.html").write_text(swagger.content.decode("utf-8"), encoding="utf-8")
+          print("Docs artifacts exported.")
+          PY
+
+      - name: Upload Docs Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-django-docs
+          path: |
+            BackEnd/Python/python-django-pip-djangoorm-postgresql/test-results/openapi.json
+            BackEnd/Python/python-django-pip-djangoorm-postgresql/test-results/swagger.html

@@ -1,14 +1,11 @@
-from django.http import JsonResponse
+from apps.api.responses import success_response
 
 
 def api_root(_request):
-    return JsonResponse(
+    return success_response(
         {
-            "success": True,
-            "data": {
-                "service": "pbshop-python-django-pip-djangoorm-postgresql",
-                "version": "bootstrap",
-                "status": "ok",
-            },
+            "service": "pbshop-python-django-pip-djangoorm-postgresql",
+            "version": "bootstrap",
+            "status": "ok",
         }
     )

@@ -342,6 +342,69 @@ def _components():
                     "imageUrl": {"type": "string"},
                 },
             },
+            "CategoryTreeNode": {
+                "type": "object",
+                "required": ["id", "name", "sortOrder", "children"],
+                "properties": {
+                    "id": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "sortOrder": {"type": "integer"},
+                    "children": {
+                        "type": "array",
+                        "items": {"$ref": "#/components/schemas/CategoryTreeNode"},
+                    },
+                },
+            },
+            "CategoryResponse": {
+                "type": "object",
+                "required": ["id", "name", "parentId", "sortOrder", "createdAt"],
+                "properties": {
+                    "id": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "parentId": {"type": ["integer", "null"]},
+                    "sortOrder": {"type": "integer"},
+                    "createdAt": {"type": "string", "format": "date-time"},
+                },
+            },
+            "CategoryDetailResponse": {
+                "type": "object",
+                "required": ["id", "name", "parentId", "sortOrder", "children", "createdAt"],
+                "properties": {
+                    "id": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "parentId": {"type": ["integer", "null"]},
+                    "sortOrder": {"type": "integer"},
+                    "children": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["id", "name", "sortOrder"],
+                            "properties": {
+                                "id": {"type": "integer"},
+                                "name": {"type": "string"},
+                                "sortOrder": {"type": "integer"},
+                            },
+                        },
+                    },
+                    "createdAt": {"type": "string", "format": "date-time"},
+                },
+            },
+            "CreateCategoryRequest": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                    "name": {"type": "string"},
+                    "parentId": {"type": "integer"},
+                    "sortOrder": {"type": "integer", "default": 0},
+                },
+            },
+            "UpdateCategoryRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "sortOrder": {"type": "integer"},
+                },
+            },
         },
     }
 
@@ -638,6 +701,139 @@ def build_openapi_spec():
                 "security": _auth_requirement(True),
             }
         },
+        "/api/v1/categories": {
+            "get": {
+                "tags": ["Categories"],
+                "summary": "List category tree",
+                "responses": {
+                    "200": {
+                        "description": "Category tree",
+                        **_json_content(
+                            _success_envelope_schema(
+                                {"type": "array", "items": {"$ref": "#/components/schemas/CategoryTreeNode"}}
+                            )
+                        ),
+                    }
+                },
+                "security": [],
+            },
+            "post": {
+                "tags": ["Categories"],
+                "summary": "Create category",
+                "requestBody": _request_body({"$ref": "#/components/schemas/CreateCategoryRequest"}),
+                "responses": {
+                    "201": {
+                        "description": "Category created",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/CategoryResponse"})),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Parent category not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
+        "/api/v1/categories/{category_id}": {
+            "get": {
+                "tags": ["Categories"],
+                "summary": "Get category detail",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Category detail",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/CategoryDetailResponse"})),
+                    },
+                    "404": {
+                        "description": "Category not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": [],
+            },
+            "patch": {
+                "tags": ["Categories"],
+                "summary": "Update category",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "requestBody": _request_body({"$ref": "#/components/schemas/UpdateCategoryRequest"}),
+                "responses": {
+                    "200": {
+                        "description": "Category updated",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/CategoryResponse"})),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Category not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+            "delete": {
+                "tags": ["Categories"],
+                "summary": "Delete category",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Category deleted",
+                        **_json_content(message_envelope),
+                    },
+                    "400": {
+                        "description": "Category has children",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Category not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
         "/api/v1/users": {
             "get": {
                 "tags": ["Users"],
@@ -879,6 +1075,7 @@ def build_openapi_spec():
             {"name": "Health"},
             {"name": "System"},
             {"name": "Auth"},
+            {"name": "Categories"},
             {"name": "Users"},
             {"name": "Docs"},
         ],

@@ -160,3 +160,47 @@ class ProductSpec(models.Model):
     def __str__(self) -> str:
         return f"{self.product_id}:{self.spec_definition_id}"
 
+
+class ProductOption(models.Model):
+    class Meta:
+        db_table = "product_options"
+        indexes = [
+            models.Index(fields=["product"], name="idx_product_options_product"),
+        ]
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="options",
+        db_index=False,
+    )
+    name = models.CharField(max_length=50)
+    values = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.product_id}:{self.name}"
+
+
+class ProductImage(models.Model):
+    class Meta:
+        db_table = "product_images"
+        indexes = [
+            models.Index(fields=["product"], name="idx_product_images_product"),
+        ]
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="images",
+        db_index=False,
+    )
+    url = models.CharField(max_length=500)
+    is_main = models.BooleanField(default=False)
+    sort_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"{self.product_id}:{self.url}"
+

@@ -405,6 +405,181 @@ def _components():
                     "sortOrder": {"type": "integer"},
                 },
             },
+            "ProductSummary": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "lowestPrice",
+                    "sellerCount",
+                    "thumbnailUrl",
+                    "reviewCount",
+                    "averageRating",
+                    "priceDiff",
+                    "priceDiffPercent",
+                    "createdAt",
+                ],
+                "properties": {
+                    "id": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "lowestPrice": {"type": "integer"},
+                    "sellerCount": {"type": "integer"},
+                    "thumbnailUrl": {"type": ["string", "null"]},
+                    "reviewCount": {"type": "integer"},
+                    "averageRating": {"type": "number"},
+                    "priceDiff": {"type": ["integer", "null"]},
+                    "priceDiffPercent": {"type": ["number", "null"]},
+                    "createdAt": {"type": "string", "format": "date-time"},
+                },
+            },
+            "ProductOption": {
+                "type": "object",
+                "required": ["id", "name", "values"],
+                "properties": {
+                    "id": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "values": {"type": "array", "items": {"type": "string"}},
+                },
+            },
+            "ProductImage": {
+                "type": "object",
+                "required": ["id", "url", "isMain", "sortOrder"],
+                "properties": {
+                    "id": {"type": "integer"},
+                    "url": {"type": "string"},
+                    "isMain": {"type": "boolean"},
+                    "sortOrder": {"type": "integer"},
+                },
+            },
+            "CreateProductOptionRequest": {
+                "type": "object",
+                "required": ["name", "values"],
+                "properties": {
+                    "name": {"type": "string"},
+                    "values": {"type": "array", "items": {"type": "string"}},
+                },
+            },
+            "CreateProductImageRequest": {
+                "type": "object",
+                "required": ["url"],
+                "properties": {
+                    "url": {"type": "string"},
+                    "isMain": {"type": "boolean"},
+                    "sortOrder": {"type": "integer"},
+                },
+            },
+            "CreateProductRequest": {
+                "type": "object",
+                "required": ["name", "description", "price", "stock", "categoryId"],
+                "properties": {
+                    "name": {"type": "string"},
+                    "description": {"type": "string"},
+                    "price": {"type": "integer"},
+                    "discountPrice": {"type": ["integer", "null"]},
+                    "stock": {"type": "integer"},
+                    "status": {"type": "string", "enum": ["ON_SALE", "SOLD_OUT", "HIDDEN"]},
+                    "categoryId": {"type": "integer"},
+                    "thumbnailUrl": {"type": ["string", "null"]},
+                    "options": {
+                        "type": "array",
+                        "items": {"$ref": "#/components/schemas/CreateProductOptionRequest"},
+                    },
+                    "images": {
+                        "type": "array",
+                        "items": {"$ref": "#/components/schemas/CreateProductImageRequest"},
+                    },
+                },
+            },
+            "UpdateProductRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "description": {"type": "string"},
+                    "price": {"type": "integer"},
+                    "discountPrice": {"type": ["integer", "null"]},
+                    "stock": {"type": "integer"},
+                    "status": {"type": "string", "enum": ["ON_SALE", "SOLD_OUT", "HIDDEN"]},
+                    "categoryId": {"type": "integer"},
+                    "thumbnailUrl": {"type": ["string", "null"]},
+                },
+            },
+            "ProductDetail": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "description",
+                    "lowestPrice",
+                    "highestPrice",
+                    "averagePrice",
+                    "stock",
+                    "status",
+                    "category",
+                    "options",
+                    "images",
+                    "specs",
+                    "priceEntries",
+                    "reviewCount",
+                    "averageRating",
+                    "createdAt",
+                ],
+                "properties": {
+                    "id": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "description": {"type": "string"},
+                    "lowestPrice": {"type": "integer"},
+                    "highestPrice": {"type": ["integer", "null"]},
+                    "averagePrice": {"type": ["integer", "null"]},
+                    "stock": {"type": "integer"},
+                    "status": {"type": "string", "enum": ["ON_SALE", "SOLD_OUT", "HIDDEN"]},
+                    "category": {
+                        "type": "object",
+                        "required": ["id", "name"],
+                        "properties": {
+                            "id": {"type": "integer"},
+                            "name": {"type": "string"},
+                        },
+                    },
+                    "options": {"type": "array", "items": {"$ref": "#/components/schemas/ProductOption"}},
+                    "images": {"type": "array", "items": {"$ref": "#/components/schemas/ProductImage"}},
+                    "specs": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["name", "value"],
+                            "properties": {
+                                "name": {"type": "string"},
+                                "value": {"type": "string"},
+                            },
+                        },
+                    },
+                    "priceEntries": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["seller", "price", "url", "shipping"],
+                            "properties": {
+                                "seller": {
+                                    "type": "object",
+                                    "required": ["id", "name", "logoUrl", "trustScore"],
+                                    "properties": {
+                                        "id": {"type": "integer"},
+                                        "name": {"type": "string"},
+                                        "logoUrl": {"type": ["string", "null"]},
+                                        "trustScore": {"type": "integer"},
+                                    },
+                                },
+                                "price": {"type": "integer"},
+                                "url": {"type": "string"},
+                                "shipping": {"type": "string"},
+                            },
+                        },
+                    },
+                    "reviewCount": {"type": "integer"},
+                    "averageRating": {"type": "number"},
+                    "createdAt": {"type": "string", "format": "date-time"},
+                },
+            },
         },
     }
 
@@ -695,6 +870,339 @@ def build_openapi_spec():
                     },
                     "401": {
                         "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            }
+        },
+        "/api/v1/products": {
+            "get": {
+                "tags": ["Products"],
+                "summary": "List products",
+                "parameters": [
+                    {"$ref": "#/components/parameters/PageQuery"},
+                    {"$ref": "#/components/parameters/LimitQuery"},
+                    {
+                        "name": "categoryId",
+                        "in": "query",
+                        "required": False,
+                        "schema": {"type": "integer"},
+                    },
+                    {"$ref": "#/components/parameters/SearchQuery"},
+                    {
+                        "name": "minPrice",
+                        "in": "query",
+                        "required": False,
+                        "schema": {"type": "integer", "minimum": 0},
+                    },
+                    {
+                        "name": "maxPrice",
+                        "in": "query",
+                        "required": False,
+                        "schema": {"type": "integer", "minimum": 0},
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "required": False,
+                        "schema": {
+                            "type": "string",
+                            "default": "newest",
+                            "enum": ["newest", "popularity", "price_asc", "price_desc", "rating_desc", "rating_asc"],
+                        },
+                    },
+                    {
+                        "name": "specs",
+                        "in": "query",
+                        "required": False,
+                        "schema": {"type": "string"},
+                    },
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated product list",
+                        **_json_content(
+                            _success_envelope_schema(
+                                {"type": "array", "items": {"$ref": "#/components/schemas/ProductSummary"}},
+                                include_meta=True,
+                            )
+                        ),
+                    },
+                    "400": {
+                        "description": "Invalid query parameters",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": [],
+            },
+            "post": {
+                "tags": ["Products"],
+                "summary": "Create product",
+                "requestBody": _request_body({"$ref": "#/components/schemas/CreateProductRequest"}),
+                "responses": {
+                    "201": {
+                        "description": "Product created",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/ProductDetail"})),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Category not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
+        "/api/v1/products/{product_id}": {
+            "get": {
+                "tags": ["Products"],
+                "summary": "Get product detail",
+                "parameters": [
+                    {
+                        "name": "product_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product detail",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/ProductDetail"})),
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": [],
+            },
+            "patch": {
+                "tags": ["Products"],
+                "summary": "Update product",
+                "parameters": [
+                    {
+                        "name": "product_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "requestBody": _request_body({"$ref": "#/components/schemas/UpdateProductRequest"}),
+                "responses": {
+                    "200": {
+                        "description": "Product updated",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/ProductDetail"})),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+            "delete": {
+                "tags": ["Products"],
+                "summary": "Delete product",
+                "parameters": [
+                    {
+                        "name": "product_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product deleted",
+                        **_json_content(message_envelope),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
+        "/api/v1/products/{product_id}/options": {
+            "post": {
+                "tags": ["Products"],
+                "summary": "Create product option",
+                "parameters": [
+                    {
+                        "name": "product_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "requestBody": _request_body({"$ref": "#/components/schemas/CreateProductOptionRequest"}),
+                "responses": {
+                    "201": {
+                        "description": "Product option created",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/ProductOption"})),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            }
+        },
+        "/api/v1/products/{product_id}/options/{option_id}": {
+            "patch": {
+                "tags": ["Products"],
+                "summary": "Update product option",
+                "parameters": [
+                    {"name": "product_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                    {"name": "option_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "requestBody": _request_body({"$ref": "#/components/schemas/CreateProductOptionRequest"}),
+                "responses": {
+                    "200": {
+                        "description": "Product option updated",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/ProductOption"})),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Product option not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+            "delete": {
+                "tags": ["Products"],
+                "summary": "Delete product option",
+                "parameters": [
+                    {"name": "product_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                    {"name": "option_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product option deleted",
+                        **_json_content(message_envelope),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Product option not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
+        "/api/v1/products/{product_id}/images": {
+            "post": {
+                "tags": ["Products"],
+                "summary": "Upload product image",
+                "parameters": [
+                    {"name": "product_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "requestBody": _request_body(
+                    {
+                        "type": "object",
+                        "required": ["image"],
+                        "properties": {
+                            "image": {"type": "string", "format": "binary"},
+                            "isMain": {"type": "boolean"},
+                            "sortOrder": {"type": "integer"},
+                        },
+                    },
+                    content_type="multipart/form-data",
+                ),
+                "responses": {
+                    "201": {
+                        "description": "Product image uploaded",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/ProductImage"})),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            }
+        },
+        "/api/v1/products/{product_id}/images/{image_id}": {
+            "delete": {
+                "tags": ["Products"],
+                "summary": "Delete product image",
+                "parameters": [
+                    {"name": "product_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                    {"name": "image_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product image deleted",
+                        **_json_content(message_envelope),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Product image not found",
                         **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
                     },
                 },
@@ -1075,6 +1583,7 @@ def build_openapi_spec():
             {"name": "Health"},
             {"name": "System"},
             {"name": "Auth"},
+            {"name": "Products"},
             {"name": "Categories"},
             {"name": "Users"},
             {"name": "Docs"},

@@ -14,6 +14,7 @@ urlpatterns = [
     path("products", products_collection, name="products-collection-no-slash"),
     path("products/", include("apps.catalog.product_urls")),
     path("products/", include("apps.pricing.product_urls")),
+    path("specs/", include("apps.catalog.spec_urls")),
     path("prices/", include("apps.pricing.price_urls")),
     path("sellers", sellers_collection, name="sellers-collection-no-slash"),
     path("sellers/", include("apps.pricing.urls")),

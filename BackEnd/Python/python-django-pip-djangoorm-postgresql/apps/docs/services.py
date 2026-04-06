@@ -405,6 +405,115 @@ def _components():
                     "sortOrder": {"type": "integer"},
                 },
             },
+            "SpecDefinition": {
+                "type": "object",
+                "required": ["id", "categoryId", "name", "type", "options", "unit", "isComparable", "dataType", "sortOrder"],
+                "properties": {
+                    "id": {"type": "integer"},
+                    "categoryId": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "type": {"type": "string", "enum": ["TEXT", "NUMBER", "SELECT"]},
+                    "options": {"type": ["array", "null"], "items": {"type": "string"}},
+                    "unit": {"type": ["string", "null"]},
+                    "isComparable": {"type": "boolean"},
+                    "dataType": {"type": "string", "enum": ["NUMBER", "STRING", "BOOLEAN"]},
+                    "sortOrder": {"type": "integer"},
+                },
+            },
+            "CreateSpecDefinitionRequest": {
+                "type": "object",
+                "required": ["categoryId", "name", "type"],
+                "properties": {
+                    "categoryId": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "type": {"type": "string", "enum": ["TEXT", "NUMBER", "SELECT"]},
+                    "options": {"type": "array", "items": {"type": "string"}},
+                    "unit": {"type": ["string", "null"]},
+                    "isComparable": {"type": "boolean", "default": True},
+                    "dataType": {"type": "string", "enum": ["NUMBER", "STRING", "BOOLEAN"]},
+                    "sortOrder": {"type": "integer", "default": 0},
+                },
+            },
+            "UpdateSpecDefinitionRequest": {
+                "type": "object",
+                "properties": {
+                    "categoryId": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "type": {"type": "string", "enum": ["TEXT", "NUMBER", "SELECT"]},
+                    "options": {"type": "array", "items": {"type": "string"}},
+                    "unit": {"type": ["string", "null"]},
+                    "isComparable": {"type": "boolean"},
+                    "dataType": {"type": "string", "enum": ["NUMBER", "STRING", "BOOLEAN"]},
+                    "sortOrder": {"type": "integer"},
+                },
+            },
+            "ProductSpecResponse": {
+                "type": "object",
+                "required": ["id", "specDefinitionId", "name", "value", "numericValue", "unit"],
+                "properties": {
+                    "id": {"type": "integer"},
+                    "specDefinitionId": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "value": {"type": "string"},
+                    "numericValue": {"type": ["number", "null"]},
+                    "unit": {"type": ["string", "null"]},
+                },
+            },
+            "SetProductSpecItem": {
+                "type": "object",
+                "required": ["specDefinitionId", "value"],
+                "properties": {
+                    "specDefinitionId": {"type": "integer"},
+                    "value": {"type": "string"},
+                    "numericValue": {"type": ["number", "null"]},
+                },
+            },
+            "SetProductSpecsRequest": {
+                "type": "array",
+                "items": {"$ref": "#/components/schemas/SetProductSpecItem"},
+            },
+            "CompareSpecsRequest": {
+                "type": "object",
+                "required": ["productIds"],
+                "properties": {
+                    "productIds": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 4,
+                        "items": {"type": "integer"},
+                    }
+                },
+            },
+            "CompareSpecsResponse": {
+                "type": "object",
+                "required": ["products", "specs"],
+                "properties": {
+                    "products": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["id", "name", "thumbnailUrl", "lowestPrice"],
+                            "properties": {
+                                "id": {"type": "integer"},
+                                "name": {"type": "string"},
+                                "thumbnailUrl": {"type": ["string", "null"]},
+                                "lowestPrice": {"type": "integer"},
+                            },
+                        },
+                    },
+                    "specs": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["name", "values"],
+                            "properties": {
+                                "name": {"type": "string"},
+                                "values": {"type": "array", "items": {"type": "string"}},
+                            },
+                        },
+                    },
+                },
+            },
             "Seller": {
                 "type": "object",
                 "required": [
@@ -647,17 +756,7 @@ def _components():
                     },
                     "options": {"type": "array", "items": {"$ref": "#/components/schemas/ProductOption"}},
                     "images": {"type": "array", "items": {"$ref": "#/components/schemas/ProductImage"}},
-                    "specs": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "required": ["name", "value"],
-                            "properties": {
-                                "name": {"type": "string"},
-                                "value": {"type": "string"},
-                            },
-                        },
-                    },
+                    "specs": {"type": "array", "items": {"$ref": "#/components/schemas/ProductSpecResponse"}},
                     "priceEntries": {
                         "type": "array",
                         "items": {
@@ -1314,6 +1413,223 @@ def build_openapi_spec():
                 "security": _auth_requirement(True),
             }
         },
+        "/api/v1/products/{product_id}/specs": {
+            "get": {
+                "tags": ["Specs"],
+                "summary": "List product specs",
+                "parameters": [
+                    {
+                        "name": "product_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product spec list",
+                        **_json_content(
+                            _success_envelope_schema(
+                                {"type": "array", "items": {"$ref": "#/components/schemas/ProductSpecResponse"}}
+                            )
+                        ),
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": [],
+            },
+            "put": {
+                "tags": ["Specs"],
+                "summary": "Replace product specs",
+                "parameters": [
+                    {
+                        "name": "product_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "requestBody": _request_body({"$ref": "#/components/schemas/SetProductSpecsRequest"}),
+                "responses": {
+                    "200": {
+                        "description": "Product specs replaced",
+                        **_json_content(
+                            _success_envelope_schema(
+                                {"type": "array", "items": {"$ref": "#/components/schemas/ProductSpecResponse"}}
+                            )
+                        ),
+                    },
+                    "400": {
+                        "description": "Invalid product spec payload",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Product or spec definition not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
+        "/api/v1/specs/definitions": {
+            "get": {
+                "tags": ["Specs"],
+                "summary": "List spec definitions",
+                "parameters": [
+                    {
+                        "name": "categoryId",
+                        "in": "query",
+                        "required": False,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Spec definition list",
+                        **_json_content(
+                            _success_envelope_schema(
+                                {"type": "array", "items": {"$ref": "#/components/schemas/SpecDefinition"}}
+                            )
+                        ),
+                    }
+                },
+                "security": [],
+            },
+            "post": {
+                "tags": ["Specs"],
+                "summary": "Create spec definition",
+                "requestBody": _request_body({"$ref": "#/components/schemas/CreateSpecDefinitionRequest"}),
+                "responses": {
+                    "201": {
+                        "description": "Spec definition created",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/SpecDefinition"})),
+                    },
+                    "400": {
+                        "description": "Invalid spec definition payload",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Category not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
+        "/api/v1/specs/definitions/{definition_id}": {
+            "patch": {
+                "tags": ["Specs"],
+                "summary": "Update spec definition",
+                "parameters": [
+                    {
+                        "name": "definition_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "requestBody": _request_body({"$ref": "#/components/schemas/UpdateSpecDefinitionRequest"}),
+                "responses": {
+                    "200": {
+                        "description": "Spec definition updated",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/SpecDefinition"})),
+                    },
+                    "400": {
+                        "description": "Invalid spec definition payload",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Spec definition not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+            "delete": {
+                "tags": ["Specs"],
+                "summary": "Delete spec definition",
+                "parameters": [
+                    {
+                        "name": "definition_id",
+                        "in": "path",
+                        "required": True,
+                        "schema": {"type": "integer"},
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Spec definition deleted",
+                        **_json_content(message_envelope),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Spec definition not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "409": {
+                        "description": "Spec definition is in use",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
+        "/api/v1/specs/compare": {
+            "post": {
+                "tags": ["Specs"],
+                "summary": "Compare products by specs",
+                "requestBody": _request_body({"$ref": "#/components/schemas/CompareSpecsRequest"}),
+                "responses": {
+                    "200": {
+                        "description": "Basic product spec comparison",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/CompareSpecsResponse"})),
+                    },
+                    "400": {
+                        "description": "Invalid compare request",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": [],
+            },
+        },
         "/api/v1/products/{product_id}/prices": {
             "get": {
                 "tags": ["Prices"],
@@ -1926,6 +2242,7 @@ def build_openapi_spec():
             {"name": "System"},
             {"name": "Auth"},
             {"name": "Products"},
+            {"name": "Specs"},
             {"name": "Sellers"},
             {"name": "Prices"},
             {"name": "Categories"},

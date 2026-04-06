@@ -1,11 +1,12 @@
 from apps.api.auth import require_auth
 from apps.api.decorators import api_endpoint
 from apps.api.responses import success_response
-from apps.catalog.services import CategoryService, ProductService
+from apps.catalog.services import CategoryService, ProductService, SpecService
 from apps.users.models import UserRole
 
 category_service = CategoryService()
 product_service = ProductService()
+spec_service = SpecService()
 
 
 @api_endpoint(["GET", "POST"])
@@ -40,6 +41,39 @@ def update_category(request, category_id: int):
 
 def delete_category(request, category_id: int):
     return success_response(category_service.delete_category(category_id))
+
+
+@api_endpoint(["GET", "POST"])
+def spec_definitions_collection(request):
+    if request.method == "GET":
+        return success_response(spec_service.list_definitions(request.GET))
+
+    protected_view = require_auth([UserRole.ADMIN])(create_spec_definition)
+    return protected_view(request)
+
+
+@api_endpoint(["PATCH", "DELETE"])
+def spec_definition_detail(request, definition_id: int):
+    if request.method == "PATCH":
+        protected_view = require_auth([UserRole.ADMIN])(update_spec_definition)
+        return protected_view(request, definition_id=definition_id)
+
+    protected_view = require_auth([UserRole.ADMIN])(delete_spec_definition)
+    return protected_view(request, definition_id=definition_id)
+
+
+@api_endpoint(["POST"])
+def spec_compare(request):
+    return success_response(spec_service.compare_products(request.json_data))
+
+
+@api_endpoint(["GET", "PUT"])
+def product_spec_collection(request, product_id: int):
+    if request.method == "GET":
+        return success_response(spec_service.get_product_specs(product_id))
+
+    protected_view = require_auth([UserRole.ADMIN])(replace_product_specs)
+    return protected_view(request, product_id=product_id)
 
 
 @api_endpoint(["GET", "POST"])
@@ -123,3 +157,19 @@ def upload_product_image(request, product_id: int):
 
 def delete_product_image(request, product_id: int, image_id: int):
     return success_response(product_service.delete_image(product_id, image_id))
+
+
+def create_spec_definition(request):
+    return success_response(spec_service.create_definition(request.json_data), status=201)
+
+
+def update_spec_definition(request, definition_id: int):
+    return success_response(spec_service.update_definition(definition_id, request.json_data))
+
+
+def delete_spec_definition(request, definition_id: int):
+    return success_response(spec_service.delete_definition(definition_id))
+
+
+def replace_product_specs(request, product_id: int):
+    return success_response(spec_service.replace_product_specs(product_id, request.json_data))

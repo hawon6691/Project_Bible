@@ -12,6 +12,7 @@ urlpatterns = [
     path("categories/", include("apps.catalog.urls")),
     path("products", products_collection, name="products-collection-no-slash"),
     path("products/", include("apps.catalog.product_urls")),
+    path("specs/", include("apps.catalog.spec_urls")),
     path("users", users_collection, name="users-collection-no-slash"),
     path("users/", include("apps.users.urls")),
 ]

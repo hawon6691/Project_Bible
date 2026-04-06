@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.db.models import Prefetch, QuerySet
 
-from apps.catalog.models import Category, Product, ProductImage, ProductOption
+from apps.catalog.models import Category, Product, ProductImage, ProductOption, ProductSpec, SpecDefinition
 
 
 class CategoryRepository:
@@ -107,3 +107,52 @@ class ProductRepository:
 
     def delete_image(self, image: ProductImage) -> None:
         image.delete()
+
+
+class SpecRepository:
+    def list_definitions(self, *, category_id: int | None = None) -> QuerySet[SpecDefinition]:
+        queryset = SpecDefinition.objects.select_related("category").order_by("sort_order", "id")
+        if category_id is not None:
+            queryset = queryset.filter(category_id=category_id)
+        return queryset
+
+    def find_definition_by_id(self, definition_id: int) -> SpecDefinition | None:
+        return SpecDefinition.objects.select_related("category").filter(id=definition_id).first()
+
+    def create_definition(self, **kwargs) -> SpecDefinition:
+        return SpecDefinition.objects.create(**kwargs)
+
+    def save_definition(
+        self,
+        definition: SpecDefinition,
+        *,
+        update_fields: list[str] | None = None,
+    ) -> SpecDefinition:
+        definition.save(update_fields=update_fields)
+        return definition
+
+    def delete_definition(self, definition: SpecDefinition) -> None:
+        definition.delete()
+
+    def definition_has_product_specs(self, definition_id: int) -> bool:
+        return ProductSpec.objects.filter(spec_definition_id=definition_id).exists()
+
+    def list_product_specs(self, product_id: int) -> QuerySet[ProductSpec]:
+        return (
+            ProductSpec.objects.select_related("spec_definition")
+            .filter(product_id=product_id, product__deleted_at__isnull=True)
+            .order_by("spec_definition__sort_order", "spec_definition__id", "id")
+        )
+
+    def delete_product_specs(self, product_id: int) -> None:
+        ProductSpec.objects.filter(product_id=product_id).delete()
+
+    def create_product_spec(self, **kwargs) -> ProductSpec:
+        return ProductSpec.objects.create(**kwargs)
+
+    def list_compare_products(self, product_ids: list[int]) -> QuerySet[Product]:
+        return (
+            Product.objects.select_related("category")
+            .prefetch_related("product_specs__spec_definition")
+            .filter(id__in=product_ids, deleted_at__isnull=True)
+        )

@@ -18,6 +18,7 @@ urlpatterns = [
     path("prices/", include("apps.pricing.price_urls")),
     path("sellers", sellers_collection, name="sellers-collection-no-slash"),
     path("sellers/", include("apps.pricing.urls")),
+    path("specs/", include("apps.catalog.spec_urls")),
     path("users", users_collection, name="users-collection-no-slash"),
     path("users/", include("apps.users.urls")),
 ]

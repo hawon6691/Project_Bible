@@ -22,6 +22,7 @@ from apps.catalog.models import (
     Product,
     ProductImage,
     ProductOption,
+    ProductSpec,
     ProductStatus,
     SpecDataType,
     SpecDefinition,

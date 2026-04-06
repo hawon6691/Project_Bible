@@ -17,8 +17,18 @@ from PIL import Image, UnidentifiedImageError
 from apps.api.errors import ApiError
 from apps.api.pagination import build_pagination_meta, parse_pagination
 from apps.api.utils import require_fields
-from apps.catalog.models import Category, Product, ProductImage, ProductOption, ProductStatus
-from apps.catalog.repositories import CategoryRepository, ProductRepository
+from apps.catalog.models import (
+    Category,
+    Product,
+    ProductImage,
+    ProductOption,
+    ProductSpec,
+    ProductStatus,
+    SpecDataType,
+    SpecDefinition,
+    SpecDefinitionType,
+)
+from apps.catalog.repositories import CategoryRepository, ProductRepository, SpecRepository
 
 
 class CategoryService:
@@ -150,6 +160,385 @@ class CategoryService:
         }
 
 
+class SpecService:
+    def __init__(
+        self,
+        spec_repository: SpecRepository | None = None,
+        product_repository: ProductRepository | None = None,
+        category_repository: CategoryRepository | None = None,
+    ) -> None:
+        self.spec_repository = spec_repository or SpecRepository()
+        self.product_repository = product_repository or ProductRepository()
+        self.category_repository = category_repository or CategoryRepository()
+
+    def list_definitions(self, querydict) -> list[dict]:
+        category_id = querydict.get("categoryId", "").strip()
+        resolved_category_id = self._parse_positive_int(category_id, "categoryId") if category_id else None
+        definitions = self.spec_repository.list_definitions(category_id=resolved_category_id)
+        return [self._serialize_definition(item) for item in definitions]
+
+    def create_definition(self, data) -> dict:
+        normalized = self._normalize_definition_payload(data, partial=False)
+        definition = self.spec_repository.create_definition(**normalized)
+        return self._serialize_definition(definition)
+
+    def update_definition(self, definition_id: int, data) -> dict:
+        definition = self.spec_repository.find_definition_by_id(definition_id)
+        if definition is None:
+            raise ApiError("SPEC_DEFINITION_NOT_FOUND", "스펙 정의를 찾을 수 없습니다.", 404)
+
+        if not isinstance(data, dict):
+            raise ApiError("VALIDATION_ERROR", "요청 본문은 객체여야 합니다.", 400)
+        if not data:
+            return self._serialize_definition(definition)
+
+        normalized = self._normalize_definition_payload(data, partial=True, current=definition)
+        for field_name, value in normalized.items():
+            setattr(definition, field_name, value)
+        self.spec_repository.save_definition(definition, update_fields=list(normalized.keys()))
+        return self._serialize_definition(definition)
+
+    def delete_definition(self, definition_id: int) -> dict:
+        definition = self.spec_repository.find_definition_by_id(definition_id)
+        if definition is None:
+            raise ApiError("SPEC_DEFINITION_NOT_FOUND", "스펙 정의를 찾을 수 없습니다.", 404)
+        if self.spec_repository.definition_has_product_specs(definition.id):
+            raise ApiError("CONFLICT", "상품에 연결된 스펙 정의는 삭제할 수 없습니다.", 409)
+        self.spec_repository.delete_definition(definition)
+        return {"message": "스펙 정의가 삭제되었습니다."}
+
+    def get_product_specs(self, product_id: int) -> list[dict]:
+        self._ensure_product(product_id)
+        return self.serialize_product_specs(self.spec_repository.list_product_specs(product_id))
+
+    def replace_product_specs(self, product_id: int, data) -> list[dict]:
+        product = self._ensure_product(product_id)
+        if not isinstance(data, list):
+            raise ApiError("VALIDATION_ERROR", "요청 본문은 배열이어야 합니다.", 400)
+
+        normalized_specs: list[dict] = []
+        seen_definition_ids: set[int] = set()
+        for item in data:
+            if not isinstance(item, dict):
+                raise ApiError("VALIDATION_ERROR", "상품 스펙 항목 형식이 올바르지 않습니다.", 400)
+            require_fields(item, ["specDefinitionId", "value"])
+
+            definition = self._resolve_definition(item.get("specDefinitionId"))
+            if definition.category_id != product.category_id:
+                raise ApiError("VALIDATION_ERROR", "상품 카테고리와 일치하는 스펙 정의만 설정할 수 있습니다.", 400)
+            if definition.id in seen_definition_ids:
+                raise ApiError("VALIDATION_ERROR", "동일한 스펙 정의를 중복으로 설정할 수 없습니다.", 400)
+            seen_definition_ids.add(definition.id)
+
+            value = self._validate_required_text(item.get("value"), field_name="value", max_length=200)
+            numeric_value = self._normalize_product_spec_numeric_value(item.get("numericValue"), definition)
+            if definition.type == SpecDefinitionType.SELECT:
+                options = definition.options or []
+                if value not in options:
+                    raise ApiError("VALIDATION_ERROR", "SELECT 타입 스펙 값이 정의된 옵션과 일치하지 않습니다.", 400)
+
+            normalized_specs.append(
+                {
+                    "product": product,
+                    "spec_definition": definition,
+                    "value": value,
+                    "numeric_value": numeric_value,
+                }
+            )
+
+        with transaction.atomic():
+            self.spec_repository.delete_product_specs(product.id)
+            for item in normalized_specs:
+                self.spec_repository.create_product_spec(**item)
+
+        return self.get_product_specs(product.id)
+
+    def compare_products(self, data) -> dict:
+        if not isinstance(data, dict):
+            raise ApiError("VALIDATION_ERROR", "요청 본문은 객체여야 합니다.", 400)
+
+        product_ids = data.get("productIds")
+        if not isinstance(product_ids, list):
+            raise ApiError("VALIDATION_ERROR", "productIds는 배열이어야 합니다.", 400)
+        if len(product_ids) < 2 or len(product_ids) > 4:
+            raise ApiError("VALIDATION_ERROR", "비교 상품은 2개 이상 4개 이하로 요청해야 합니다.", 400)
+
+        ordered_product_ids = [self._parse_positive_int(item, "productIds") for item in product_ids]
+        unique_product_ids = list(dict.fromkeys(ordered_product_ids))
+        products = list(self.spec_repository.list_compare_products(unique_product_ids))
+        product_by_id = {product.id: product for product in products}
+        if len(product_by_id) != len(unique_product_ids):
+            raise ApiError("PRODUCT_NOT_FOUND", "비교할 상품을 찾을 수 없습니다.", 404)
+
+        ordered_products = [product_by_id[product_id] for product_id in ordered_product_ids]
+        comparable_meta: dict[str, dict] = {}
+        value_maps: dict[int, dict[str, str]] = {}
+
+        for product in ordered_products:
+            value_maps[product.id] = {}
+            for item in product.product_specs.all():
+                definition = item.spec_definition
+                if not definition.is_comparable:
+                    continue
+                name = definition.name
+                if name not in comparable_meta:
+                    comparable_meta[name] = {
+                        "sortOrder": definition.sort_order,
+                        "definitionId": definition.id,
+                    }
+                value_maps[product.id][name] = item.value
+
+        ordered_spec_names = sorted(
+            comparable_meta.keys(),
+            key=lambda name: (
+                comparable_meta[name]["sortOrder"],
+                comparable_meta[name]["definitionId"],
+                name,
+            ),
+        )
+
+        return {
+            "products": [self._serialize_compare_product(product) for product in ordered_products],
+            "specs": [
+                {
+                    "name": spec_name,
+                    "values": [value_maps[product.id].get(spec_name, "-") for product in ordered_products],
+                }
+                for spec_name in ordered_spec_names
+            ],
+        }
+
+    @staticmethod
+    def parse_filter_payload(raw_specs: str) -> list[dict]:
+        try:
+            spec_filters = json.loads(raw_specs)
+        except json.JSONDecodeError as exc:
+            raise ApiError("VALIDATION_ERROR", "specs는 올바른 JSON 문자열이어야 합니다.", 400) from exc
+
+        if not isinstance(spec_filters, dict):
+            raise ApiError("VALIDATION_ERROR", "specs는 key/value 객체여야 합니다.", 400)
+
+        normalized_filters: list[dict] = []
+        for spec_name, spec_value in spec_filters.items():
+            normalized_name = str(spec_name or "").strip()
+            if not normalized_name or spec_value in (None, ""):
+                raise ApiError("VALIDATION_ERROR", "specs 필터는 비어 있을 수 없습니다.", 400)
+            if isinstance(spec_value, (dict, list)):
+                raise ApiError("VALIDATION_ERROR", "specs 필터 값은 문자열, 숫자, 불리언만 허용됩니다.", 400)
+
+            numeric_value = None
+            if isinstance(spec_value, bool):
+                normalized_value = "true" if spec_value else "false"
+            elif isinstance(spec_value, (int, float, Decimal)):
+                numeric_value = Decimal(str(spec_value))
+                normalized_value = str(spec_value)
+            else:
+                normalized_value = str(spec_value).strip()
+                if not normalized_value:
+                    raise ApiError("VALIDATION_ERROR", "specs 필터는 비어 있을 수 없습니다.", 400)
+
+            normalized_filters.append(
+                {
+                    "name": normalized_name,
+                    "value": normalized_value,
+                    "numericValue": numeric_value,
+                }
+            )
+        return normalized_filters
+
+    @staticmethod
+    def serialize_product_specs(specs) -> list[dict]:
+        sorted_specs = sorted(
+            specs,
+            key=lambda item: (item.spec_definition.sort_order, item.spec_definition.id, item.id),
+        )
+        return [
+            {
+                "id": item.id,
+                "specDefinitionId": item.spec_definition_id,
+                "name": item.spec_definition.name,
+                "value": item.value,
+                "numericValue": float(item.numeric_value) if item.numeric_value is not None else None,
+                "unit": item.spec_definition.unit,
+            }
+            for item in sorted_specs
+        ]
+
+    def _normalize_definition_payload(self, data, *, partial: bool, current: SpecDefinition | None = None) -> dict:
+        if not isinstance(data, dict):
+            raise ApiError("VALIDATION_ERROR", "요청 본문은 객체여야 합니다.", 400)
+
+        if not partial:
+            require_fields(data, ["categoryId", "name", "type"])
+
+        raw_type = data.get("type", current.type if current else None)
+        spec_type = self._parse_spec_type(raw_type)
+
+        category = current.category if current else None
+        if not partial or "categoryId" in data:
+            category = self._resolve_category(data.get("categoryId"))
+
+        name = current.name if current else None
+        if not partial or "name" in data:
+            name = self._validate_required_text(data.get("name"), field_name="name", max_length=50)
+
+        options_value = data.get("options", current.options if current else None)
+        options = self._normalize_definition_options(options_value, spec_type)
+
+        unit = current.unit if current else None
+        if not partial or "unit" in data:
+            unit = self._parse_optional_string(data.get("unit"), "unit", 20)
+
+        is_comparable = current.is_comparable if current else True
+        if not partial or "isComparable" in data:
+            is_comparable = self._parse_bool(data.get("isComparable"), default=True)
+
+        raw_data_type = data.get("dataType", current.data_type if current else self._default_data_type_for_type(spec_type))
+        data_type = self._parse_data_type(raw_data_type)
+        if spec_type == SpecDefinitionType.NUMBER:
+            data_type = SpecDataType.NUMBER
+
+        sort_order = current.sort_order if current else 0
+        if not partial or "sortOrder" in data:
+            sort_order = self._parse_non_negative_int(data.get("sortOrder", 0), "sortOrder")
+
+        return {
+            "category": category,
+            "name": name,
+            "type": spec_type,
+            "options": options,
+            "unit": unit,
+            "is_comparable": is_comparable,
+            "data_type": data_type,
+            "sort_order": sort_order,
+        }
+
+    def _normalize_definition_options(self, value, spec_type: str) -> list[str] | None:
+        if spec_type != SpecDefinitionType.SELECT:
+            return None
+        if not isinstance(value, list) or not value:
+            raise ApiError("VALIDATION_ERROR", "SELECT 타입 스펙 정의는 비어 있지 않은 options 배열이 필요합니다.", 400)
+
+        normalized_options: list[str] = []
+        for item in value:
+            normalized_item = str(item or "").strip()
+            if not normalized_item:
+                raise ApiError("VALIDATION_ERROR", "스펙 옵션 값은 비워둘 수 없습니다.", 400)
+            normalized_options.append(normalized_item)
+        return normalized_options
+
+    def _normalize_product_spec_numeric_value(self, value, definition: SpecDefinition):
+        if definition.data_type != SpecDataType.NUMBER:
+            return None
+        if value in (None, ""):
+            raise ApiError("VALIDATION_ERROR", "숫자형 스펙은 numericValue가 필요합니다.", 400)
+        try:
+            return Decimal(str(value))
+        except Exception as exc:
+            raise ApiError("VALIDATION_ERROR", "numericValue는 숫자여야 합니다.", 400) from exc
+
+    def _serialize_definition(self, definition: SpecDefinition) -> dict:
+        return {
+            "id": definition.id,
+            "categoryId": definition.category_id,
+            "name": definition.name,
+            "type": definition.type,
+            "options": definition.options,
+            "unit": definition.unit,
+            "isComparable": definition.is_comparable,
+            "dataType": definition.data_type,
+            "sortOrder": definition.sort_order,
+        }
+
+    def _serialize_compare_product(self, product: Product) -> dict:
+        return {
+            "id": product.id,
+            "name": product.name,
+            "thumbnailUrl": product.thumbnail_url,
+            "lowestPrice": product.lowest_price if product.lowest_price is not None else product.price,
+        }
+
+    def _resolve_category(self, raw_category_id) -> Category:
+        category_id = self._parse_positive_int(raw_category_id, "categoryId")
+        category = self.category_repository.find_by_id(category_id)
+        if category is None:
+            raise ApiError("CATEGORY_NOT_FOUND", "카테고리를 찾을 수 없습니다.", 404)
+        return category
+
+    def _resolve_definition(self, raw_definition_id) -> SpecDefinition:
+        definition_id = self._parse_positive_int(raw_definition_id, "specDefinitionId")
+        definition = self.spec_repository.find_definition_by_id(definition_id)
+        if definition is None:
+            raise ApiError("SPEC_DEFINITION_NOT_FOUND", "스펙 정의를 찾을 수 없습니다.", 404)
+        return definition
+
+    def _ensure_product(self, product_id: int) -> Product:
+        product = self.product_repository.find_by_id(product_id)
+        if product is None:
+            raise ApiError("PRODUCT_NOT_FOUND", "상품을 찾을 수 없습니다.", 404)
+        return product
+
+    def _validate_required_text(self, value, *, field_name: str, max_length: int) -> str:
+        normalized = str(value or "").strip()
+        if not normalized:
+            raise ApiError("VALIDATION_ERROR", f"{field_name}은(는) 비워둘 수 없습니다.", 400)
+        if len(normalized) > max_length:
+            raise ApiError("VALIDATION_ERROR", f"{field_name}은(는) {max_length}자 이하여야 합니다.", 400)
+        return normalized
+
+    def _parse_optional_string(self, value, field_name: str, max_length: int) -> str | None:
+        if value in (None, ""):
+            return None
+        normalized = str(value).strip()
+        if len(normalized) > max_length:
+            raise ApiError("VALIDATION_ERROR", f"{field_name}은(는) {max_length}자 이하여야 합니다.", 400)
+        return normalized or None
+
+    def _parse_bool(self, value, *, default: bool) -> bool:
+        if value in (None, ""):
+            return default
+        if isinstance(value, bool):
+            return value
+        normalized = str(value).strip().lower()
+        if normalized in {"1", "true", "yes", "on"}:
+            return True
+        if normalized in {"0", "false", "no", "off"}:
+            return False
+        raise ApiError("VALIDATION_ERROR", "불리언 값 형식이 올바르지 않습니다.", 400)
+
+    def _parse_non_negative_int(self, value, field_name: str) -> int:
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError) as exc:
+            raise ApiError("VALIDATION_ERROR", f"{field_name}는 정수여야 합니다.", 400) from exc
+        if parsed < 0:
+            raise ApiError("VALIDATION_ERROR", f"{field_name}는 0 이상이어야 합니다.", 400)
+        return parsed
+
+    def _parse_positive_int(self, value, field_name: str) -> int:
+        parsed = self._parse_non_negative_int(value, field_name)
+        if parsed < 1:
+            raise ApiError("VALIDATION_ERROR", f"{field_name}는 1 이상이어야 합니다.", 400)
+        return parsed
+
+    def _parse_spec_type(self, value) -> str:
+        normalized = str(value or "").strip().upper()
+        if normalized not in SpecDefinitionType.values:
+            raise ApiError("VALIDATION_ERROR", "유효하지 않은 스펙 type입니다.", 400)
+        return normalized
+
+    def _parse_data_type(self, value) -> str:
+        normalized = str(value or "").strip().upper()
+        if normalized not in SpecDataType.values:
+            raise ApiError("VALIDATION_ERROR", "유효하지 않은 dataType입니다.", 400)
+        return normalized
+
+    def _default_data_type_for_type(self, spec_type: str) -> str:
+        if spec_type == SpecDefinitionType.NUMBER:
+            return SpecDataType.NUMBER
+        return SpecDataType.STRING
+
+
 class ProductService:
     SORT_VALUES = {
         "newest",
@@ -236,7 +625,7 @@ class ProductService:
             },
             "options": [self._serialize_option(option) for option in product.options.all()],
             "images": [self._serialize_image(image) for image in product.images.all()],
-            "specs": self._serialize_specs(product),
+            "specs": SpecService.serialize_product_specs(product.product_specs.all()),
             "priceEntries": [self._serialize_price_entry(entry) for entry in price_entries],
             "reviewCount": product.review_count,
             "averageRating": float(product.average_rating),
@@ -403,23 +792,18 @@ class ProductService:
         return {"message": "이미지가 삭제되었습니다."}
 
     def _apply_spec_filters(self, queryset, raw_specs: str):
-        try:
-            spec_filters = json.loads(raw_specs)
-        except json.JSONDecodeError as exc:
-            raise ApiError("VALIDATION_ERROR", "specs는 올바른 JSON 문자열이어야 합니다.", 400) from exc
-
-        if not isinstance(spec_filters, dict):
-            raise ApiError("VALIDATION_ERROR", "specs는 key/value 객체여야 합니다.", 400)
-
-        for spec_name, spec_value in spec_filters.items():
-            if not str(spec_name).strip() or spec_value in (None, ""):
-                raise ApiError("VALIDATION_ERROR", "specs 필터는 비어 있을 수 없습니다.", 400)
+        spec_filters = SpecService.parse_filter_payload(raw_specs)
+        for spec_filter in spec_filters:
+            filter_kwargs = {
+                "deleted_at__isnull": True,
+                "product_specs__spec_definition__name": spec_filter["name"],
+            }
+            if spec_filter["numericValue"] is not None:
+                filter_kwargs["product_specs__numeric_value"] = spec_filter["numericValue"]
+            else:
+                filter_kwargs["product_specs__value"] = spec_filter["value"]
             queryset = queryset.filter(
-                id__in=Product.objects.filter(
-                    deleted_at__isnull=True,
-                    product_specs__spec_definition__name=str(spec_name).strip(),
-                    product_specs__value=str(spec_value).strip(),
-                ).values("id")
+                id__in=Product.objects.filter(**filter_kwargs).values("id")
             )
         return queryset
 
@@ -648,19 +1032,6 @@ class ProductService:
             "isMain": image.is_main,
             "sortOrder": image.sort_order,
         }
-
-    def _serialize_specs(self, product: Product) -> list[dict]:
-        specs = sorted(
-            product.product_specs.all(),
-            key=lambda item: (item.spec_definition.sort_order, item.spec_definition.id, item.id),
-        )
-        return [
-            {
-                "name": item.spec_definition.name,
-                "value": item.value,
-            }
-            for item in specs
-        ]
 
     def _serialize_price_entry(self, entry) -> dict:
         return {

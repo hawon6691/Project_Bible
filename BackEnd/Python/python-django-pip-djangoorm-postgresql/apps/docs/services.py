@@ -405,6 +405,111 @@ def _components():
                     "sortOrder": {"type": "integer"},
                 },
             },
+            "Seller": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "url",
+                    "logoUrl",
+                    "trustScore",
+                    "trustGrade",
+                    "description",
+                    "isActive",
+                    "createdAt",
+                ],
+                "properties": {
+                    "id": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "url": {"type": "string"},
+                    "logoUrl": {"type": ["string", "null"]},
+                    "trustScore": {"type": "integer"},
+                    "trustGrade": {"type": ["string", "null"]},
+                    "description": {"type": ["string", "null"]},
+                    "isActive": {"type": "boolean"},
+                    "createdAt": {"type": "string", "format": "date-time"},
+                },
+            },
+            "CreateSellerRequest": {
+                "type": "object",
+                "required": ["name", "url"],
+                "properties": {
+                    "name": {"type": "string"},
+                    "url": {"type": "string"},
+                    "logoUrl": {"type": ["string", "null"]},
+                    "description": {"type": ["string", "null"]},
+                    "trustScore": {"type": "integer", "minimum": 0, "maximum": 100},
+                    "trustGrade": {"type": ["string", "null"]},
+                    "isActive": {"type": "boolean"},
+                },
+            },
+            "UpdateSellerRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "url": {"type": "string"},
+                    "logoUrl": {"type": ["string", "null"]},
+                    "description": {"type": ["string", "null"]},
+                    "trustScore": {"type": "integer", "minimum": 0, "maximum": 100},
+                    "trustGrade": {"type": ["string", "null"]},
+                    "isActive": {"type": "boolean"},
+                },
+            },
+            "PriceEntry": {
+                "type": "object",
+                "required": ["id", "seller", "price", "shippingCost", "shippingInfo", "productUrl", "updatedAt"],
+                "properties": {
+                    "id": {"type": "integer"},
+                    "seller": {
+                        "type": "object",
+                        "required": ["id", "name", "logoUrl", "trustScore"],
+                        "properties": {
+                            "id": {"type": "integer"},
+                            "name": {"type": "string"},
+                            "logoUrl": {"type": ["string", "null"]},
+                            "trustScore": {"type": "integer"},
+                        },
+                    },
+                    "price": {"type": "integer"},
+                    "shippingCost": {"type": "integer"},
+                    "shippingInfo": {"type": "string"},
+                    "productUrl": {"type": "string"},
+                    "updatedAt": {"type": "string", "format": "date-time"},
+                },
+            },
+            "CreatePriceEntryRequest": {
+                "type": "object",
+                "required": ["sellerId", "price", "productUrl"],
+                "properties": {
+                    "sellerId": {"type": "integer"},
+                    "price": {"type": "integer", "minimum": 0},
+                    "shippingCost": {"type": "integer", "minimum": 0},
+                    "shippingInfo": {"type": ["string", "null"]},
+                    "productUrl": {"type": "string"},
+                    "shippingType": {"type": "string", "enum": ["FREE", "PAID", "CONDITIONAL"]},
+                },
+            },
+            "UpdatePriceEntryRequest": {
+                "type": "object",
+                "properties": {
+                    "price": {"type": "integer", "minimum": 0},
+                    "shippingCost": {"type": "integer", "minimum": 0},
+                    "shippingInfo": {"type": ["string", "null"]},
+                    "productUrl": {"type": "string"},
+                    "shippingType": {"type": "string", "enum": ["FREE", "PAID", "CONDITIONAL"]},
+                    "isAvailable": {"type": "boolean"},
+                },
+            },
+            "ProductPricesResponse": {
+                "type": "object",
+                "required": ["lowestPrice", "averagePrice", "highestPrice", "entries"],
+                "properties": {
+                    "lowestPrice": {"type": ["integer", "null"]},
+                    "averagePrice": {"type": ["integer", "null"]},
+                    "highestPrice": {"type": ["integer", "null"]},
+                    "entries": {"type": "array", "items": {"$ref": "#/components/schemas/PriceEntry"}},
+                },
+            },
             "ProductSummary": {
                 "type": "object",
                 "required": [
@@ -1209,6 +1314,243 @@ def build_openapi_spec():
                 "security": _auth_requirement(True),
             }
         },
+        "/api/v1/products/{product_id}/prices": {
+            "get": {
+                "tags": ["Prices"],
+                "summary": "List seller prices for product",
+                "parameters": [
+                    {"name": "product_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product price comparison",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/ProductPricesResponse"})),
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": [],
+            },
+            "post": {
+                "tags": ["Prices"],
+                "summary": "Create product seller price",
+                "parameters": [
+                    {"name": "product_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "requestBody": _request_body({"$ref": "#/components/schemas/CreatePriceEntryRequest"}),
+                "responses": {
+                    "201": {
+                        "description": "Price entry created",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/PriceEntry"})),
+                    },
+                    "400": {
+                        "description": "Invalid price payload",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Seller or admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Product or seller not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "409": {
+                        "description": "Duplicate price entry",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
+        "/api/v1/prices/{price_id}": {
+            "patch": {
+                "tags": ["Prices"],
+                "summary": "Update price entry",
+                "parameters": [
+                    {"name": "price_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "requestBody": _request_body({"$ref": "#/components/schemas/UpdatePriceEntryRequest"}),
+                "responses": {
+                    "200": {
+                        "description": "Price entry updated",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/PriceEntry"})),
+                    },
+                    "400": {
+                        "description": "Invalid price payload",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Seller or admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Price entry not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+            "delete": {
+                "tags": ["Prices"],
+                "summary": "Delete price entry",
+                "parameters": [
+                    {"name": "price_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Price entry deleted",
+                        **_json_content(message_envelope),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Price entry not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
+        "/api/v1/sellers": {
+            "get": {
+                "tags": ["Sellers"],
+                "summary": "List sellers",
+                "parameters": [
+                    {"$ref": "#/components/parameters/PageQuery"},
+                    {"$ref": "#/components/parameters/LimitQuery"},
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated seller list",
+                        **_json_content(
+                            _success_envelope_schema(
+                                {"type": "array", "items": {"$ref": "#/components/schemas/Seller"}},
+                                include_meta=True,
+                            )
+                        ),
+                    }
+                },
+                "security": [],
+            },
+            "post": {
+                "tags": ["Sellers"],
+                "summary": "Create seller",
+                "requestBody": _request_body({"$ref": "#/components/schemas/CreateSellerRequest"}),
+                "responses": {
+                    "201": {
+                        "description": "Seller created",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/Seller"})),
+                    },
+                    "400": {
+                        "description": "Invalid seller payload",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
+        "/api/v1/sellers/{seller_id}": {
+            "get": {
+                "tags": ["Sellers"],
+                "summary": "Get seller detail",
+                "parameters": [
+                    {"name": "seller_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Seller detail",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/Seller"})),
+                    },
+                    "404": {
+                        "description": "Seller not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": [],
+            },
+            "patch": {
+                "tags": ["Sellers"],
+                "summary": "Update seller",
+                "parameters": [
+                    {"name": "seller_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "requestBody": _request_body({"$ref": "#/components/schemas/UpdateSellerRequest"}),
+                "responses": {
+                    "200": {
+                        "description": "Seller updated",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/Seller"})),
+                    },
+                    "400": {
+                        "description": "Invalid seller payload",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Seller not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+            "delete": {
+                "tags": ["Sellers"],
+                "summary": "Deactivate seller",
+                "parameters": [
+                    {"name": "seller_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Seller deactivated",
+                        **_json_content(message_envelope),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "403": {
+                        "description": "Admin role required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Seller not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
         "/api/v1/categories": {
             "get": {
                 "tags": ["Categories"],
@@ -1584,6 +1926,8 @@ def build_openapi_spec():
             {"name": "System"},
             {"name": "Auth"},
             {"name": "Products"},
+            {"name": "Sellers"},
+            {"name": "Prices"},
             {"name": "Categories"},
             {"name": "Users"},
             {"name": "Docs"},

@@ -212,7 +212,7 @@ class ProductService:
             raise ApiError("PRODUCT_NOT_FOUND", "상품을 찾을 수 없습니다.", 404)
 
         price_entries = sorted(
-            [entry for entry in product.price_entries.all() if entry.is_available],
+            [entry for entry in product.price_entries.all() if entry.is_available and entry.seller.is_active],
             key=lambda item: (item.price, item.id),
         )
         price_values = [entry.price for entry in price_entries]

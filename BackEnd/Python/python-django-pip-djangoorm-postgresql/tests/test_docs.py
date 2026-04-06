@@ -12,10 +12,15 @@ class DocsTests(SimpleTestCase):
         self.assertIn("/api/v1/auth/login", payload["paths"])
         self.assertIn("/api/v1/categories", payload["paths"])
         self.assertIn("/api/v1/products", payload["paths"])
+        self.assertIn("/api/v1/products/{product_id}/prices", payload["paths"])
+        self.assertIn("/api/v1/prices/{price_id}", payload["paths"])
+        self.assertIn("/api/v1/sellers", payload["paths"])
         self.assertIn("/api/v1/users/me", payload["paths"])
         self.assertIn("bearerAuth", payload["components"]["securitySchemes"])
         self.assertIn("CategoryTreeNode", payload["components"]["schemas"])
         self.assertIn("ProductDetail", payload["components"]["schemas"])
+        self.assertIn("Seller", payload["components"]["schemas"])
+        self.assertIn("PriceEntry", payload["components"]["schemas"])
         self.assertIn("ApiErrorEnvelope", payload["components"]["schemas"])
 
     def test_swagger_redirect_and_ui(self):

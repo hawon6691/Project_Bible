@@ -11,11 +11,12 @@ class DocsTests(SimpleTestCase):
         self.assertEqual(payload["info"]["title"], "PBShop Python Django ORM API")
         self.assertIn("/api/v1/auth/login", payload["paths"])
         self.assertIn("/api/v1/categories", payload["paths"])
+        self.assertIn("/api/v1/products", payload["paths"])
         self.assertIn("/api/v1/users/me", payload["paths"])
         self.assertIn("bearerAuth", payload["components"]["securitySchemes"])
         self.assertIn("CategoryTreeNode", payload["components"]["schemas"])
+        self.assertIn("ProductDetail", payload["components"]["schemas"])
         self.assertIn("ApiErrorEnvelope", payload["components"]["schemas"])
-        self.assertNotIn("/api/v1/products", payload["paths"])
 
     def test_swagger_redirect_and_ui(self):
         redirect = self.client.get("/docs/swagger")

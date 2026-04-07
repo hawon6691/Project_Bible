@@ -619,6 +619,47 @@ def _components():
                     "entries": {"type": "array", "items": {"$ref": "#/components/schemas/PriceEntry"}},
                 },
             },
+            "PriceHistoryPoint": {
+                "type": "object",
+                "required": ["date", "lowestPrice", "averagePrice"],
+                "properties": {
+                    "date": {"type": "string", "format": "date"},
+                    "lowestPrice": {"type": "integer"},
+                    "averagePrice": {"type": "integer"},
+                },
+            },
+            "ProductPriceHistoryResponse": {
+                "type": "object",
+                "required": ["productId", "productName", "allTimeLowest", "allTimeHighest", "history"],
+                "properties": {
+                    "productId": {"type": "integer"},
+                    "productName": {"type": "string"},
+                    "allTimeLowest": {"type": ["integer", "null"]},
+                    "allTimeHighest": {"type": ["integer", "null"]},
+                    "history": {"type": "array", "items": {"$ref": "#/components/schemas/PriceHistoryPoint"}},
+                },
+            },
+            "PriceAlert": {
+                "type": "object",
+                "required": ["id", "productId", "productName", "targetPrice", "currentLowestPrice", "isTriggered", "createdAt"],
+                "properties": {
+                    "id": {"type": "integer"},
+                    "productId": {"type": "integer"},
+                    "productName": {"type": "string"},
+                    "targetPrice": {"type": "integer"},
+                    "currentLowestPrice": {"type": "integer"},
+                    "isTriggered": {"type": "boolean"},
+                    "createdAt": {"type": "string", "format": "date-time"},
+                },
+            },
+            "CreatePriceAlertRequest": {
+                "type": "object",
+                "required": ["productId", "targetPrice"],
+                "properties": {
+                    "productId": {"type": "integer"},
+                    "targetPrice": {"type": "integer", "minimum": 1},
+                },
+            },
             "ProductSummary": {
                 "type": "object",
                 "required": [
@@ -1686,6 +1727,44 @@ def build_openapi_spec():
                 "security": _auth_requirement(True),
             },
         },
+        "/api/v1/products/{product_id}/price-history": {
+            "get": {
+                "tags": ["Prices"],
+                "summary": "Get product price history",
+                "parameters": [
+                    {"name": "product_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                    {
+                        "name": "period",
+                        "in": "query",
+                        "required": False,
+                        "schema": {"type": "string", "enum": ["1w", "1m", "3m", "6m", "1y"], "default": "3m"},
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": False,
+                        "schema": {"type": "string", "enum": ["daily", "weekly", "monthly"], "default": "daily"},
+                    },
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product price history",
+                        **_json_content(
+                            _success_envelope_schema({"$ref": "#/components/schemas/ProductPriceHistoryResponse"})
+                        ),
+                    },
+                    "400": {
+                        "description": "Invalid history query",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": [],
+            },
+        },
         "/api/v1/prices/{price_id}": {
             "patch": {
                 "tags": ["Prices"],
@@ -1739,6 +1818,79 @@ def build_openapi_spec():
                     },
                     "404": {
                         "description": "Price entry not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
+        "/api/v1/price-alerts": {
+            "get": {
+                "tags": ["Prices"],
+                "summary": "List current user price alerts",
+                "responses": {
+                    "200": {
+                        "description": "Price alert list",
+                        **_json_content(
+                            _success_envelope_schema(
+                                {"type": "array", "items": {"$ref": "#/components/schemas/PriceAlert"}}
+                            )
+                        ),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+            "post": {
+                "tags": ["Prices"],
+                "summary": "Create price alert",
+                "requestBody": _request_body({"$ref": "#/components/schemas/CreatePriceAlertRequest"}),
+                "responses": {
+                    "201": {
+                        "description": "Price alert created",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/PriceAlert"})),
+                    },
+                    "400": {
+                        "description": "Invalid price alert payload",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "409": {
+                        "description": "Active alert already exists",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
+        "/api/v1/price-alerts/{alert_id}": {
+            "delete": {
+                "tags": ["Prices"],
+                "summary": "Delete current user price alert",
+                "parameters": [
+                    {"name": "alert_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Price alert deleted",
+                        **_json_content(message_envelope),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Price alert not found",
                         **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
                     },
                 },

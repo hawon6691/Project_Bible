@@ -1,18 +1,58 @@
 from __future__ import annotations
 
+from collections import OrderedDict
+from datetime import timedelta
 from urllib.parse import urlparse
 
 from django.db import transaction
+from django.utils import timezone
 
 from apps.api.errors import ApiError
 from apps.api.pagination import build_pagination_meta, parse_pagination
 from apps.api.utils import require_fields
 from apps.catalog.repositories import ProductRepository
-from apps.pricing.models import PriceEntry, Seller, ShippingType
-from apps.pricing.repositories import PriceEntryRepository, SellerRepository
+from apps.pricing.models import PriceAlert, PriceEntry, Seller, ShippingType
+from apps.pricing.repositories import (
+    PriceAlertRepository,
+    PriceEntryRepository,
+    PriceHistoryRepository,
+    SellerRepository,
+)
 
 
 TRUST_GRADE_VALUES = {"A+", "A", "B+", "B", "C+", "C", "D", "F"}
+HISTORY_PERIOD_DAYS = {
+    "1w": 7,
+    "1m": 30,
+    "3m": 90,
+    "6m": 180,
+    "1y": 365,
+}
+HISTORY_TYPES = {"daily", "weekly", "monthly"}
+
+
+def refresh_product_price_state(
+    *,
+    product_id: int,
+    product_repository: ProductRepository,
+    price_entry_repository: PriceEntryRepository,
+    price_alert_repository: PriceAlertRepository,
+) -> None:
+    product = product_repository.find_by_id(product_id)
+    if product is None:
+        return
+
+    summary = price_entry_repository.summarize_product(product_id)
+    product.lowest_price = summary["lowest_price"]
+    product.seller_count = summary["seller_count"] or 0
+    product_repository.save(product, update_fields=["lowest_price", "seller_count", "updated_at"])
+
+    current_lowest_price = product.lowest_price if product.lowest_price is not None else product.price
+    price_alert_repository.trigger_eligible_for_product(
+        product_id,
+        current_lowest_price,
+        triggered_at=timezone.now(),
+    )
 
 
 class SellerService:
@@ -21,10 +61,12 @@ class SellerService:
         seller_repository: SellerRepository | None = None,
         price_entry_repository: PriceEntryRepository | None = None,
         product_repository: ProductRepository | None = None,
+        price_alert_repository: PriceAlertRepository | None = None,
     ) -> None:
         self.seller_repository = seller_repository or SellerRepository()
         self.price_entry_repository = price_entry_repository or PriceEntryRepository()
         self.product_repository = product_repository or ProductRepository()
+        self.price_alert_repository = price_alert_repository or PriceAlertRepository()
 
     def list_sellers(self, querydict) -> tuple[list[dict], dict]:
         page, limit = parse_pagination(querydict)
@@ -169,16 +211,12 @@ class SellerService:
     def _refresh_products_for_seller(self, seller_id: int) -> None:
         product_ids = list(self.price_entry_repository.list_by_seller(seller_id).values_list("product_id", flat=True).distinct())
         for product_id in product_ids:
-            self._refresh_product_stats(product_id)
-
-    def _refresh_product_stats(self, product_id: int) -> None:
-        product = self.product_repository.find_by_id(product_id)
-        if product is None:
-            return
-        summary = self.price_entry_repository.summarize_product(product_id)
-        product.lowest_price = summary["lowest_price"]
-        product.seller_count = summary["seller_count"] or 0
-        self.product_repository.save(product, update_fields=["lowest_price", "seller_count", "updated_at"])
+            refresh_product_price_state(
+                product_id=product_id,
+                product_repository=self.product_repository,
+                price_entry_repository=self.price_entry_repository,
+                price_alert_repository=self.price_alert_repository,
+            )
 
 
 class PriceEntryService:
@@ -187,10 +225,12 @@ class PriceEntryService:
         price_entry_repository: PriceEntryRepository | None = None,
         seller_repository: SellerRepository | None = None,
         product_repository: ProductRepository | None = None,
+        price_alert_repository: PriceAlertRepository | None = None,
     ) -> None:
         self.price_entry_repository = price_entry_repository or PriceEntryRepository()
         self.seller_repository = seller_repository or SellerRepository()
         self.product_repository = product_repository or ProductRepository()
+        self.price_alert_repository = price_alert_repository or PriceAlertRepository()
 
     def get_product_prices(self, product_id: int) -> dict:
         self._ensure_product(product_id)
@@ -210,7 +250,7 @@ class PriceEntryService:
     def create_price_entry(self, product_id: int, data: dict) -> dict:
         self._ensure_product(product_id)
         require_fields(data, ["sellerId", "price", "productUrl"])
-        normalized = self._normalize_create_payload(product_id, data)
+        normalized = self._normalize_create_payload(data)
 
         existing = self.price_entry_repository.find_by_product_and_seller(product_id, normalized["seller"].id)
         if existing is not None:
@@ -227,7 +267,12 @@ class PriceEntryService:
                 shipping_fee=normalized["shipping_cost"],
                 shipping_type=normalized["shipping_type"],
             )
-            self._refresh_product_stats(product_id)
+            refresh_product_price_state(
+                product_id=product_id,
+                product_repository=self.product_repository,
+                price_entry_repository=self.price_entry_repository,
+                price_alert_repository=self.price_alert_repository,
+            )
         return self._serialize_price_entry(entry)
 
     def update_price_entry(self, price_id: int, data: dict) -> dict:
@@ -248,7 +293,12 @@ class PriceEntryService:
         update_fields.append("updated_at")
         with transaction.atomic():
             self.price_entry_repository.save(entry, update_fields=update_fields)
-            self._refresh_product_stats(entry.product_id)
+            refresh_product_price_state(
+                product_id=entry.product_id,
+                product_repository=self.product_repository,
+                price_entry_repository=self.price_entry_repository,
+                price_alert_repository=self.price_alert_repository,
+            )
         return self._serialize_price_entry(entry)
 
     def delete_price_entry(self, price_id: int) -> dict:
@@ -256,10 +306,15 @@ class PriceEntryService:
         product_id = entry.product_id
         with transaction.atomic():
             self.price_entry_repository.delete(entry)
-            self._refresh_product_stats(product_id)
+            refresh_product_price_state(
+                product_id=product_id,
+                product_repository=self.product_repository,
+                price_entry_repository=self.price_entry_repository,
+                price_alert_repository=self.price_alert_repository,
+            )
         return {"message": "가격이 삭제되었습니다."}
 
-    def _normalize_create_payload(self, product_id: int, data: dict) -> dict:
+    def _normalize_create_payload(self, data: dict) -> dict:
         seller = self._resolve_active_seller(data.get("sellerId"))
         return {
             "seller": seller,
@@ -334,15 +389,6 @@ class PriceEntryService:
             raise ApiError("SELLER_NOT_FOUND", "활성 판매처를 찾을 수 없습니다.", 404)
         return seller
 
-    def _refresh_product_stats(self, product_id: int) -> None:
-        product = self.product_repository.find_by_id(product_id)
-        if product is None:
-            return
-        summary = self.price_entry_repository.summarize_product(product_id)
-        product.lowest_price = summary["lowest_price"]
-        product.seller_count = summary["seller_count"] or 0
-        self.product_repository.save(product, update_fields=["lowest_price", "seller_count", "updated_at"])
-
     def _parse_non_negative_int(self, value, field_name: str) -> int:
         try:
             parsed = int(value)
@@ -392,3 +438,181 @@ class PriceEntryService:
         if normalized in {"0", "false", "no", "off"}:
             return False
         raise ApiError("VALIDATION_ERROR", f"{field_name}는 불리언이어야 합니다.", 400)
+
+
+class PriceHistoryService:
+    def __init__(
+        self,
+        history_repository: PriceHistoryRepository | None = None,
+        product_repository: ProductRepository | None = None,
+    ) -> None:
+        self.history_repository = history_repository or PriceHistoryRepository()
+        self.product_repository = product_repository or ProductRepository()
+
+    def get_product_history(self, product_id: int, querydict) -> dict:
+        product = self._ensure_product(product_id)
+        period = self._parse_period(querydict.get("period"))
+        history_type = self._parse_history_type(querydict.get("type"))
+        since_date = timezone.localdate() - timedelta(days=HISTORY_PERIOD_DAYS[period])
+
+        history_rows = list(self.history_repository.list_by_product_since(product_id, since_date))
+        summary = self.history_repository.summarize_all_time(product_id)
+
+        if history_type == "daily":
+            history = [
+                {
+                    "date": row.date.isoformat(),
+                    "lowestPrice": row.lowest_price,
+                    "averagePrice": row.average_price,
+                }
+                for row in history_rows
+            ]
+        else:
+            history = self._aggregate_history(history_rows, history_type)
+
+        return {
+            "productId": product.id,
+            "productName": product.name,
+            "allTimeLowest": summary["all_time_lowest"],
+            "allTimeHighest": summary["all_time_highest"],
+            "history": history,
+        }
+
+    def _ensure_product(self, product_id: int):
+        product = self.product_repository.find_by_id(product_id)
+        if product is None:
+            raise ApiError("PRODUCT_NOT_FOUND", "상품을 찾을 수 없습니다.", 404)
+        return product
+
+    def _parse_period(self, value) -> str:
+        normalized = str(value or "3m").strip().lower()
+        if normalized not in HISTORY_PERIOD_DAYS:
+            raise ApiError("VALIDATION_ERROR", "유효하지 않은 period입니다.", 400)
+        return normalized
+
+    def _parse_history_type(self, value) -> str:
+        normalized = str(value or "daily").strip().lower()
+        if normalized not in HISTORY_TYPES:
+            raise ApiError("VALIDATION_ERROR", "유효하지 않은 type입니다.", 400)
+        return normalized
+
+    def _aggregate_history(self, history_rows, history_type: str) -> list[dict]:
+        buckets: OrderedDict[str, dict] = OrderedDict()
+
+        for row in history_rows:
+            if history_type == "weekly":
+                bucket_date = row.date - timedelta(days=row.date.weekday())
+            else:
+                bucket_date = row.date.replace(day=1)
+
+            bucket_key = bucket_date.isoformat()
+            bucket = buckets.setdefault(
+                bucket_key,
+                {
+                    "date": bucket_key,
+                    "lowestPrice": row.lowest_price,
+                    "averagePriceTotal": 0,
+                    "count": 0,
+                },
+            )
+            bucket["lowestPrice"] = min(bucket["lowestPrice"], row.lowest_price)
+            bucket["averagePriceTotal"] += row.average_price
+            bucket["count"] += 1
+
+        result: list[dict] = []
+        for bucket in buckets.values():
+            result.append(
+                {
+                    "date": bucket["date"],
+                    "lowestPrice": bucket["lowestPrice"],
+                    "averagePrice": round(bucket["averagePriceTotal"] / bucket["count"]),
+                }
+            )
+        return result
+
+
+class PriceAlertService:
+    def __init__(
+        self,
+        alert_repository: PriceAlertRepository | None = None,
+        product_repository: ProductRepository | None = None,
+    ) -> None:
+        self.alert_repository = alert_repository or PriceAlertRepository()
+        self.product_repository = product_repository or ProductRepository()
+
+    def list_alerts(self, user) -> list[dict]:
+        return [self._serialize_alert(alert) for alert in self.alert_repository.list_active_by_user(user.id)]
+
+    def create_alert(self, user, data: dict) -> dict:
+        if not isinstance(data, dict):
+            raise ApiError("VALIDATION_ERROR", "요청 본문은 객체여야 합니다.", 400)
+
+        require_fields(data, ["productId", "targetPrice"])
+        product = self._ensure_product(self._parse_positive_int(data.get("productId"), "productId"))
+        target_price = self._parse_positive_int(data.get("targetPrice"), "targetPrice")
+        existing = self.alert_repository.find_by_user_and_product(user.id, product.id)
+        current_lowest_price = self._current_lowest_price(product)
+        triggered = current_lowest_price <= target_price
+        triggered_at = timezone.now() if triggered else None
+
+        if existing is not None and existing.is_active:
+            raise ApiError("ALERT_EXISTS", "해당 상품에 대한 알림이 이미 존재합니다.", 409)
+
+        if existing is not None:
+            existing.target_price = target_price
+            existing.is_active = True
+            existing.is_triggered = triggered
+            existing.triggered_at = triggered_at
+            self.alert_repository.save(
+                existing,
+                update_fields=["target_price", "is_active", "is_triggered", "triggered_at"],
+            )
+            return self._serialize_alert(existing)
+
+        alert = self.alert_repository.create(
+            user=user,
+            product=product,
+            target_price=target_price,
+            is_triggered=triggered,
+            triggered_at=triggered_at,
+            is_active=True,
+        )
+        return self._serialize_alert(alert)
+
+    def delete_alert(self, user, alert_id: int) -> dict:
+        alert = self.alert_repository.find_active_by_id_for_user(alert_id, user.id)
+        if alert is None:
+            raise ApiError("PRICE_ALERT_NOT_FOUND", "알림을 찾을 수 없습니다.", 404)
+
+        alert.is_active = False
+        self.alert_repository.save(alert, update_fields=["is_active"])
+        return {"message": "최저가 알림이 해제되었습니다."}
+
+    def _serialize_alert(self, alert: PriceAlert) -> dict:
+        return {
+            "id": alert.id,
+            "productId": alert.product_id,
+            "productName": alert.product.name,
+            "targetPrice": alert.target_price,
+            "currentLowestPrice": self._current_lowest_price(alert.product),
+            "isTriggered": alert.is_triggered,
+            "createdAt": alert.created_at.isoformat().replace("+00:00", "Z"),
+        }
+
+    def _ensure_product(self, product_id: int):
+        product = self.product_repository.find_by_id(product_id)
+        if product is None:
+            raise ApiError("PRODUCT_NOT_FOUND", "상품을 찾을 수 없습니다.", 404)
+        return product
+
+    def _parse_positive_int(self, value, field_name: str) -> int:
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError) as exc:
+            raise ApiError("VALIDATION_ERROR", f"{field_name}는 정수여야 합니다.", 400) from exc
+        if parsed < 1:
+            raise ApiError("VALIDATION_ERROR", f"{field_name}는 1 이상이어야 합니다.", 400)
+        return parsed
+
+    def _current_lowest_price(self, product) -> int:
+        return product.lowest_price if product.lowest_price is not None else product.price

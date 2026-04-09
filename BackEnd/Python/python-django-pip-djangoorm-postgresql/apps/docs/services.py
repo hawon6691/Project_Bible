@@ -660,6 +660,69 @@ def _components():
                     "targetPrice": {"type": "integer", "minimum": 1},
                 },
             },
+            "CartItem": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "quantity",
+                    "selectedOptions",
+                    "createdAt",
+                    "updatedAt",
+                    "product",
+                    "seller",
+                    "unitPrice",
+                    "subtotal",
+                ],
+                "properties": {
+                    "id": {"type": "integer"},
+                    "quantity": {"type": "integer", "minimum": 1},
+                    "selectedOptions": {"type": "string"},
+                    "createdAt": {"type": "string", "format": "date-time"},
+                    "updatedAt": {"type": "string", "format": "date-time"},
+                    "product": {
+                        "type": "object",
+                        "required": ["id", "name", "thumbnailUrl", "status", "stock", "price", "lowestPrice"],
+                        "properties": {
+                            "id": {"type": "integer"},
+                            "name": {"type": "string"},
+                            "thumbnailUrl": {"type": ["string", "null"]},
+                            "status": {"type": "string", "enum": ["ON_SALE", "SOLD_OUT", "HIDDEN"]},
+                            "stock": {"type": "integer"},
+                            "price": {"type": "integer"},
+                            "lowestPrice": {"type": "integer"},
+                        },
+                    },
+                    "seller": {
+                        "type": "object",
+                        "required": ["id", "name", "logoUrl", "trustScore"],
+                        "properties": {
+                            "id": {"type": "integer"},
+                            "name": {"type": "string"},
+                            "logoUrl": {"type": ["string", "null"]},
+                            "trustScore": {"type": "integer"},
+                        },
+                    },
+                    "unitPrice": {"type": "integer"},
+                    "subtotal": {"type": "integer"},
+                },
+            },
+            "CreateCartItemRequest": {
+                "type": "object",
+                "required": ["productId", "sellerId", "quantity"],
+                "properties": {
+                    "productId": {"type": "integer"},
+                    "sellerId": {"type": "integer"},
+                    "quantity": {"type": "integer", "minimum": 1},
+                    "selectedOptions": {"type": "string"},
+                },
+            },
+            "UpdateCartQuantityRequest": {
+                "type": "object",
+                "required": ["quantity"],
+                "properties": {
+                    "quantity": {"type": "integer", "minimum": 1},
+                },
+            },
             "ProductSummary": {
                 "type": "object",
                 "required": [
@@ -1120,6 +1183,117 @@ def build_openapi_spec():
                 },
                 "security": _auth_requirement(True),
             }
+        },
+        "/api/v1/cart": {
+            "get": {
+                "tags": ["Cart"],
+                "summary": "List current user cart items",
+                "responses": {
+                    "200": {
+                        "description": "Current user cart items",
+                        **_json_content(
+                            _success_envelope_schema(
+                                {"type": "array", "items": {"$ref": "#/components/schemas/CartItem"}}
+                            )
+                        ),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+            "post": {
+                "tags": ["Cart"],
+                "summary": "Add item to cart",
+                "requestBody": _request_body({"$ref": "#/components/schemas/CreateCartItemRequest"}),
+                "responses": {
+                    "201": {
+                        "description": "Cart item created or merged",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/CartItem"})),
+                    },
+                    "400": {
+                        "description": "Invalid cart payload",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Product or seller not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+            "delete": {
+                "tags": ["Cart"],
+                "summary": "Clear current user cart",
+                "responses": {
+                    "200": {
+                        "description": "Cart cleared",
+                        **_json_content(message_envelope),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+        },
+        "/api/v1/cart/{item_id}": {
+            "patch": {
+                "tags": ["Cart"],
+                "summary": "Update cart item quantity",
+                "parameters": [
+                    {"name": "item_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "requestBody": _request_body({"$ref": "#/components/schemas/UpdateCartQuantityRequest"}),
+                "responses": {
+                    "200": {
+                        "description": "Cart item updated",
+                        **_json_content(_success_envelope_schema({"$ref": "#/components/schemas/CartItem"})),
+                    },
+                    "400": {
+                        "description": "Invalid quantity",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Cart item not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
+            "delete": {
+                "tags": ["Cart"],
+                "summary": "Delete cart item",
+                "parameters": [
+                    {"name": "item_id", "in": "path", "required": True, "schema": {"type": "integer"}},
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cart item deleted",
+                        **_json_content(message_envelope),
+                    },
+                    "401": {
+                        "description": "Authentication required",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                    "404": {
+                        "description": "Cart item not found",
+                        **_json_content({"$ref": "#/components/schemas/ApiErrorEnvelope"}),
+                    },
+                },
+                "security": _auth_requirement(True),
+            },
         },
         "/api/v1/products": {
             "get": {
@@ -2394,6 +2568,7 @@ def build_openapi_spec():
             {"name": "Health"},
             {"name": "System"},
             {"name": "Auth"},
+            {"name": "Cart"},
             {"name": "Products"},
             {"name": "Specs"},
             {"name": "Sellers"},

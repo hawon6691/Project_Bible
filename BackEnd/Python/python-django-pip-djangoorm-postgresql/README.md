@@ -7,7 +7,7 @@ This bootstrap keeps the scope intentionally small:
 - Django + pip
 - Django ORM + PostgreSQL
 - environment-based settings
-- minimal `/health` and `/api/v1/` routes
+- minimal `/health`, `/api/v1/`, `/docs/openapi`, and `/docs/swagger` routes
 - smoke tests for the bootstrap stage
 
 Domain implementation is intentionally out of scope for this step.
@@ -23,6 +23,11 @@ Copy-Item .env.example .env
 .\.venv\Scripts\python manage.py runserver
 ```
 
+Docs endpoints after boot:
+
+- OpenAPI JSON: `/docs/openapi`
+- Swagger UI: `/docs/swagger`
+
 ## CI
 
 GitHub Actions validates the bootstrap track on `push` and `pull_request`.
@@ -32,7 +37,7 @@ The first CI scope stays intentionally small:
 - `python -m pip install -r requirements.txt`
 - `python manage.py check`
 - `python manage.py test`
-- bootstrap smoke checks for `/health` and `/api/v1/`
+- bootstrap smoke checks for `/health`, `/api/v1/`, `/docs/openapi`, and `/docs/swagger`
 
 Local CI-equivalent commands:
 

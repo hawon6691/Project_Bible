@@ -46,10 +46,7 @@ DB 엔진은 공통으로 아래 두 축을 기준으로 둔다.
 예시
 
 - `java-spring-maven-jpa-postgresql`
-- `javascript-express-npm-prisma-postgresql`
 - `typescript-nest-npm-typeorm-postgresql`
-- `php-laravel-composer-eloquent-postgresql`
-- `kotlin-ktor-gradle-exposeddao-postgresql`
 
 ## 언어별 정리 기준
 
@@ -58,22 +55,16 @@ DB 엔진은 공통으로 아래 두 축을 기준으로 둔다.
 | 언어       | 프레임워크       | 빌드/패키지 도구  | PostgreSQL Raw SQL 평균 스택 | MySQL Raw SQL 평균 스택   | PostgreSQL ORM 평균 스택        | MySQL ORM 평균 스택             | 기본 프로젝트 수 |
 | ---------- | ---------------- | ----------------- | ---------------------------- | ------------------------- | ------------------------------- | ------------------------------- | ---------------- |
 | Java       | `Spring Boot`    | `Maven`, `Gradle` | `JDBC`                       | `JDBC`                    | `JPA(Hibernate)`                | `JPA(Hibernate)`                | `8`              |
-| Kotlin     | `Spring`, `Ktor` | `Gradle`          | `JDBC`, `Exposed SQL DSL`    | `JDBC`, `Exposed SQL DSL` | `JPA(Hibernate)`, `Exposed DAO` | `JPA(Hibernate)`, `Exposed DAO` | `8`              |
-| JavaScript | `Express`        | `npm`             | `knex`                       | `knex`                    | `Prisma`                        | `Prisma`                        | `4`              |
 | TypeScript | `NestJS`         | `npm`             | `knex`                       | `knex`                    | `TypeORM`                       | `TypeORM`                       | `4`              |
 | Python     | `Django`         | `pip`             | `SQLAlchemy Core`            | `SQLAlchemy Core`         | `Django ORM`                    | `Django ORM`                    | `4`              |
-| PHP        | `Laravel`        | `Composer`        | `PDO`                        | `PDO`                     | `Eloquent ORM`                  | `Eloquent ORM`                  | `4`              |
 
 ## 언어별 생성 프로젝트 기준
 
 | 언어       | 생성 프로젝트                                                                                                                                                                                                                                                                                                            |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Java       | `java-spring-maven-jdbc-postgresql`, `java-spring-maven-jpa-postgresql`, `java-spring-maven-jdbc-mysql`, `java-spring-maven-jpa-mysql`, `java-spring-gradle-jdbc-postgresql`, `java-spring-gradle-jpa-postgresql`, `java-spring-gradle-jdbc-mysql`, `java-spring-gradle-jpa-mysql`                                       |
-| Kotlin     | `kotlin-spring-gradle-jdbc-postgresql`, `kotlin-spring-gradle-jpa-postgresql`, `kotlin-spring-gradle-jdbc-mysql`, `kotlin-spring-gradle-jpa-mysql`, `kotlin-ktor-gradle-exposedsql-postgresql`, `kotlin-ktor-gradle-exposeddao-postgresql`, `kotlin-ktor-gradle-exposedsql-mysql`, `kotlin-ktor-gradle-exposeddao-mysql` |
-| JavaScript | `javascript-express-npm-knex-postgresql`, `javascript-express-npm-prisma-postgresql`, `javascript-express-npm-knex-mysql`, `javascript-express-npm-prisma-mysql`                                                                                                                                                         |
 | TypeScript | `typescript-nest-npm-knex-postgresql`, `typescript-nest-npm-typeorm-postgresql`, `typescript-nest-npm-knex-mysql`, `typescript-nest-npm-typeorm-mysql`                                                                                                                                                                   |
 | Python     | `python-django-pip-sqlalchemycore-postgresql`, `python-django-pip-djangoorm-postgresql`, `python-django-pip-sqlalchemycore-mysql`, `python-django-pip-djangoorm-mysql`                                                                                                                                                   |
-| PHP        | `php-laravel-composer-pdo-postgresql`, `php-laravel-composer-eloquent-postgresql`, `php-laravel-composer-pdo-mysql`, `php-laravel-composer-eloquent-mysql`                                                                                                                                                               |
 
 ## 작성 원칙
 
